@@ -1,0 +1,28 @@
+2019-03-19 21:27:14.251  INFO 24172 --- [main] o.m.MainInitApplication                  : Starting MainInitApplication on DESKTOP-0MAIH3P with PID 24172 (C:\Users\firs\Documents\myongoingscalendar-backend\target\classes started by firs in C:\Users\firs\Documents\myongoingscalendar-backend)
+2019-03-19 21:27:14.253  INFO 24172 --- [main] o.m.MainInitApplication                  : The following profiles are active: dev
+2019-03-19 21:27:16.487  INFO 24172 --- [main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2019-03-19 21:27:16.487  INFO 24172 --- [main] org.apache.catalina.core.StandardEngine  : Starting Servlet engine: [Apache Tomcat/9.0.14]
+2019-03-19 21:27:16.493  INFO 24172 --- [main] o.a.catalina.core.AprLifecycleListener   : The APR based Apache Tomcat Native library which allows optimal performance in production environments was not found on the java.library.path: [C:\Program Files\Java\jdk1.8.0_151\bin;C:\WINDOWS\Sun\Java\bin;C:\WINDOWS\system32;C:\WINDOWS;C:\ProgramData\Oracle\Java\javapath;C:\Windows\system32;C:\Windows;C:\Windows\System32\Wbem;C:\Windows\System32\WindowsPowerShell\v1.0\;C:\Program Files (x86)\NVIDIA Corporation\PhysX\Common;C:\WINDOWS\system32;C:\WINDOWS;C:\WINDOWS\System32\Wbem;C:\WINDOWS\System32\WindowsPowerShell\v1.0\;C:\Program Files\Git\cmd;C:\Program Files\Git\mingw64\bin;C:\Program Files\Git\usr\bin;C:\PostgreSQL\pg10\bin;C:\Program Files\PuTTY\;C:\Program Files\Microsoft VS Code\bin;C:\Program Files\nodejs\;C:\WINDOWS\System32\OpenSSH\;C:\Users\firs\AppData\Local\Microsoft\WindowsApps;C:\Users\firs\AppData\Roaming\npm;.]
+2019-03-19 21:27:16.621  INFO 24172 --- [main] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2019-03-19 21:27:17.248  INFO 24172 --- [main] o.elasticsearch.plugins.PluginsService   : no modules loaded
+2019-03-19 21:27:17.250  INFO 24172 --- [main] o.elasticsearch.plugins.PluginsService   : loaded plugin [org.elasticsearch.index.reindex.ReindexPlugin]
+2019-03-19 21:27:17.250  INFO 24172 --- [main] o.elasticsearch.plugins.PluginsService   : loaded plugin [org.elasticsearch.join.ParentJoinPlugin]
+2019-03-19 21:27:17.250  INFO 24172 --- [main] o.elasticsearch.plugins.PluginsService   : loaded plugin [org.elasticsearch.percolator.PercolatorPlugin]
+2019-03-19 21:27:17.250  INFO 24172 --- [main] o.elasticsearch.plugins.PluginsService   : loaded plugin [org.elasticsearch.script.mustache.MustachePlugin]
+2019-03-19 21:27:17.250  INFO 24172 --- [main] o.elasticsearch.plugins.PluginsService   : loaded plugin [org.elasticsearch.transport.Netty4Plugin]
+2019-03-19 21:27:20.211  INFO 24172 --- [main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2019-03-19 21:27:20.275  INFO 24172 --- [main] com.zaxxer.hikari.pool.PoolBase          : HikariPool-1 - Driver does not support get/set network timeout for connections. (Method org.postgresql.jdbc.PgConnection.getNetworkTimeout() is not yet implemented.)
+2019-03-19 21:27:20.287  INFO 24172 --- [main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2019-03-19 21:27:20.375  INFO 24172 --- [main] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [
+	name: default
+	...]
+2019-03-19 21:27:20.629  INFO 24172 --- [main] org.hibernate.Version                    : HHH000412: Hibernate Core {5.3.7.Final}
+2019-03-19 21:27:20.630  INFO 24172 --- [main] org.hibernate.cfg.Environment            : HHH000206: hibernate.properties not found
+2019-03-19 21:27:20.792  INFO 24172 --- [main] o.hibernate.annotations.common.Version   : HCANN000001: Hibernate Commons Annotations {5.0.4.Final}
+2019-03-19 21:27:20.972  INFO 24172 --- [main] org.hibernate.dialect.Dialect            : HHH000400: Using dialect: org.hibernate.dialect.PostgreSQLDialect
+2019-03-19 21:27:20.991  INFO 24172 --- [main] o.h.e.j.e.i.LobCreatorBuilderImpl        : HHH000422: Disabling contextual LOB creation as connection was null
+2019-03-19 21:27:20.998  INFO 24172 --- [main] org.hibernate.type.BasicTypeRegistry     : HHH000270: Type registration [java.util.UUID] overrides previous : org.hibernate.type.UUIDBinaryType@40a7974
+2019-03-19 21:27:22.693  INFO 24172 --- [main] o.h.h.i.QueryTranslatorFactoryInitiator  : HHH000397: Using ASTQueryTranslatorFactory
+2019-03-19 21:27:23.017 ERROR 24172 --- [main] .d.e.r.s.AbstractElasticsearchRepository : failed to load elasticsearch nodes : org.elasticsearch.client.transport.NoNodeAvailableException: None of the configured nodes are available: [{#transport#-1}{mkJQR0yvSwapE53--dj19A}{127.0.0.1}{127.0.0.1:9300}]
+2019-03-19 21:27:25.653  INFO 24172 --- [main] o.m.MainInitApplication                  : Started MainInitApplication in 11.746 seconds (JVM running for 12.465)
+2019-03-19 21:27:26.142  INFO 24172 --- [RMI TCP Connection(10)-127.0.0.1] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet 'dispatcherServlet'

@@ -1,0 +1,15 @@
+{
+  "anime": {
+    "properties": {
+      "en": {
+        "type": "text",
+        "fields": {
+          "raw": {
+            "type": "keyword",
+            "index": true
+          }
+        }
+      }
+    }
+  }
+}
