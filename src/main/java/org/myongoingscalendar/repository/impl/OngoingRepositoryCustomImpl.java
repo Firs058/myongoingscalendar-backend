@@ -267,13 +267,13 @@ public class OngoingRepositoryCustomImpl implements OngoingRepositoryCustom {
                     "  WHEN a.image = TRUE\n" +
                     "    THEN '/images/anime/thumbnails/' || CAST(z.aid AS TEXT) || '.jpg'\n" +
                     "  ELSE '/images/noimage.svg'\n" +
-                    "  END :: TEXT                           AS image\n" +
+                    "  END                                   AS image\n" +
                     "FROM syoboi_timetable s\n" +
                     "  LEFT JOIN syoboi_ongoings o ON o.tid = s.tid\n" +
                     "  LEFT JOIN syoboi_info i ON o.tid = i.tid\n" +
                     "  LEFT JOIN channels h ON h.id = s.ch\n" +
                     "  LEFT JOIN ongoings z ON z.tid = s.tid\n" +
-                    "  LEFT JOIN anidb a ON a.tid = z.aid\n" +
+                    "  LEFT JOIN anidb a ON a.tid = z.tid\n" +
                     "WHERE\n" +
                     "  s.date_start BETWEEN date_trunc('day', now()) AND date_trunc('day', now()) + INTERVAL '2 week'\n" +
                     "ORDER BY s.date_start ASC";
@@ -312,13 +312,13 @@ public class OngoingRepositoryCustomImpl implements OngoingRepositoryCustom {
                     "  WHEN a.image = TRUE\n" +
                     "    THEN '/images/anime/thumbnails/' || CAST(z.aid AS TEXT) || '.jpg'\n" +
                     "  ELSE '/images/noimage.svg'\n" +
-                    "  END :: TEXT                          AS image\n" +
+                    "  END                                   AS image\n" +
                     "FROM syoboi_timetable s\n" +
                     "  LEFT JOIN syoboi_ongoings o ON o.tid = s.tid\n" +
                     "  LEFT JOIN syoboi_info i ON o.tid = i.tid\n" +
                     "  LEFT JOIN channels h ON h.id = s.ch\n" +
                     "  LEFT JOIN ongoings z ON z.tid = s.tid\n" +
-                    "  LEFT JOIN anidb a ON a.tid = z.aid\n" +
+                    "  LEFT JOIN anidb a ON a.tid = z.tid\n" +
                     "  INNER JOIN users_titles u ON u.tid = o.tid\n" +
                     "WHERE\n" +
                     "  s.date_start BETWEEN date_trunc('day', now()) AND date_trunc('day', now()) + INTERVAL '2 week'\n" +
