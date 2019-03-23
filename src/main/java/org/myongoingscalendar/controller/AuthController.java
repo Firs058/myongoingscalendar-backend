@@ -65,7 +65,7 @@ public class AuthController {
                                         .email(user.email())
                                         .social(userEntity.social() != SNS.local)
                                         .tokens(tokens)
-                                        .roles(userEntity.authorityEntities().stream().map(UserAuthorityEntity::name).collect(Collectors.toList()))
+                                        .roles(userEntity.authorityEntities().stream().map(UserAuthorityEntity::authorityName).collect(Collectors.toList()))
                                         .settings(userEntity.userSettingsEntity().avatar(gravatarManipulations.getGravatarImageUrl(user.email()))));
                     } else
                         return new AjaxResponse<>(new Status(10023, "Sorry, you account not activate yet. Check you email"));

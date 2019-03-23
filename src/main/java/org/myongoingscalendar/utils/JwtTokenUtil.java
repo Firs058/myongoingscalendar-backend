@@ -5,7 +5,6 @@ import java.io.Serializable;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -20,6 +19,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.myongoingscalendar.model.Token;
 import org.myongoingscalendar.security.JwtUser;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
@@ -41,7 +41,7 @@ public class JwtTokenUtil implements Serializable {
 
     public JwtUser getJwtUserFromToken(String token) {
         return new JwtUser(
-                Long.valueOf(getJwtUserIdFromToken(token)),
+                getJwtUserIdFromToken(token),
                 null,
                 null,
                 null,
@@ -94,7 +94,7 @@ public class JwtTokenUtil implements Serializable {
 
     public Token generateAccessToken(JwtUser jwtUser) {
         Map<String, Object> claims = new HashMap<>();
-        claims.put("authorities", jwtUser.getAuthorities());
+        claims.put("authorities", jwtUser.getAuthorities().stream().map(GrantedAuthority::getAuthority).collect(Collectors.joining(",")));
         return doGenerateTokenAndExpiration(claims, jwtUser.getId(), expirationAccess);
     }
 

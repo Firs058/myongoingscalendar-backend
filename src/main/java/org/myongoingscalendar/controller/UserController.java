@@ -14,12 +14,10 @@ import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
-import javax.annotation.security.RolesAllowed;
 import java.security.Principal;
 import java.util.Locale;
 
 @RestController
-@RolesAllowed("ROLE_USER")
 @RequestMapping(value = "/api/user", method = RequestMethod.POST, produces = "application/json; charset=utf-8")
 public class UserController {
 

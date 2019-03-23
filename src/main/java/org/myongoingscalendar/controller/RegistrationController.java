@@ -67,7 +67,7 @@ public class RegistrationController {
                             .email(user.email())
                             .password(BCrypt.hashpw(user.password(), BCrypt.gensalt()))
                             .userSettingsEntity(user.userSettingsEntity());
-                    userToSave.authorityEntities(Collections.singletonList(new UserAuthorityEntity().name(AuthorityName.ROLE_USER).userEntity(userToSave)));
+                    userToSave.authorityEntities(Collections.singletonList(new UserAuthorityEntity().authorityName(AuthorityName.ROLE_USER).userEntity(userToSave)));
                     userService.save(userToSave);
                     emailManipulations.sendRegistrationMail(urlDataDAO.getUrlData(request).getDomainAddress(), user);
                     return new AjaxResponse<>(new Status(11001, "OK, check you mail to activate account"));
@@ -121,7 +121,7 @@ public class RegistrationController {
                                     .email(userEntity.email())
                                     .social(false)
                                     .tokens(tokens)
-                                    .roles(userEntity.authorityEntities().stream().map(UserAuthorityEntity::name).collect(Collectors.toList()))
+                                    .roles(userEntity.authorityEntities().stream().map(UserAuthorityEntity::authorityName).collect(Collectors.toList()))
                                     .settings(userEntity.userSettingsEntity().avatar(gravatarManipulations.getGravatarImageUrl(userEntity.email()))));
                 })
                 .orElse(new AjaxResponse<>(new Status(10014, "Token not exists. Repeat recover")));

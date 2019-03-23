@@ -3,8 +3,6 @@ package org.myongoingscalendar.config;
 import org.myongoingscalendar.security.JwtAuthenticationEntryPoint;
 import org.myongoingscalendar.security.JwtAuthorizationTokenFilter;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -13,9 +11,7 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.http.HttpMethod;
 
-@Configuration
 @EnableWebSecurity
-@EnableGlobalMethodSecurity(prePostEnabled = true)
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
     private final JwtAuthenticationEntryPoint unauthorizedHandler;
@@ -36,13 +32,14 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).and()
 
+                .addFilterBefore(authenticationTokenFilter, UsernamePasswordAuthenticationFilter.class)
+
                 .authorizeRequests()
 
-                .antMatchers("/api/**").permitAll()
+                .antMatchers("/api/public/**", "/api/auth/**").permitAll()
+                .antMatchers("/api/user/**").hasRole("USER")
+                .antMatchers("/api/admin/**").hasRole("ADMIN")
                 .anyRequest().authenticated();
-
-        httpSecurity
-                .addFilterBefore(authenticationTokenFilter, UsernamePasswordAuthenticationFilter.class);
     }
 
     @Override

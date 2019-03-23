@@ -2,29 +2,34 @@ package org.myongoingscalendar.controller;
 
 import org.myongoingscalendar.model.*;
 import org.myongoingscalendar.elastic.service.ElasticAnimeService;
+import org.myongoingscalendar.security.JwtUser;
+import org.myongoingscalendar.service.CommentServiceCustom;
 import org.myongoingscalendar.service.GenreService;
 import org.myongoingscalendar.service.OngoingServiceCustom;
 import org.myongoingscalendar.service.SyoboiInfoService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Locale;
 
 @RestController
-@RequestMapping(value = "/api", method = RequestMethod.POST, produces = "application/json; charset=utf-8")
+@RequestMapping(value = "/api/public", method = RequestMethod.POST, produces = "application/json; charset=utf-8")
 public class ApiController {
 
     private final ElasticAnimeService elasticAnimeService;
     private final OngoingServiceCustom ongoingServiceCustom;
     private final SyoboiInfoService syoboiInfoService;
     private final GenreService genreService;
+    private final CommentServiceCustom commentServiceCustom;
 
     @Autowired
-    public ApiController(ElasticAnimeService elasticAnimeService, OngoingServiceCustom ongoingServiceCustom, SyoboiInfoService syoboiInfoService, GenreService genreService) {
+    public ApiController(ElasticAnimeService elasticAnimeService, OngoingServiceCustom ongoingServiceCustom, SyoboiInfoService syoboiInfoService, GenreService genreService, CommentServiceCustom commentServiceCustom) {
         this.elasticAnimeService = elasticAnimeService;
         this.ongoingServiceCustom = ongoingServiceCustom;
         this.syoboiInfoService = syoboiInfoService;
         this.genreService = genreService;
+        this.commentServiceCustom = commentServiceCustom;
     }
 
     @RequestMapping(value = "/calendar")
@@ -48,6 +53,14 @@ public class ApiController {
         return new AjaxResponse<>(
                 new Status(11000, "OK"),
                 ongoingServiceCustom.getOngoingData(tid, inputUserValues.getTimezone(), locale)
+        );
+    }
+
+    @RequestMapping(value = "/title/{tid}/comments/{path}/{offset}")
+    public AjaxResponse getUserComments(@PathVariable("tid") Long tid, @PathVariable("path") String path, @PathVariable("offset") Integer offset, @AuthenticationPrincipal JwtUser user) {
+        return new AjaxResponse<>(
+                new Status(11000, "OK"),
+                commentServiceCustom.getComments(tid, path, offset)
         );
     }
 

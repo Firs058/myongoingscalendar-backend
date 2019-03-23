@@ -14,11 +14,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
-import javax.annotation.security.RolesAllowed;
 import java.util.AbstractMap;
 
 @RestController
-@RolesAllowed("ROLE_ADMIN")
 @RequestMapping(value = "/api/admin", method = RequestMethod.POST, produces = "application/json; charset=utf-8")
 public class AdminController {
     private final ParseAniDBManipulations parseAniDBManipulations;

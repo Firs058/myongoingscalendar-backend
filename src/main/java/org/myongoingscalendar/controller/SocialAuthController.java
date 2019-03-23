@@ -189,7 +189,7 @@ public class SocialAuthController {
                     return userService.save(u);
                 })
                 .orElseGet(() -> {
-                    user.authorityEntities(Collections.singletonList(new UserAuthorityEntity().name(AuthorityName.ROLE_USER).userEntity(user)));
+                    user.authorityEntities(Collections.singletonList(new UserAuthorityEntity().authorityName(AuthorityName.ROLE_USER).userEntity(user)));
                     user.userSettingsEntity().nickname(user.email().replaceAll("@.*?$", "").trim());
                     user.userSettingsEntity().userEntity(user);
                     return userService.save(user);
@@ -212,7 +212,7 @@ public class SocialAuthController {
                                     .email(user.email())
                                     .social(true)
                                     .tokens(tokens)
-                                    .roles(userEntity.authorityEntities().stream().map(UserAuthorityEntity::name).collect(Collectors.toList()))
+                                    .roles(userEntity.authorityEntities().stream().map(UserAuthorityEntity::authorityName).collect(Collectors.toList()))
                                     .settings(userEntity.userSettingsEntity().avatar(gravatarManipulations.getGravatarImageUrl(user.email()))));
                 })
                 .orElseGet(() -> new AjaxResponse<>(new Status(10001, "Empty fields are not allowed")));

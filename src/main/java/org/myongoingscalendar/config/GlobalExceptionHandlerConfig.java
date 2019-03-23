@@ -6,6 +6,7 @@ import org.elasticsearch.client.transport.NoNodeAvailableException;
 import org.myongoingscalendar.model.AjaxResponse;
 import org.myongoingscalendar.model.Status;
 import org.myongoingscalendar.security.AuthenticationException;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.HttpMediaTypeNotAcceptableException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -41,4 +42,11 @@ public class GlobalExceptionHandlerConfig {
         log.error(ex.getMessage(), ex);
         return new AjaxResponse<>(new Status(10012, "You must be logged"));
     }
+
+    @ExceptionHandler(AccessDeniedException.class)
+    public AjaxResponse processAccessDeniedException(AccessDeniedException ex) {
+        log.error(ex.getMessage(), ex);
+        return new AjaxResponse<>(new Status(10012, "You must be logged"));
+    }
+
 }

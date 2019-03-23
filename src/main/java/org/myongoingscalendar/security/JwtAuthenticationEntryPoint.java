@@ -31,7 +31,7 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint, Se
                          AuthenticationException authException) throws IOException {
         response.addHeader("Content-Type", "application/json; charset=utf-8");
         response.setStatus(HttpServletResponse.SC_OK);
-        objectMapper.writeValue(response.getOutputStream(), new AjaxResponse<>(new Status(12000, "Token expired")));
+        objectMapper.writeValue(response.getOutputStream(), new AjaxResponse<>(new Status(10012, "You must be logged")));
         response.flushBuffer();
     }
 }

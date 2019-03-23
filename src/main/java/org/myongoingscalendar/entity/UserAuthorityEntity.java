@@ -24,7 +24,7 @@ public class UserAuthorityEntity {
     private Long id;
     @Column(name = "name", nullable = false)
     @Enumerated(EnumType.STRING)
-    private AuthorityName name;
+    private AuthorityName authorityName;
     @JoinColumn(name = "user_id", referencedColumnName = "id", nullable = false)
     @ManyToOne(fetch = FetchType.LAZY)
     private UserEntity userEntity;
