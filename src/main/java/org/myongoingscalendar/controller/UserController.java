@@ -1,5 +1,6 @@
 package org.myongoingscalendar.controller;
 
+import org.myongoingscalendar.entity.UserAuthorityEntity;
 import org.myongoingscalendar.entity.UserEntity;
 import org.myongoingscalendar.manipulations.DBManipulations;
 import org.myongoingscalendar.model.*;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
 import java.util.Locale;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping(value = "/api/user", method = RequestMethod.POST, produces = "application/json; charset=utf-8")
@@ -67,7 +69,13 @@ public class UserController {
     @RequestMapping("/sync")
     public AjaxResponse settings(@AuthenticationPrincipal JwtUser user) {
         return userService.get(user.getId())
-                .map(u -> new AjaxResponse<>(new Status(11000, "OK"), u.userSettingsEntity()))
+                .map(u -> new AjaxResponse<>(new Status(11000, "OK"),
+                        new LoginStatus()
+                                .email(u.email())
+                                .social(u.social() != SNS.local)
+                                .roles(u.authorityEntities().stream().map(UserAuthorityEntity::authorityName).collect(Collectors.toList()))
+                                .settings(u.userSettingsEntity())
+                ))
                 .orElse(new AjaxResponse<>(new Status(10012, "You must be logged")));
     }
 
