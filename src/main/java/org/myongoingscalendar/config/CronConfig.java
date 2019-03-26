@@ -56,7 +56,7 @@ public class CronConfig {
 
     @Profile({"prod", "dev"})
     @Scheduled(cron = "* */10 * * * ?")
-    @CacheEvict(value = {"getOngoings", "getOngoingsMin", "getAllTimezones", "getAllGenres", "getFrontLocale", "getYearsRanges"}, allEntries = true)
+    @CacheEvict(value = {"getOngoingsFull", "getOngoingsMin", "getAllTimezones", "getAllGenres", "getYearsRanges"}, allEntries = true)
     public void clearCache() {
     }
 

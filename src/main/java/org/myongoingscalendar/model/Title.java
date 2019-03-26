@@ -23,6 +23,7 @@ public class Title {
     private String description;
     private String trailer;
     private List<Ratings> ratings = new ArrayList<>();
+    private ChartData chartData;
     private int episodes;
     private List<Links> links = new ArrayList<>();
     private List<GenreEntity> genres = new ArrayList<>();

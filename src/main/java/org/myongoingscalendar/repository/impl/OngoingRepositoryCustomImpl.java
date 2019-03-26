@@ -21,9 +21,11 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.PersistenceUnit;
+import java.text.SimpleDateFormat;
 import java.time.ZoneId;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * @author firs
@@ -124,12 +126,32 @@ public class OngoingRepositoryCustomImpl implements OngoingRepositoryCustom {
                                 .genres(ongoing.malTitleGenreEntities().stream().map(MalTitleGenreEntity::genreEntity).collect(Collectors.toList()))
                                 .links().addAll(AnimeUtil.createLinks(new Object[]{"MAL", malAnimeUrlPath, ongoing.malid()}));
 
-                    if (ongoing.ratingEntities() != null)
+                    if (ongoing.ratingEntities() != null) {
+                        List<Datasets> datasets = new ArrayList<>();
+                        datasets.add(new Datasets()
+                                .label("AniDB")
+                                .borderColor("#D32F2F")
+                                .backgroundColor("rgba(211, 49, 49, 0.5)")
+                                .data(ongoing.ratingEntities().stream().sorted(Comparator.comparing(RatingEntity::added)).map(e->!e.anidbTemporary().equals(0.0) ? e.anidbTemporary() : null).toArray()));
+
+                        datasets.add(new Datasets()
+                                .label("MAL")
+                                .borderColor("#1976D2")
+                                .backgroundColor("rgba(25, 117, 210, 0.5)")
+                                .data(ongoing.ratingEntities().stream().sorted(Comparator.comparing(RatingEntity::added)).map(e->!e.mal().equals(0.0) ? e.mal() : null).toArray()));
+
                         title
                                 .ratings(AnimeUtil.createRatings(
                                         new Object[]{"AniDB", ongoing.ratingEntities().stream().max(Comparator.comparing(RatingEntity::added)).map(RatingEntity::anidbTemporary).orElse((double) 0)},
                                         new Object[]{"MAL", ongoing.ratingEntities().stream().max(Comparator.comparing(RatingEntity::added)).map(RatingEntity::mal).orElse((double) 0)}
-                                ));
+                                ))
+                                .chartData(
+                                        new ChartData()
+                                                .labels(ongoing.ratingEntities().stream().sorted(Comparator.comparing(RatingEntity::added)).map(e -> new SimpleDateFormat("dd/MM/yyyy").format(e.added())).toArray())
+                                                .datasets(datasets)
+                                );
+                    }
+
                     return title;
                 })
                 .orElse(new Title());
