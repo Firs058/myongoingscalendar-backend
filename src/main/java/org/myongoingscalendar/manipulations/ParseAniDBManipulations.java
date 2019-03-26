@@ -163,7 +163,7 @@ public class ParseAniDBManipulations {
         }
     }
 
-    private void checkThumbnails() {
+    public void checkThumbnails() {
         try {
             File path = new File(getImagesLocationPath() + "thumbnails");
             if (!path.exists()) {

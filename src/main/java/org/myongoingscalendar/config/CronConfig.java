@@ -10,6 +10,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 import org.springframework.scheduling.annotation.Scheduled;
 
+import javax.annotation.PostConstruct;
+
 @Configuration
 public class CronConfig {
 
@@ -26,53 +28,48 @@ public class CronConfig {
         this.fillElastic = fillElastic;
     }
 
-    // @Profile({"prod"})
+    @Profile({"prod"})
     @Scheduled(cron = "* */10 * * * ?")
-    // @Scheduled(cron = "0 59 17 * * ?")
-    public void updateDB() {
-       //parseSyoboiManipulations.parseSyoboiRSS();
-      //  parseSyoboiManipulations.updateTidsTimetable();
-     //    fillElastic.loadAnimeIntoElastic();
-         clearOngoingsListCache();
+    public void updateSyoboi() {
+        parseSyoboiManipulations.parseSyoboiRSS();
+        parseSyoboiManipulations.updateTidsTimetable();
+        fillElastic.loadAnimeIntoElastic();
+        clearOngoingsListCache();
     }
 
     @Profile({"prod"})
-    //@Scheduled(cron = "0 0 */12 ? * *")
-    @Scheduled(cron = "0 51 17 * * ?")
+    @Scheduled(cron = "0 * */6 * * ?")
     public void updateSyoboiOngoingsList() {
         parseSyoboiManipulations.parseSyoboiAnimeOngoingsList();
         parseSyoboiManipulations.parseSyoboiUidTimetableForAllOngoings();
     }
 
-    // @Profile({"prod"})
-    // @Scheduled(cron = "0 0 12 * * ?")
-    @Scheduled(cron = "0 35 09 * * ?")
-    public void updateAniDBData() {
-
-        // parseAniDBManipulations.parseAniDB();
-        //   parseAniDBManipulations.getAniDBImages();
-         parseMALManipulations.parseMAL();
+    @Profile({"prod"})
+    @Scheduled(cron = "0 0 12 * * ?")
+    public void updateDBData() {
+        parseAniDBManipulations.parseAniDB();
+        parseAniDBManipulations.getAniDBImages();
+        parseMALManipulations.parseMAL();
         parseSyoboiManipulations.insertFromSyoboiToInfo();
-        //   clearOngoingsListCache();
+        clearOngoingsListCache();
     }
-//
-    // @Profile({"prod", "dev"})
-    // @Scheduled(cron = "* */10 * * * ?")
-    // @CacheEvict(value = {"getOngoings", "getOngoingsMin", "getAllTimezones", "getAllGenres", "getFrontLocale", "getYearsRanges"}, allEntries = true)
-    // public void clearCache() {
-    // }
-//
-//
-    // @PostConstruct
-    // @CacheEvict(value = "getImagesLocationPath", allEntries = true)
-    // public void getImagesLocationPath() {
-    //     fillDBManipulations.getImagesLocationPath();
-    //     fillDBManipulations.checkThumbnails();
-    // }
-//
-     @Profile({"prod", "dev"})
-     @Scheduled(cron = "0 * * * * ?")
-     @CacheEvict(value = {"getCurrentOngoingsList", "getAllOngoingsList"}, allEntries = true)
-     public void clearOngoingsListCache() {
-     }
+
+    @Profile({"prod", "dev"})
+    @Scheduled(cron = "* */10 * * * ?")
+    @CacheEvict(value = {"getOngoings", "getOngoingsMin", "getAllTimezones", "getAllGenres", "getFrontLocale", "getYearsRanges"}, allEntries = true)
+    public void clearCache() {
+    }
+
+    @PostConstruct
+    @CacheEvict(value = "getImagesLocationPath", allEntries = true)
+    public void getImagesLocationPath() {
+        parseAniDBManipulations.getImagesLocationPath();
+        parseAniDBManipulations.checkThumbnails();
+    }
+
+    @Profile({"prod", "dev"})
+    @Scheduled(cron = "0 * * * * ?")
+    @CacheEvict(value = {"getCurrentOngoingsList", "getAllOngoingsList"}, allEntries = true)
+    public void clearOngoingsListCache() {
+    }
 }

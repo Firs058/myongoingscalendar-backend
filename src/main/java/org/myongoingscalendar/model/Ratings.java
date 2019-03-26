@@ -13,5 +13,5 @@ import lombok.experimental.Accessors;
 @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY)
 public class Ratings {
     private String dbname;
-    private double score;
+    private Double score;
 }
