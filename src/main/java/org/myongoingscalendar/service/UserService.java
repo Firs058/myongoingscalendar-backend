@@ -21,7 +21,7 @@ public interface UserService {
 
     void deleteAll();
 
-    Optional<UserEntity> findByEmail(String email);
+    Optional<UserEntity> findByEmailContainingIgnoreCase(String email);
 
     Optional<UserEntity> findByRecoverToken(String recoverToken);
 

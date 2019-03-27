@@ -7,11 +7,9 @@ import org.myongoingscalendar.elastic.FillElastic;
 import org.myongoingscalendar.manipulations.ParseAniDBManipulations;
 import org.myongoingscalendar.manipulations.ParseMALManipulations;
 import org.myongoingscalendar.model.*;
-import org.myongoingscalendar.security.JwtUser;
 import org.myongoingscalendar.service.OngoingService;
 import org.myongoingscalendar.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.AbstractMap;
@@ -56,7 +54,7 @@ public class AdminController {
     }
 
     @PostMapping("/update")
-    public AjaxResponse updateOngoing(@RequestBody AdminData adminData, @AuthenticationPrincipal JwtUser user) {
+    public AjaxResponse updateOngoing(@RequestBody AdminData adminData) {
         return ongoingService.findByTid(adminData.tid())
                 .map(o -> {
                     if (adminData.aid() != null) o.aid(adminData.aid());
@@ -76,7 +74,7 @@ public class AdminController {
                         .setRating(Rating.PARENTAL_GUIDANCE_SUGGESTED)
                         .setStandardDefaultImage(DefaultImage.MONSTER)
                         .getUrl(userEntity.email())))
-                .forEach(e -> userService.findByEmail(e.getValue()).ifPresent(u -> {
+                .forEach(e -> userService.findByEmailContainingIgnoreCase(e.getValue()).ifPresent(u -> {
                     u.userSettingsEntity().avatar(e.getKey());
                     userService.save(u);
                 }));

@@ -182,7 +182,7 @@ public class SocialAuthController {
 
     @Transactional
     AjaxResponse authUserViaEmail(UserEntity user) {
-        return userService.findByEmail(user.email())
+        return userService.findByEmailContainingIgnoreCase(user.email())
                 .map(u -> {
                     u.active(true);
                     user.userSettingsEntity().userEntity(u);

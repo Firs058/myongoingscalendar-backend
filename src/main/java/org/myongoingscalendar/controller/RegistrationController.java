@@ -60,19 +60,21 @@ public class RegistrationController {
         } else {
             ReCaptchaGoogleResponse reCaptchaResponse = reCaptchaManipulations.verify(user.recaptchaToken());
             if (reCaptchaResponse.isSuccess()) {
-                user.confirmToken(UUID.randomUUID().toString());
-                Optional<UserEntity> existent = userService.findByEmail(user.email());
-                if (!existent.isPresent()) {
-                    UserEntity userToSave = new UserEntity()
-                            .email(user.email())
-                            .password(BCrypt.hashpw(user.password(), BCrypt.gensalt()))
-                            .userSettingsEntity(user.userSettingsEntity());
-                    userToSave.authorityEntities(Collections.singletonList(new UserAuthorityEntity().authorityName(AuthorityName.ROLE_USER).userEntity(userToSave)));
-                    userService.save(userToSave);
-                    emailManipulations.sendRegistrationMail(urlDataDAO.getUrlData(request).getDomainAddress(), user);
-                    return new AjaxResponse<>(new Status(11001, "OK, check you mail to activate account"));
-                }
-                return new AjaxResponse<>(new Status(10007, "Sorry, account with that email is already existed"));
+                return userService.findByEmailContainingIgnoreCase(user.email())
+                        .map(u -> new AjaxResponse<>(new Status(10007, "Sorry, account with that email is already existed")))
+                        .orElseGet(() -> {
+                            UserEntity userToSave = new UserEntity()
+                                    .email(user.email())
+                                    .password(BCrypt.hashpw(user.password(), BCrypt.gensalt()))
+                                    .confirmToken(UUID.randomUUID().toString());
+
+                            userToSave.userSettingsEntity(user.userSettingsEntity().userEntity(userToSave).avatar(gravatarManipulations.getGravatarImageUrl(user.email())));
+                            userToSave.authorityEntities(Collections.singletonList(new UserAuthorityEntity().authorityName(AuthorityName.ROLE_USER).userEntity(userToSave)));
+
+                            userService.save(userToSave);
+                            emailManipulations.sendRegistrationMail(urlDataDAO.getUrlData(request).getDomainAddress(), userToSave);
+                            return new AjaxResponse<>(new Status(11001, "OK, check you mail to activate account"));
+                        });
             }
             return new AjaxResponse<>(new Status(10008, "Invalid captcha"));
         }
@@ -92,11 +94,13 @@ public class RegistrationController {
 
     @RequestMapping(value = "/pass/recover")
     public AjaxResponse recoverPass(@RequestBody UserEntity user, HttpServletRequest request) {
-        return userService.findByEmail(user.email())
+        return userService.findByEmailContainingIgnoreCase(user.email())
                 .map(u -> {
                     ReCaptchaGoogleResponse reCaptchaResponse = reCaptchaManipulations.verify(user.recaptchaToken());
                     if (!reCaptchaResponse.isSuccess())
                         return new AjaxResponse<>(new Status(10008, "Invalid captcha"));
+                    if (u.password() == null)
+                        return new AjaxResponse<>(new Status(10032, "Password recovery is not available for accounts created through a social network"));
                     u.recoverToken(UUID.randomUUID().toString());
                     emailManipulations.sendRecoverPassMail(urlDataDAO.getUrlData(request).getDomainAddress(), user);
                     return new AjaxResponse<>(new Status(11003, "OK, check you mail for recover you password"));

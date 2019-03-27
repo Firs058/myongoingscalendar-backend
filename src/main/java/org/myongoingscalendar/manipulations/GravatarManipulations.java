@@ -22,7 +22,7 @@ public class GravatarManipulations {
                 .setRating(Rating.PARENTAL_GUIDANCE_SUGGESTED)
                 .setStandardDefaultImage(DefaultImage.MONSTER)
                 .getUrl(email);
-        userService.findByEmail(email).ifPresent(u -> {
+        userService.findByEmailContainingIgnoreCase(email).ifPresent(u -> {
             u.userSettingsEntity().avatar(avatar);
             userService.save(u);
         });

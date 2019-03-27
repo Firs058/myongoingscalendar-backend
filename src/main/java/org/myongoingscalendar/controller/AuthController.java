@@ -45,8 +45,10 @@ public class AuthController {
     public AjaxResponse createAuthenticationToken(@RequestBody UserEntity user) {
         if (user.email() == null || user.password() == null || user.email().equals(user.password()))
             return new AjaxResponse<>(new Status(10022, "The query conditions are not met"));
-        return userService.findByEmail(user.email())
+        return userService.findByEmailContainingIgnoreCase(user.email())
                 .map(userEntity -> {
+                    if (userEntity.password() == null)
+                        return new AjaxResponse<>(new Status(10031, "Access is available only through a social network"));
                     if (userEntity.active() && BCrypt.checkpw(user.password(), userEntity.password())) {
                         HashMap<String, Object> tokens = new HashMap<>();
                         Token generatedAccessToken = jwtTokenUtil.generateAccessToken(JwtUserUtil.create(userEntity));

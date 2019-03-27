@@ -53,8 +53,8 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Optional<UserEntity> findByEmail(String email) {
-        return userRepository.findByEmail(email);
+    public Optional<UserEntity> findByEmailContainingIgnoreCase(String email) {
+        return userRepository.findByEmailContainingIgnoreCase(email);
     }
 
     @Override

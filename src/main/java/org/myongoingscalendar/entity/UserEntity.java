@@ -1,5 +1,6 @@
 package org.myongoingscalendar.entity;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.vladmihalcea.hibernate.type.json.JsonNodeBinaryType;
 import lombok.AllArgsConstructor;
@@ -40,6 +41,7 @@ public class UserEntity implements Serializable {
     @SequenceGenerator(name = "users_seq", sequenceName = "users_seq", allocationSize = 1)
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "users_seq")
     private Long id;
+    @JsonProperty("userSettings")
     @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER, mappedBy = "userEntity", orphanRemoval = true)
     private UserSettingsEntity userSettingsEntity;
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "userEntity", orphanRemoval = true)
