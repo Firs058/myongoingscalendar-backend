@@ -30,11 +30,11 @@ public class RatingEntity implements Serializable {
     @ManyToOne(fetch = FetchType.LAZY)
     private OngoingEntity ongoingEntity;
     @Column(name = "anidb_temporary")
-    private Double anidbTemporary = (double) 0;
+    private Double anidbTemporary;
     @Column(name = "anidb_permanent")
-    private Double anidbPermanent = (double) 0;
+    private Double anidbPermanent;
     @Column(name = "mal")
-    private Double mal = (double) 0;
+    private Double mal;
     @Temporal(TemporalType.TIMESTAMP)
     @Column(columnDefinition = "timestamp with time zone", nullable = false)
     private Date added = new Date();

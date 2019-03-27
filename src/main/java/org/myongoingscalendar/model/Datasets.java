@@ -19,5 +19,7 @@ public class Datasets {
     private String label;
     private String borderColor;
     private String backgroundColor;
+    private String pointBackgroundColor = "rgba(255,255,255,0.25)";
+    private String pointStyle = "line";
     private boolean fill = true;
 }

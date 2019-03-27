@@ -132,18 +132,18 @@ public class OngoingRepositoryCustomImpl implements OngoingRepositoryCustom {
                                 .label("AniDB")
                                 .borderColor("#D32F2F")
                                 .backgroundColor("rgba(211, 49, 49, 0.5)")
-                                .data(ongoing.ratingEntities().stream().sorted(Comparator.comparing(RatingEntity::added)).map(e->!e.anidbTemporary().equals(0.0) ? e.anidbTemporary() : null).toArray()));
+                                .data(ongoing.ratingEntities().stream().sorted(Comparator.comparing(RatingEntity::added)).map(RatingEntity::anidbTemporary).toArray()));
 
                         datasets.add(new Datasets()
                                 .label("MAL")
                                 .borderColor("#1976D2")
                                 .backgroundColor("rgba(25, 117, 210, 0.5)")
-                                .data(ongoing.ratingEntities().stream().sorted(Comparator.comparing(RatingEntity::added)).map(e->!e.mal().equals(0.0) ? e.mal() : null).toArray()));
+                                .data(ongoing.ratingEntities().stream().sorted(Comparator.comparing(RatingEntity::added)).map(RatingEntity::mal).toArray()));
 
                         title
                                 .ratings(AnimeUtil.createRatings(
-                                        new Object[]{"AniDB", ongoing.ratingEntities().stream().max(Comparator.comparing(RatingEntity::added)).map(RatingEntity::anidbTemporary).orElse((double) 0)},
-                                        new Object[]{"MAL", ongoing.ratingEntities().stream().max(Comparator.comparing(RatingEntity::added)).map(RatingEntity::mal).orElse((double) 0)}
+                                        new Object[]{"AniDB", ongoing.ratingEntities().stream().sorted(Comparator.comparing(RatingEntity::added)).filter(e -> Objects.nonNull(e.anidbTemporary())).max(Comparator.comparingDouble(RatingEntity::anidbTemporary)).map(RatingEntity::anidbTemporary).orElse((double) 0)},
+                                        new Object[]{"MAL", ongoing.ratingEntities().stream().sorted(Comparator.comparing(RatingEntity::added)).filter(e -> Objects.nonNull(e.mal())).max(Comparator.comparingDouble(RatingEntity::mal)).map(RatingEntity::mal).orElse((double) 0)}
                                 ))
                                 .chartData(
                                         new ChartData()
@@ -184,22 +184,28 @@ public class OngoingRepositoryCustomImpl implements OngoingRepositoryCustom {
                                 .description(ongoing.malEntity().description())
                                 .genres(ongoing.malTitleGenreEntities().stream().map(MalTitleGenreEntity::genreEntity).collect(Collectors.toList()));
 
-                    if (ongoing.ratingEntities() != null)
-                        elasticAnime
-                                .recommended(AnimeUtil.createRecommended(
-                                        ongoing.ratingEntities().stream()
-                                                .max(Comparator.comparing(RatingEntity::added))
-                                                .map(RatingEntity::anidbTemporary)
-                                                .orElse((double) 0),
-                                        ongoing.ratingEntities().stream()
-                                                .max(Comparator.comparing(RatingEntity::added))
-                                                .map(RatingEntity::mal)
-                                                .orElse((double) 0)))
-                                .ratings(AnimeUtil.createRatings(
-                                        new Object[]{"AniDB", ongoing.ratingEntities().stream().max(Comparator.comparing(RatingEntity::added)).map(RatingEntity::anidbTemporary).orElse((double) 0)},
-                                        new Object[]{"MAL", ongoing.ratingEntities().stream().max(Comparator.comparing(RatingEntity::added)).map(RatingEntity::mal).orElse((double) 0)}
-                                ));
+                    if (ongoing.ratingEntities() != null) {
+                        Double anidbTemporaryRating = ongoing.ratingEntities().stream()
+                                .sorted(Comparator.comparing(RatingEntity::added))
+                                .filter(e -> Objects.nonNull(e.anidbTemporary()))
+                                .max(Comparator.comparingDouble(RatingEntity::anidbTemporary))
+                                .map(RatingEntity::anidbTemporary)
+                                .orElse((double) 0);
 
+                        Double malRating = ongoing.ratingEntities().stream()
+                                .sorted(Comparator.comparing(RatingEntity::added))
+                                .filter(e -> Objects.nonNull(e.mal()))
+                                .max(Comparator.comparingDouble(RatingEntity::mal))
+                                .map(RatingEntity::mal)
+                                .orElse((double) 0);
+
+                        elasticAnime
+                                .recommended(AnimeUtil.createRecommended(anidbTemporaryRating, malRating))
+                                .ratings(AnimeUtil.createRatings(
+                                        new Object[]{"AniDB", anidbTemporaryRating},
+                                        new Object[]{"MAL", malRating}
+                                ));
+                    }
                     if (ongoing.syoboiTimetableEntities() != null)
                         elasticAnime
                                 .channels(ongoing.syoboiTimetableEntities().stream().map(SyoboiTimetableEntity::channelEntity).distinct().collect(Collectors.toList()));
