@@ -130,14 +130,14 @@ public class OngoingRepositoryCustomImpl implements OngoingRepositoryCustom {
                         List<Datasets> datasets = new ArrayList<>();
                         datasets.add(new Datasets()
                                 .label("AniDB")
-                                .borderColor("#D32F2F")
-                                .backgroundColor("rgba(211, 49, 49, 0.5)")
+                                .borderColor("#791B26")
+                                .backgroundColor("rgba(121, 27, 38, 0.5)")
                                 .data(ongoing.ratingEntities().stream().sorted(Comparator.comparing(RatingEntity::added)).map(RatingEntity::anidbTemporary).toArray()));
 
                         datasets.add(new Datasets()
                                 .label("MAL")
-                                .borderColor("#1976D2")
-                                .backgroundColor("rgba(25, 117, 210, 0.5)")
+                                .borderColor("#2e51a2")
+                                .backgroundColor("rgba(46, 81, 163, 0.5)")
                                 .data(ongoing.ratingEntities().stream().sorted(Comparator.comparing(RatingEntity::added)).map(RatingEntity::mal).toArray()));
 
                         title
