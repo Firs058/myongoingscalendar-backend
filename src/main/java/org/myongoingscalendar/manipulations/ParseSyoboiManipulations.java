@@ -255,8 +255,19 @@ public class ParseSyoboiManipulations {
         }
     }
 
-    public void insertFromSyoboiToInfo() {
-        List<Long> tids = syoboiOngoingService.getAll().stream().map(e -> e.ongoingEntity().tid()).distinct().collect(Collectors.toList());
+    public void insertFromSyoboiToInfoForAll() {
+        parse(ongoingService.getAll().stream().map(OngoingEntity::tid).distinct().collect(Collectors.toList()));
+    }
+
+    public void insertFromSyoboiToInfoForEmptyInfo() {
+        parse(ongoingService.getCurrentOngoingsWithoutInfo().stream().map(OngoingEntity::tid).distinct().collect(Collectors.toList()));
+    }
+
+    public void insertFromSyoboiToInfoForCurrentOngoings() {
+        parse(syoboiOngoingService.getAll().stream().map(e -> e.ongoingEntity().tid()).distinct().collect(Collectors.toList()));
+    }
+
+    private void parse(List<Long> tids) {
         JsonFactory jsonFactory = new JsonFactory();
         ObjectMapper objectMapper = new ObjectMapper();
         for (Long tid : tids) {

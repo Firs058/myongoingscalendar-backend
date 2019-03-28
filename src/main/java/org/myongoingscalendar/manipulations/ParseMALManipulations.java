@@ -40,10 +40,16 @@ public class ParseMALManipulations {
     }
 
     @Transactional
-    public void parseMAL() {
-        List<OngoingEntity> ongoings = ongoingService.getCurrentOngoings().stream()
-                .filter(e -> e.malid() != null)
-                .collect(Collectors.toList());
+    public void parseMALForCurrentOngoings() {
+        parse(ongoingService.getCurrentOngoings().stream().filter(e -> e.malid() != null).collect(Collectors.toList()));
+    }
+
+    @Transactional
+    public void parseMALForAll() {
+        parse(ongoingService.findByMalidIsNotNull());
+    }
+
+    private void parse(List<OngoingEntity> ongoings) {
         for (OngoingEntity ongoing : ongoings) {
             try {
                 HttpURLConnection con = (HttpURLConnection) new URL(jikanPath + ongoing.malid()).openConnection();

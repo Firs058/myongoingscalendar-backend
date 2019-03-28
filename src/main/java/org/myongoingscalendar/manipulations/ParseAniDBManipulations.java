@@ -1,7 +1,5 @@
 package org.myongoingscalendar.manipulations;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vladmihalcea.hibernate.type.json.internal.JacksonUtil;
 import lombok.extern.slf4j.Slf4j;
 import net.coobird.thumbnailator.Thumbnails;
@@ -9,7 +7,6 @@ import net.coobird.thumbnailator.geometry.Positions;
 import net.coobird.thumbnailator.name.Rename;
 import org.apache.commons.lang3.SystemUtils;
 import org.jsoup.Jsoup;
-import org.myongoingscalendar.model.Vibrant;
 import org.myongoingscalendar.entity.AnidbEntity;
 import org.myongoingscalendar.entity.OngoingEntity;
 import org.myongoingscalendar.entity.RatingEntity;
@@ -53,10 +50,16 @@ public class ParseAniDBManipulations {
     }
 
     @Transactional
-    public void parseAniDB() {
-        List<OngoingEntity> ongoings = ongoingService.getCurrentOngoings().stream()
-                .filter(e -> e.aid() != null)
-                .collect(Collectors.toList());
+    public void parseAniDBForCurrentOngoings() {
+        parse(ongoingService.getCurrentOngoings().stream().filter(e -> e.aid() != null).collect(Collectors.toList()));
+    }
+
+    @Transactional
+    public void parseAniDBForAll() {
+        parse(ongoingService.findByAidIsNotNull());
+    }
+
+    private void parse(List<OngoingEntity> ongoings) {
         for (OngoingEntity ongoing : ongoings) {
             try {
                 org.jsoup.nodes.Document doc = Jsoup.connect(anidbPath + ongoing.aid()).userAgent("Mozilla").get();

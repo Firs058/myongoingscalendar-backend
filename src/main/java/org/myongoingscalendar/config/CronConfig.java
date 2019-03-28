@@ -33,6 +33,7 @@ public class CronConfig {
     public void updateSyoboi() {
         parseSyoboiManipulations.parseSyoboiRSS();
         parseSyoboiManipulations.updateTidsTimetable();
+        parseSyoboiManipulations.insertFromSyoboiToInfoForEmptyInfo();
         fillElastic.loadAnimeIntoElastic();
         clearOngoingsListCache();
     }
@@ -42,15 +43,16 @@ public class CronConfig {
     public void updateSyoboiOngoingsList() {
         parseSyoboiManipulations.parseSyoboiAnimeOngoingsList();
         parseSyoboiManipulations.parseSyoboiUidTimetableForAllOngoings();
+        parseSyoboiManipulations.insertFromSyoboiToInfoForEmptyInfo();
     }
 
     @Profile({"prod"})
     @Scheduled(cron = "0 0 12 * * ?")
     public void updateDBData() {
-        parseAniDBManipulations.parseAniDB();
+        parseAniDBManipulations.parseAniDBForCurrentOngoings();
         parseAniDBManipulations.getAniDBImages();
-        parseMALManipulations.parseMAL();
-        parseSyoboiManipulations.insertFromSyoboiToInfo();
+        parseMALManipulations.parseMALForCurrentOngoings();
+        parseSyoboiManipulations.insertFromSyoboiToInfoForCurrentOngoings();
         clearOngoingsListCache();
     }
 

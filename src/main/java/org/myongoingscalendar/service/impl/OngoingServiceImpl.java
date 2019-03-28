@@ -52,6 +52,16 @@ public class OngoingServiceImpl implements OngoingService {
     }
 
     @Override
+    public List<OngoingEntity> findByMalidIsNotNull() {
+        return ongoingRepository.findByMalidIsNotNull();
+    }
+
+    @Override
+    public List<OngoingEntity> findByAidIsNotNull() {
+        return ongoingRepository.findByAidIsNotNull();
+    }
+
+    @Override
     public List<OngoingEntity> getAll() {
         return ongoingRepository.findAll();
     }
@@ -69,6 +79,11 @@ public class OngoingServiceImpl implements OngoingService {
     @Override
     public List<OngoingEntity> getCurrentOngoingsWithoutVibrant() {
         return ongoingRepository.getCurrentOngoingsWithoutVibrant();
+    }
+
+    @Override
+    public List<OngoingEntity> getCurrentOngoingsWithoutInfo() {
+        return ongoingRepository.getCurrentOngoingsWithoutInfo();
     }
 
     @Override

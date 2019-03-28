@@ -20,6 +20,10 @@ public interface OngoingService {
 
     List<OngoingEntity> findByTidIn(List<Long> tids);
 
+    List<OngoingEntity> findByMalidIsNotNull();
+
+    List<OngoingEntity> findByAidIsNotNull();
+
     List<OngoingEntity> getAll();
 
     List<OngoingEntity> getCurrentOngoings();
@@ -27,6 +31,8 @@ public interface OngoingService {
     List<OngoingEntity> getCurrentOngoingsWithoutImage();
 
     List<OngoingEntity> getCurrentOngoingsWithoutVibrant();
+
+    List<OngoingEntity> getCurrentOngoingsWithoutInfo();
 
     List<AdminData> getAdminData();
 
