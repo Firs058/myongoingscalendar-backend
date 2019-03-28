@@ -82,7 +82,7 @@ public class AdminController {
     }
 
     @PostMapping("/mal")
-    public AjaxResponse parseMALForCurrentOngoings() {
+    public AjaxResponse forceParseMALForCurrentOngoings() {
         parseMALManipulations.parseMALForCurrentOngoings();
         ongoingService.clearOngoingsCache();
         return new AjaxResponse<>(new Status(11000, "OK"));
@@ -96,14 +96,14 @@ public class AdminController {
     }
 
     @PostMapping("/anidb")
-    public AjaxResponse parseAniDBForCurrentOngoings() {
+    public AjaxResponse forceParseAniDBForCurrentOngoings() {
         parseAniDBManipulations.parseAniDBForCurrentOngoings();
         ongoingService.clearOngoingsCache();
         return new AjaxResponse<>(new Status(11000, "OK"));
     }
 
     @PostMapping("/anidb/all")
-    public AjaxResponse parseAniDBForAll() {
+    public AjaxResponse forceParseAniDBForAll() {
         parseAniDBManipulations.parseAniDBForAll();
         ongoingService.clearOngoingsCache();
         return new AjaxResponse<>(new Status(11000, "OK"));
