@@ -1,5 +1,6 @@
 package org.myongoingscalendar.controller;
 
+import org.myongoingscalendar.manipulations.DBManipulations;
 import org.myongoingscalendar.model.*;
 import org.myongoingscalendar.elastic.service.ElasticAnimeService;
 import org.myongoingscalendar.security.JwtUser;
@@ -22,14 +23,16 @@ public class ApiController {
     private final SyoboiInfoService syoboiInfoService;
     private final GenreService genreService;
     private final CommentServiceCustom commentServiceCustom;
+    private final DBManipulations dbManipulations;
 
     @Autowired
-    public ApiController(ElasticAnimeService elasticAnimeService, OngoingServiceCustom ongoingServiceCustom, SyoboiInfoService syoboiInfoService, GenreService genreService, CommentServiceCustom commentServiceCustom) {
+    public ApiController(ElasticAnimeService elasticAnimeService, OngoingServiceCustom ongoingServiceCustom, SyoboiInfoService syoboiInfoService, GenreService genreService, CommentServiceCustom commentServiceCustom, DBManipulations dbManipulations) {
         this.elasticAnimeService = elasticAnimeService;
         this.ongoingServiceCustom = ongoingServiceCustom;
         this.syoboiInfoService = syoboiInfoService;
         this.genreService = genreService;
         this.commentServiceCustom = commentServiceCustom;
+        this.dbManipulations = dbManipulations;
     }
 
     @RequestMapping(value = "/calendar")
@@ -94,6 +97,11 @@ public class ApiController {
                 new Status(11000, "OK"),
                 elasticAnimeService.autocomplete(elasticQuery, 12)
         );
+    }
+
+    @RequestMapping("/timezones")
+    public AjaxResponse getAllTimezones() {
+        return new AjaxResponse<>(new Status(11000, "OK"), dbManipulations.getAllTimezones());
     }
 }
 

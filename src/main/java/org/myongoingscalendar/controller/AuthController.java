@@ -4,7 +4,6 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.myongoingscalendar.entity.UserAuthorityEntity;
 import org.myongoingscalendar.entity.UserEntity;
-import org.myongoingscalendar.manipulations.DBManipulations;
 import org.myongoingscalendar.manipulations.GravatarManipulations;
 import org.myongoingscalendar.model.*;
 import org.myongoingscalendar.service.UserService;
@@ -27,14 +26,12 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping(value = "/api/auth", method = RequestMethod.POST, produces = "application/json; charset=utf-8")
 public class AuthController {
-    private final DBManipulations dbManipulations;
     private final GravatarManipulations gravatarManipulations;
     private final UserService userService;
     private final JwtTokenUtil jwtTokenUtil;
 
     @Autowired
-    public AuthController(DBManipulations dbManipulations, GravatarManipulations gravatarManipulations, UserService userService, JwtTokenUtil jwtTokenUtil) {
-        this.dbManipulations = dbManipulations;
+    public AuthController(GravatarManipulations gravatarManipulations, UserService userService, JwtTokenUtil jwtTokenUtil) {
         this.gravatarManipulations = gravatarManipulations;
         this.userService = userService;
         this.jwtTokenUtil = jwtTokenUtil;
@@ -106,10 +103,5 @@ public class AuthController {
                     return new AjaxResponse<>(new Status(11017, "Need re login"));
                 })
                 .orElse(new AjaxResponse<>(new Status(10012, "You must be logged")));
-    }
-
-    @RequestMapping("/settings/timezones")
-    public AjaxResponse getAllTimezones() {
-        return new AjaxResponse<>(new Status(11000, "OK"), dbManipulations.getAllTimezones());
     }
 }
