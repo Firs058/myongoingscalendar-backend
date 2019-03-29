@@ -71,9 +71,10 @@ public class ParseAniDBManipulations {
                 String titleEN = anime.select("title").get(0).text();
 
                 org.jsoup.nodes.Element ratings = anime.select("ratings").first();
+
                 if (ratings != null) {
-                    double permanentRating = (ratings.select("permanent").first() != null) ? Double.parseDouble(ratings.select("permanent").get(0).text()) : 0;
-                    double temporaryRating = (ratings.select("temporary").first() != null) ? Double.parseDouble(ratings.select("temporary").get(0).text()) : 0;
+                    double permanentRating = (ratings.select("permanent").first() != null) ? Double.parseDouble(ratings.select("permanent").get(0).text()) : 0.0;
+                    double temporaryRating = (ratings.select("temporary").first() != null) ? Double.parseDouble(ratings.select("temporary").get(0).text()) : 0.0;
 
                     Optional<RatingEntity> ratingsEntity = ongoing.ratingEntities().stream()
                             .max(Comparator.comparing(RatingEntity::added));
@@ -88,6 +89,7 @@ public class ParseAniDBManipulations {
                                         .anidbPermanent(permanentRating)
                                         .anidbTemporary(temporaryRating));
                 }
+
                 ongoing.anidbEntity(
                         new AnidbEntity()
                                 .ongoingEntity(ongoing)
@@ -96,6 +98,7 @@ public class ParseAniDBManipulations {
                                 .description(description)
                                 .episodeCount(episodeCount)
                                 .picture(picture));
+
                 ongoingService.save(ongoing);
             } catch (Exception e) {
                 log.error("Error parse aniDB title " + ongoing.aid(), e);

@@ -43,7 +43,6 @@ public class CronConfig {
     public void updateSyoboiOngoingsList() {
         parseSyoboiManipulations.parseSyoboiAnimeOngoingsList();
         parseSyoboiManipulations.parseSyoboiUidTimetableForAllOngoings();
-        parseSyoboiManipulations.insertFromSyoboiToInfoForEmptyInfo();
     }
 
     @Profile({"prod"})

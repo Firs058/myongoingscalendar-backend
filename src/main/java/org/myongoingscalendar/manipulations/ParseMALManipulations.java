@@ -76,19 +76,22 @@ public class ParseMALManipulations {
                         ongoingService.flush();
                         ongoing.malTitleGenreEntities().addAll(genresList);
                     }
-                    Double score = (jikanAnime.score() != null) ? jikanAnime.score() : 0;
+
                     String description = (jikanAnime.synopsis() != null) ? parseAndCleanMALDescription(jikanAnime.synopsis()) : "Not have description";
                     String trailerUrl = (jikanAnime.trailerUrl() != null) ? parseAndCleanMALTrailerUrl(jikanAnime.trailerUrl()) : null;
 
-                    Optional<RatingEntity> ratingsEntity = ongoing.ratingEntities().stream()
-                            .max(Comparator.comparing(RatingEntity::added));
-                    if (ratingsEntity.isPresent() && Duration.between(ratingsEntity.get().added().toInstant(), Instant.now()).toDays() <= 1)
-                        ratingsEntity.get().mal(score);
-                    else if (!ratingsEntity.isPresent() || Duration.between(ratingsEntity.get().added().toInstant(), Instant.now()).toDays() > 1)
-                        ongoing.ratingEntities().add(
-                                new RatingEntity()
-                                        .ongoingEntity(ongoing)
-                                        .mal(score));
+                    if (jikanAnime.score() != null) {
+                        Optional<RatingEntity> ratingsEntity = ongoing.ratingEntities().stream()
+                                .max(Comparator.comparing(RatingEntity::added));
+
+                        if (ratingsEntity.isPresent() && Duration.between(ratingsEntity.get().added().toInstant(), Instant.now()).toDays() <= 1)
+                            ratingsEntity.get().mal(jikanAnime.score());
+                        else if (!ratingsEntity.isPresent() || Duration.between(ratingsEntity.get().added().toInstant(), Instant.now()).toDays() > 1)
+                            ongoing.ratingEntities().add(
+                                    new RatingEntity()
+                                            .ongoingEntity(ongoing)
+                                            .mal(jikanAnime.score()));
+                    }
 
                     if (ongoing.malEntity() == null)
                         ongoing.malEntity(

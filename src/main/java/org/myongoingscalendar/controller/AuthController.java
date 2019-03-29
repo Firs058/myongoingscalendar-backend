@@ -86,7 +86,7 @@ public class AuthController {
                     if (userEntity.refreshTokens() != null)
                         tokenList = new ObjectMapper().convertValue(userEntity.refreshTokens(), new TypeReference<List<Token>>() {
                         });
-                    if (tokenList.stream().anyMatch(t -> t.token().equals(token) && new Date().getTime() / 1000 < t.expires_in())) {
+                    if (tokenList.stream().anyMatch(t -> t.token().equals(token))) {
                         HashMap<String, Object> tokens = new HashMap<>();
                         Token generatedAccessToken = jwtTokenUtil.generateAccessToken(JwtUserUtil.create(userEntity));
                         Token refreshedToken = jwtTokenUtil.refreshToken(token);
@@ -102,8 +102,7 @@ public class AuthController {
                                 new Status(11010, "Successful login"),
                                 new LoginStatus()
                                         .tokens(tokens));
-                    } else if (tokenList.stream().anyMatch(t -> t.token().equals(token) && new Date().getTime() / 1000 > t.expires_in()))
-                        return new AjaxResponse<>(new Status(11018, "No need for refresh"));
+                    }
                     return new AjaxResponse<>(new Status(11017, "Need re login"));
                 })
                 .orElse(new AjaxResponse<>(new Status(10012, "You must be logged")));

@@ -30,7 +30,7 @@ public interface OngoingRepository extends JpaRepository<OngoingEntity, Long> {
     @Query("select o from OngoingEntity o join o.anidbEntity s where s is not null and s.vibrant is null")
     List<OngoingEntity> getCurrentOngoingsWithoutVibrant();
 
-    @Query("select o from OngoingEntity o join o.syoboiOngoingEntity s where s is null")
+    @Query("select o from OngoingEntity o join o.syoboiOngoingEntity s where o.tid not in (select e.tid from OngoingEntity e join e.syoboiInfoEntity i)")
     List<OngoingEntity> getCurrentOngoingsWithoutInfo();
 
     @Query("select o from OngoingEntity o join o.syoboiOngoingEntity s where o.malid is null or o.aid is null")
