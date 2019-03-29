@@ -86,7 +86,7 @@ public class AuthController {
                     if (userEntity.refreshTokens() != null)
                         tokenList = new ObjectMapper().convertValue(userEntity.refreshTokens(), new TypeReference<List<Token>>() {
                         });
-                    if (tokenList.stream().anyMatch(refreshedToken -> refreshedToken.token().equals(token) && new Date().getTime() / 1000 < refreshedToken.expires_in())) {
+                    if (tokenList.stream().anyMatch(refreshToken -> refreshToken.token().equals(token) && new Date().getTime() / 1000 < refreshToken.expires_in())) {
                         HashMap<String, Object> tokens = new HashMap<>();
                         Token generatedAccessToken = jwtTokenUtil.generateAccessToken(JwtUserUtil.create(userEntity));
                         Token refreshedToken = jwtTokenUtil.refreshToken(token);
