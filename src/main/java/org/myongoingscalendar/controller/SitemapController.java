@@ -3,8 +3,8 @@ package org.myongoingscalendar.controller;
 import org.apache.tomcat.util.http.fileupload.IOUtils;
 import org.myongoingscalendar.SEO.XmlUrl;
 import org.myongoingscalendar.SEO.XmlUrlSet;
-import org.myongoingscalendar.model.AnimeDAO;
 import org.myongoingscalendar.model.UrlDataDAO;
+import org.myongoingscalendar.service.OngoingService;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -22,11 +22,11 @@ import static org.springframework.web.bind.annotation.RequestMethod.GET;
 @RequestMapping(method = GET)
 public class SitemapController {
     private final UrlDataDAO urlDataDAO;
-    private final AnimeDAO animeDAO;
+    private final OngoingService ongoingService;
 
-    public SitemapController(UrlDataDAO urlDataDAO, AnimeDAO animeDAO) {
+    public SitemapController(UrlDataDAO urlDataDAO, OngoingService ongoingService) {
         this.urlDataDAO = urlDataDAO;
-        this.animeDAO = animeDAO;
+        this.ongoingService = ongoingService;
     }
 
     @RequestMapping(value = "/sitemap.xml")
@@ -39,7 +39,7 @@ public class SitemapController {
         create(request, xmlUrlSet, "/registration", XmlUrl.Priority.HIGH);
         create(request, xmlUrlSet, "/login", XmlUrl.Priority.HIGH);
         create(request, xmlUrlSet, "/recover", XmlUrl.Priority.HIGH);
-        animeDAO.getAllOngoingsList().forEach(titlesList -> create(request, xmlUrlSet, "/title/" + titlesList.tid(), XmlUrl.Priority.HIGH));
+        ongoingService.getAll().forEach(titlesList -> create(request, xmlUrlSet, "/title/" + titlesList.tid(), XmlUrl.Priority.HIGH));
         return xmlUrlSet;
     }
 
@@ -47,7 +47,7 @@ public class SitemapController {
         xmlUrlSet.addUrl(new XmlUrl(urlDataDAO.getUrlData(request).getAll(link), priority));
     }
 
-    @RequestMapping(value = {"/robot.txt", "/robots.txt"})
+    @RequestMapping(value = "/robots.txt")
     public void robot(HttpServletRequest request, HttpServletResponse response) throws IOException {
         String robots = "User-agent: *\n" +
                 "Disallow: /admin/\n" +
