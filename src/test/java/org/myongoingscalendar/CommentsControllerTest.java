@@ -16,14 +16,14 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@RunWith(SpringRunner.class)
+/*@RunWith(SpringRunner.class)
 @SpringBootTest(classes = MainInitApplication.class)
 @AutoConfigureMockMvc
 @ActiveProfiles("prod")
-@DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
+@DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)*/
 public class CommentsControllerTest {
 
-    private String token = "eyJhbGciOiJIUzI1NiJ9.eyJqdGkiOiIxNTQiLCJpYXQiOjE1Mjg5MDUxNzd9.w7SDrAvi5FMdjMCqkWYWpCdJedUeDlJTSRDpN00ymH4";
+/*    private String token = "eyJhbGciOiJIUzI1NiJ9.eyJqdGkiOiIxNTQiLCJpYXQiOjE1Mjg5MDUxNzd9.w7SDrAvi5FMdjMCqkWYWpCdJedUeDlJTSRDpN00ymH4";
 
     @Autowired
     private MockMvc mockMvc;
@@ -52,7 +52,7 @@ public class CommentsControllerTest {
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.status.code").value(11011));
-    }
+    }*/
 /*
 
     @Test
