@@ -104,7 +104,7 @@ public class ParseAniDBManipulations {
                 log.error("Error parse aniDB title " + ongoing.aid(), e);
             }
             try {
-                Thread.sleep(5000);
+                Thread.sleep(3000);
             } catch (InterruptedException e) {
                 log.error(e.toString());
             }
@@ -129,7 +129,7 @@ public class ParseAniDBManipulations {
                     ongoing.anidbEntity().image(true);
                     ongoingService.save(ongoing);
                 }
-                Thread.sleep(5000);
+                Thread.sleep(3000);
             } catch (InterruptedException e) {
                 log.error("Can't download image for aid: " + ongoing.aid(), e);
             }

@@ -248,7 +248,7 @@ public class ParseSyoboiManipulations {
         for (Long tid : tids) {
             try {
                 parseSyoboiUidTimetable(tid);
-                Thread.sleep(5000);
+                Thread.sleep(3000);
             } catch (InterruptedException e) {
                 log.error(e.toString());
             }
@@ -279,7 +279,7 @@ public class ParseSyoboiManipulations {
                     s.syoboiInfoEntity(new ObjectMapper().convertValue(nodeTID, SyoboiInfoEntity.class).ongoingEntity(s));
                     ongoingService.save(s);
                 });
-                Thread.sleep(5000);
+                Thread.sleep(3000);
             } catch (Exception e) {
                 log.error("Error parse syoboi info " + tid, e);
             }

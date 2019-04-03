@@ -111,7 +111,7 @@ public class ParseMALManipulations {
                 log.error("Can't parse malid " + ongoing.malid() + ", message: " + e.getMessage());
             }
             try {
-                Thread.sleep(5000);
+                Thread.sleep(3000);
             } catch (InterruptedException e) {
                 log.error(e.getMessage());
             }
