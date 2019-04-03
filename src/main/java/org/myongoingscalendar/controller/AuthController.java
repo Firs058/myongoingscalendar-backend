@@ -46,7 +46,9 @@ public class AuthController {
                 .map(userEntity -> {
                     if (userEntity.password() == null)
                         return new AjaxResponse<>(new Status(10031, "Access is available only through a social network"));
-                    if (userEntity.active() && BCrypt.checkpw(user.password(), userEntity.password())) {
+                    if (!userEntity.active())
+                        return new AjaxResponse<>(new Status(10023, "Sorry, you account not activate yet. Check you email"));
+                    if (BCrypt.checkpw(user.password(), userEntity.password())) {
                         HashMap<String, Object> tokens = new HashMap<>();
                         Token generatedAccessToken = jwtTokenUtil.generateAccessToken(JwtUserUtil.create(userEntity));
                         Token generatedRefreshToken = jwtTokenUtil.generateRefreshToken(JwtUserUtil.create(userEntity));
@@ -67,7 +69,7 @@ public class AuthController {
                                         .roles(userEntity.authorityEntities().stream().map(UserAuthorityEntity::authorityName).collect(Collectors.toList()))
                                         .settings(userEntity.userSettingsEntity().avatar(gravatarManipulations.getGravatarImageUrl(user.email()))));
                     } else
-                        return new AjaxResponse<>(new Status(10023, "Sorry, you account not activate yet. Check you email"));
+                        return new AjaxResponse<>(new Status(10024, "Sorry, wrong email or password"));
                 })
                 .orElse(new AjaxResponse<>(new Status(10024, "Sorry, wrong email or password")));
     }

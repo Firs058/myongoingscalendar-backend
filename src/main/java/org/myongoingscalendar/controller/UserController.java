@@ -110,6 +110,7 @@ public class UserController {
                 .orElse(new AjaxResponse<>(new Status(10012, "You must be logged")));
     }
 
+    @Transactional
     @RequestMapping(value = "/pass/change")
     public AjaxResponse changePass(@RequestBody UserEntity user, @AuthenticationPrincipal JwtUser jwtUser) {
         return userService.get(jwtUser.getId())
