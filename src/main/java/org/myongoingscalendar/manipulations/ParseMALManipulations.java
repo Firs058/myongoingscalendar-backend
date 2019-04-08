@@ -84,9 +84,9 @@ public class ParseMALManipulations {
                         Optional<RatingEntity> ratingsEntity = ongoing.ratingEntities().stream()
                                 .max(Comparator.comparing(RatingEntity::added));
 
-                        if (ratingsEntity.isPresent() && Duration.between(ratingsEntity.get().added().toInstant(), Instant.now()).toDays() <= 1)
+                        if (ratingsEntity.isPresent() && Duration.between(ratingsEntity.get().added().toInstant(), Instant.now()).toHours() <= 23)
                             ratingsEntity.get().mal(jikanAnime.score());
-                        else if (!ratingsEntity.isPresent() || Duration.between(ratingsEntity.get().added().toInstant(), Instant.now()).toDays() > 1)
+                        else if (!ratingsEntity.isPresent() || Duration.between(ratingsEntity.get().added().toInstant(), Instant.now()).toHours() > 23)
                             ongoing.ratingEntities().add(
                                     new RatingEntity()
                                             .ongoingEntity(ongoing)

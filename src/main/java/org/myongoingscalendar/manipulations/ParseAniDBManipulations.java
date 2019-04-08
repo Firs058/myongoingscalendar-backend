@@ -78,11 +78,11 @@ public class ParseAniDBManipulations {
 
                     Optional<RatingEntity> ratingsEntity = ongoing.ratingEntities().stream()
                             .max(Comparator.comparing(RatingEntity::added));
-                    if (ratingsEntity.isPresent() && Duration.between(ratingsEntity.get().added().toInstant(), Instant.now()).toDays() <= 1)
+                    if (ratingsEntity.isPresent() && Duration.between(ratingsEntity.get().added().toInstant(), Instant.now()).toHours() <= 23)
                         ratingsEntity.get()
                                 .anidbPermanent(permanentRating)
                                 .anidbTemporary(temporaryRating);
-                    else if (!ratingsEntity.isPresent() || Duration.between(ratingsEntity.get().added().toInstant(), Instant.now()).toDays() > 1)
+                    else if (!ratingsEntity.isPresent() || Duration.between(ratingsEntity.get().added().toInstant(), Instant.now()).toHours() > 23)
                         ongoing.ratingEntities().add(
                                 new RatingEntity()
                                         .ongoingEntity(ongoing)
