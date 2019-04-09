@@ -2,6 +2,7 @@ package org.myongoingscalendar.config;
 
 import org.myongoingscalendar.elastic.FillElastic;
 import org.myongoingscalendar.manipulations.ParseAniDBManipulations;
+import org.myongoingscalendar.manipulations.ParseAnnManipulations;
 import org.myongoingscalendar.manipulations.ParseMALManipulations;
 import org.myongoingscalendar.manipulations.ParseSyoboiManipulations;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,13 +19,15 @@ public class CronConfig {
     private final ParseSyoboiManipulations parseSyoboiManipulations;
     private final ParseAniDBManipulations parseAniDBManipulations;
     private final ParseMALManipulations parseMALManipulations;
+    private final ParseAnnManipulations parseAnnManipulations;
     private final FillElastic fillElastic;
 
     @Autowired
-    public CronConfig(ParseSyoboiManipulations parseSyoboiManipulations, ParseAniDBManipulations parseAniDBManipulations, ParseMALManipulations parseMALManipulations, FillElastic fillElastic) {
+    public CronConfig(ParseSyoboiManipulations parseSyoboiManipulations, ParseAniDBManipulations parseAniDBManipulations, ParseMALManipulations parseMALManipulations, ParseAnnManipulations parseAnnManipulations, FillElastic fillElastic) {
         this.parseSyoboiManipulations = parseSyoboiManipulations;
         this.parseAniDBManipulations = parseAniDBManipulations;
         this.parseMALManipulations = parseMALManipulations;
+        this.parseAnnManipulations = parseAnnManipulations;
         this.fillElastic = fillElastic;
     }
 
@@ -51,6 +54,7 @@ public class CronConfig {
         parseAniDBManipulations.parseAniDBForCurrentOngoings();
         parseAniDBManipulations.getAniDBImages();
         parseMALManipulations.parseMALForCurrentOngoings();
+        parseAnnManipulations.parseAnnForCurrentOngoings();
         parseSyoboiManipulations.insertFromSyoboiToInfoForCurrentOngoings();
         clearOngoingsListCache();
     }

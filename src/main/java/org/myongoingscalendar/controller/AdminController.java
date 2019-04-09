@@ -59,6 +59,7 @@ public class AdminController {
                 .map(o -> {
                     if (adminData.aid() != null) o.aid(adminData.aid());
                     if (adminData.malid() != null) o.malid(adminData.malid());
+                    if (adminData.annid() != null) o.annid(adminData.annid());
                     ongoingService.save(o);
                     return new AjaxResponse<>(new Status(11000, "OK"));
                 })

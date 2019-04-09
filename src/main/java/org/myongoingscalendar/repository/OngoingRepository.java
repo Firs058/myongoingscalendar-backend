@@ -15,6 +15,8 @@ import java.util.Optional;
 public interface OngoingRepository extends JpaRepository<OngoingEntity, Long> {
     Optional<OngoingEntity> findByTid(Long tid);
 
+    Optional<OngoingEntity> findByAnnid(Long tid);
+
     List<OngoingEntity> findByTidIn(List<Long> tids);
 
     List<OngoingEntity> findByMalidIsNotNull();
@@ -32,7 +34,4 @@ public interface OngoingRepository extends JpaRepository<OngoingEntity, Long> {
 
     @Query("select o from OngoingEntity o join o.syoboiOngoingEntity s where o.tid not in (select e.tid from OngoingEntity e join e.syoboiInfoEntity i)")
     List<OngoingEntity> getCurrentOngoingsWithoutInfo();
-
-    @Query("select o from OngoingEntity o join o.syoboiOngoingEntity s where o.malid is null or o.aid is null")
-    List<OngoingEntity> getAdminData();
 }

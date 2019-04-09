@@ -17,4 +17,5 @@ public class AdminData {
     private Long tid;
     private Long aid;
     private Long malid;
+    private Long annid;
 }

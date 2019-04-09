@@ -9,6 +9,7 @@ import lombok.experimental.Accessors;
 import javax.persistence.*;
 import java.io.Serializable;
 import java.util.Date;
+import java.util.Locale;
 
 /**
  * @author firs
@@ -19,25 +20,25 @@ import java.util.Date;
 @AllArgsConstructor
 @Accessors(fluent = true)
 @Entity
-@Table(name = "ratings")
-public class RatingEntity implements Serializable {
+@Table(name = "news")
+public class NewsEntity implements Serializable {
     @Id
     @Column(unique = true, nullable = false)
-    @SequenceGenerator(name = "ratings_seq", sequenceName = "ratings_seq", allocationSize = 1)
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "ratings_seq")
+    @SequenceGenerator(name = "news_seq", sequenceName = "news_seq", allocationSize = 1)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "news_seq")
     private Long id;
     @JoinColumn(name = "tid", referencedColumnName = "tid", nullable = false)
     @ManyToOne(fetch = FetchType.LAZY)
     private OngoingEntity ongoingEntity;
-    @Column(name = "anidb_temporary")
-    private Double anidbTemporary;
-    @Column(name = "anidb_permanent")
-    private Double anidbPermanent;
-    @Column(name = "mal")
-    private Double mal;
-    @Column(name = "ann")
-    private Double ann;
     @Temporal(TemporalType.TIMESTAMP)
     @Column(columnDefinition = "timestamp with time zone", nullable = false)
-    private Date added = new Date();
+    private Date datetime;
+    @Column(columnDefinition = "text", nullable = false)
+    private String href;
+    @Column(columnDefinition = "text", nullable = false)
+    private String headline;
+    @Column(columnDefinition = "text", nullable = false)
+    private Locale lang;
+    @Column(columnDefinition = "text", nullable = false)
+    private String source;
 }

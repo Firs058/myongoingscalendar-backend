@@ -18,6 +18,8 @@ public interface OngoingService {
 
     Optional<OngoingEntity> findByTid(Long tid);
 
+    Optional<OngoingEntity> findByAnnid(Long annid);
+
     List<OngoingEntity> findByTidIn(List<Long> tids);
 
     List<OngoingEntity> findByMalidIsNotNull();

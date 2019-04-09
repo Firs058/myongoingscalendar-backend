@@ -28,6 +28,8 @@ public class OngoingEntity implements Serializable {
     private Long aid;
     @Column
     private Long malid;
+    @Column
+    private Long annid;
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "ongoingEntity", orphanRemoval = true)
     private List<SyoboiTimetableEntity> syoboiTimetableEntities;
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "ongoingEntity", orphanRemoval = true)
@@ -40,6 +42,8 @@ public class OngoingEntity implements Serializable {
     private List<UserTitleEntity> userTitleEntities;
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "ongoingEntity", orphanRemoval = true)
     private List<CommentEntity> commentEntities;
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "ongoingEntity", orphanRemoval = true)
+    private List<NewsEntity> newsEntities;
     @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER, mappedBy = "ongoingEntity")
     private SyoboiOngoingEntity syoboiOngoingEntity;
     @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER, mappedBy = "ongoingEntity", orphanRemoval = true)

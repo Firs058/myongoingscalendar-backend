@@ -42,6 +42,8 @@ public class OngoingRepositoryCustomImpl implements OngoingRepositoryCustom {
     private String anidbAnimeUrlPath;
     @Value("${links.anime.mal}")
     private String malAnimeUrlPath;
+    @Value("${links.anime.ann}")
+    private String annAnimeUrlPath;
 
     public OngoingRepositoryCustomImpl(OngoingService ongoingService, UserService userService, CommentServiceCustom commentServiceCustom) {
         this.ongoingService = ongoingService;
@@ -126,24 +128,42 @@ public class OngoingRepositoryCustomImpl implements OngoingRepositoryCustom {
                                 .genres(ongoing.malTitleGenreEntities().stream().map(MalTitleGenreEntity::genreEntity).collect(Collectors.toList()))
                                 .links().addAll(AnimeUtil.createLinks(new Object[]{"MAL", malAnimeUrlPath, ongoing.malid()}));
 
+                    if (ongoing.annid() != null)
+                        title
+                                .links().addAll(AnimeUtil.createLinks(new Object[]{"ANN", annAnimeUrlPath, ongoing.annid()}));
+
                     if (ongoing.ratingEntities() != null) {
                         List<Datasets> datasets = new ArrayList<>();
-                        datasets.add(new Datasets()
-                                .label("AniDB")
-                                .borderColor("#791B26")
-                                .backgroundColor("rgba(121, 27, 38, 0.5)")
-                                .data(ongoing.ratingEntities().stream().sorted(Comparator.comparing(RatingEntity::added)).map(RatingEntity::anidbTemporary).toArray()));
 
-                        datasets.add(new Datasets()
-                                .label("MAL")
-                                .borderColor("#2e51a2")
-                                .backgroundColor("rgba(46, 81, 163, 0.5)")
-                                .data(ongoing.ratingEntities().stream().sorted(Comparator.comparing(RatingEntity::added)).map(RatingEntity::mal).toArray()));
+                        List<Double> anidbData = ongoing.ratingEntities().stream().sorted(Comparator.comparing(RatingEntity::added)).map(RatingEntity::anidbTemporary).collect(Collectors.toList());
+                        if (anidbData.stream().filter(Objects::nonNull).count() > 2)
+                            datasets.add(new Datasets()
+                                    .label("AniDB")
+                                    .borderColor("#791B26")
+                                    .backgroundColor("rgba(121, 27, 38, 0.5)")
+                                    .data(anidbData.toArray()));
+
+                        List<Double> malData = ongoing.ratingEntities().stream().sorted(Comparator.comparing(RatingEntity::added)).map(RatingEntity::mal).collect(Collectors.toList());
+                        if (malData.stream().filter(Objects::nonNull).count() > 2)
+                            datasets.add(new Datasets()
+                                    .label("MAL")
+                                    .borderColor("#2e51a2")
+                                    .backgroundColor("rgba(46, 81, 163, 0.5)")
+                                    .data(malData.toArray()));
+
+                        List<Double> annData = ongoing.ratingEntities().stream().sorted(Comparator.comparing(RatingEntity::added)).map(RatingEntity::ann).collect(Collectors.toList());
+                        if (annData.stream().filter(Objects::nonNull).count() > 2)
+                            datasets.add(new Datasets()
+                                    .label("ANN")
+                                    .borderColor("#016192")
+                                    .backgroundColor("rgba(1, 98, 147, 0.5)")
+                                    .data(annData.toArray()));
 
                         title
                                 .ratings(AnimeUtil.createRatings(
                                         new Object[]{"AniDB", ongoing.ratingEntities().stream().sorted(Comparator.comparing(RatingEntity::added)).filter(e -> Objects.nonNull(e.anidbTemporary())).max(Comparator.comparingDouble(RatingEntity::anidbTemporary)).map(RatingEntity::anidbTemporary).orElse((double) 0)},
-                                        new Object[]{"MAL", ongoing.ratingEntities().stream().sorted(Comparator.comparing(RatingEntity::added)).filter(e -> Objects.nonNull(e.mal())).max(Comparator.comparingDouble(RatingEntity::mal)).map(RatingEntity::mal).orElse((double) 0)}
+                                        new Object[]{"MAL", ongoing.ratingEntities().stream().sorted(Comparator.comparing(RatingEntity::added)).filter(e -> Objects.nonNull(e.mal())).max(Comparator.comparingDouble(RatingEntity::mal)).map(RatingEntity::mal).orElse((double) 0)},
+                                        new Object[]{"ANN", ongoing.ratingEntities().stream().sorted(Comparator.comparing(RatingEntity::added)).filter(e -> Objects.nonNull(e.ann())).max(Comparator.comparingDouble(RatingEntity::ann)).map(RatingEntity::ann).orElse((double) 0)}
                                 ))
                                 .chartData(
                                         new ChartData()
@@ -199,11 +219,19 @@ public class OngoingRepositoryCustomImpl implements OngoingRepositoryCustom {
                                 .map(RatingEntity::mal)
                                 .orElse((double) 0);
 
+                        Double annRating = ongoing.ratingEntities().stream()
+                                .sorted(Comparator.comparing(RatingEntity::added))
+                                .filter(e -> Objects.nonNull(e.ann()))
+                                .max(Comparator.comparingDouble(RatingEntity::ann))
+                                .map(RatingEntity::ann)
+                                .orElse((double) 0);
+
                         elasticAnime
                                 .recommended(AnimeUtil.createRecommended(anidbTemporaryRating, malRating))
                                 .ratings(AnimeUtil.createRatings(
                                         new Object[]{"AniDB", anidbTemporaryRating},
-                                        new Object[]{"MAL", malRating}
+                                        new Object[]{"MAL", malRating},
+                                        new Object[]{"ANN", annRating}
                                 ));
                     }
                     if (ongoing.syoboiTimetableEntities() != null)

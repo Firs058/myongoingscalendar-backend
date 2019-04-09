@@ -47,6 +47,11 @@ public class OngoingServiceImpl implements OngoingService {
     }
 
     @Override
+    public Optional<OngoingEntity> findByAnnid(Long annid) {
+        return ongoingRepository.findByAnnid(annid);
+    }
+
+    @Override
     public List<OngoingEntity> findByTidIn(List<Long> tids) {
         return ongoingRepository.findByTidIn(tids);
     }
@@ -88,11 +93,12 @@ public class OngoingServiceImpl implements OngoingService {
 
     @Override
     public List<AdminData> getAdminData() {
-        return ongoingRepository.getAdminData().stream().map(o ->
+        return ongoingRepository.getCurrentOngoings().stream().map(o ->
                 new AdminData()
                         .tid(Objects.nonNull(o.tid()) ? o.tid() : null)
                         .malid(Objects.nonNull(o.malid()) ? o.malid() : null)
                         .aid(Objects.nonNull(o.aid()) ? o.aid() : null)
+                        .annid(Objects.nonNull(o.annid()) ? o.annid() : null)
                         .titleen(Objects.nonNull(o.anidbEntity()) ? o.anidbEntity().titleEN() : "null")
                         .title(Objects.nonNull(o.syoboiInfoEntity()) ? o.syoboiInfoEntity().title() : "null"))
                 .collect(Collectors.toList());
