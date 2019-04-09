@@ -5,6 +5,7 @@ import de.bripkens.gravatar.Gravatar;
 import de.bripkens.gravatar.Rating;
 import org.myongoingscalendar.elastic.FillElastic;
 import org.myongoingscalendar.manipulations.ParseAniDBManipulations;
+import org.myongoingscalendar.manipulations.ParseAnnManipulations;
 import org.myongoingscalendar.manipulations.ParseMALManipulations;
 import org.myongoingscalendar.model.*;
 import org.myongoingscalendar.service.OngoingService;
@@ -19,14 +20,16 @@ import java.util.AbstractMap;
 public class AdminController {
     private final ParseAniDBManipulations parseAniDBManipulations;
     private final ParseMALManipulations parseMALManipulations;
+    private final ParseAnnManipulations parseAnnManipulations;
     private final FillElastic fillElastic;
     private final OngoingService ongoingService;
     private final UserService userService;
 
     @Autowired
-    public AdminController(ParseAniDBManipulations parseAniDBManipulations, ParseMALManipulations parseMALManipulations, FillElastic fillElastic, OngoingService ongoingService, UserService userService) {
+    public AdminController(ParseAniDBManipulations parseAniDBManipulations, ParseMALManipulations parseMALManipulations, ParseAnnManipulations parseAnnManipulations, FillElastic fillElastic, OngoingService ongoingService, UserService userService) {
         this.parseAniDBManipulations = parseAniDBManipulations;
         this.parseMALManipulations = parseMALManipulations;
+        this.parseAnnManipulations = parseAnnManipulations;
         this.fillElastic = fillElastic;
         this.ongoingService = ongoingService;
         this.userService = userService;
@@ -85,6 +88,13 @@ public class AdminController {
     @PostMapping("/mal")
     public AjaxResponse forceParseMALForCurrentOngoings() {
         parseMALManipulations.parseMALForCurrentOngoings();
+        ongoingService.clearOngoingsCache();
+        return new AjaxResponse<>(new Status(11000, "OK"));
+    }
+
+    @PostMapping("/ann")
+    public AjaxResponse forceParseAnnForCurrentOngoings() {
+        parseAnnManipulations.parseAnnForCurrentOngoings();
         ongoingService.clearOngoingsCache();
         return new AjaxResponse<>(new Status(11000, "OK"));
     }
