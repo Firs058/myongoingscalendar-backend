@@ -208,21 +208,21 @@ public class OngoingRepositoryCustomImpl implements OngoingRepositoryCustom {
                         Double anidbTemporaryRating = ongoing.ratingEntities().stream()
                                 .sorted(Comparator.comparing(RatingEntity::added))
                                 .filter(e -> Objects.nonNull(e.anidbTemporary()))
-                                .max(Comparator.comparingDouble(RatingEntity::anidbTemporary))
+                                .reduce((first, second) -> second)
                                 .map(RatingEntity::anidbTemporary)
                                 .orElse((double) 0);
 
                         Double malRating = ongoing.ratingEntities().stream()
                                 .sorted(Comparator.comparing(RatingEntity::added))
                                 .filter(e -> Objects.nonNull(e.mal()))
-                                .max(Comparator.comparingDouble(RatingEntity::mal))
+                                .reduce((first, second) -> second)
                                 .map(RatingEntity::mal)
                                 .orElse((double) 0);
 
                         Double annRating = ongoing.ratingEntities().stream()
                                 .sorted(Comparator.comparing(RatingEntity::added))
                                 .filter(e -> Objects.nonNull(e.ann()))
-                                .max(Comparator.comparingDouble(RatingEntity::ann))
+                                .reduce((first, second) -> second)
                                 .map(RatingEntity::ann)
                                 .orElse((double) 0);
 
