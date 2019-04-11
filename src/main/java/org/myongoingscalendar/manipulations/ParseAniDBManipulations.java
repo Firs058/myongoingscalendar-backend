@@ -90,14 +90,27 @@ public class ParseAniDBManipulations {
                                         .anidbTemporary(temporaryRating));
                 }
 
-                ongoing.anidbEntity(
-                        new AnidbEntity()
-                                .ongoingEntity(ongoing)
-                                .url(url)
-                                .titleEN(titleEN)
-                                .description(description)
-                                .episodeCount(episodeCount)
-                                .picture(picture));
+                boolean image = new File(getImagesLocationPath() + ongoing.aid() + ".jpg").exists();
+
+                if (ongoing.anidbEntity() != null)
+                    ongoing.anidbEntity()
+                            .ongoingEntity(ongoing)
+                            .url(url)
+                            .titleEN(titleEN)
+                            .description(description)
+                            .episodeCount(episodeCount)
+                            .picture(picture)
+                            .image(image);
+                else
+                    ongoing.anidbEntity(
+                            new AnidbEntity()
+                                    .ongoingEntity(ongoing)
+                                    .url(url)
+                                    .titleEN(titleEN)
+                                    .description(description)
+                                    .episodeCount(episodeCount)
+                                    .picture(picture)
+                                    .image(image));
 
                 ongoingService.save(ongoing);
             } catch (Exception e) {
