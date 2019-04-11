@@ -161,9 +161,9 @@ public class OngoingRepositoryCustomImpl implements OngoingRepositoryCustom {
 
                         title
                                 .ratings(AnimeUtil.createRatings(
-                                        new Object[]{"AniDB", ongoing.ratingEntities().stream().sorted(Comparator.comparing(RatingEntity::added)).filter(e -> Objects.nonNull(e.anidbTemporary())).max(Comparator.comparingDouble(RatingEntity::anidbTemporary)).map(RatingEntity::anidbTemporary).orElse((double) 0)},
-                                        new Object[]{"MAL", ongoing.ratingEntities().stream().sorted(Comparator.comparing(RatingEntity::added)).filter(e -> Objects.nonNull(e.mal())).max(Comparator.comparingDouble(RatingEntity::mal)).map(RatingEntity::mal).orElse((double) 0)},
-                                        new Object[]{"ANN", ongoing.ratingEntities().stream().sorted(Comparator.comparing(RatingEntity::added)).filter(e -> Objects.nonNull(e.ann())).max(Comparator.comparingDouble(RatingEntity::ann)).map(RatingEntity::ann).orElse((double) 0)}
+                                        new Object[]{"AniDB", ongoing.ratingEntities().stream().sorted(Comparator.comparing(RatingEntity::added)).filter(e -> Objects.nonNull(e.anidbTemporary())).reduce((first, second) -> second).map(RatingEntity::anidbTemporary).orElse((double) 0)},
+                                        new Object[]{"MAL", ongoing.ratingEntities().stream().sorted(Comparator.comparing(RatingEntity::added)).filter(e -> Objects.nonNull(e.mal())).reduce((first, second) -> second).map(RatingEntity::mal).orElse((double) 0)},
+                                        new Object[]{"ANN", ongoing.ratingEntities().stream().sorted(Comparator.comparing(RatingEntity::added)).filter(e -> Objects.nonNull(e.ann())).reduce((first, second) -> second).map(RatingEntity::ann).orElse((double) 0)}
                                 ))
                                 .chartData(
                                         new ChartData()
