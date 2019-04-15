@@ -7,6 +7,7 @@ import org.myongoingscalendar.model.Jikan.JikanAnime;
 import org.myongoingscalendar.entity.*;
 import org.myongoingscalendar.service.GenreService;
 import org.myongoingscalendar.service.OngoingService;
+import org.myongoingscalendar.utils.AnimeUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -17,8 +18,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.time.*;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.regex.Matcher;
@@ -84,13 +85,12 @@ public class ParseMALManipulations {
                         Optional<RatingEntity> ratingsEntity = ongoing.ratingEntities().stream()
                                 .max(Comparator.comparing(RatingEntity::added));
 
-                        if (ratingsEntity.isPresent() && Duration.between(ratingsEntity.get().added().toInstant(), Instant.now()).toHours() <= 23)
+                        if (ratingsEntity.isPresent() && AnimeUtil.daysBetween(ratingsEntity.get().added(), new Date()) == 0)
                             ratingsEntity.get().mal(jikanAnime.score());
-                        else if (!ratingsEntity.isPresent() || Duration.between(ratingsEntity.get().added().toInstant(), Instant.now()).toHours() > 23)
-                            ongoing.ratingEntities().add(
-                                    new RatingEntity()
-                                            .ongoingEntity(ongoing)
-                                            .mal(jikanAnime.score()));
+                        else ongoing.ratingEntities().add(
+                                new RatingEntity()
+                                        .ongoingEntity(ongoing)
+                                        .mal(jikanAnime.score()));
                     }
 
                     if (ongoing.malEntity() == null)

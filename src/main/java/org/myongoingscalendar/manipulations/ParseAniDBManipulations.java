@@ -11,6 +11,7 @@ import org.myongoingscalendar.entity.AnidbEntity;
 import org.myongoingscalendar.entity.OngoingEntity;
 import org.myongoingscalendar.entity.RatingEntity;
 import org.myongoingscalendar.service.OngoingService;
+import org.myongoingscalendar.utils.AnimeUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.Cacheable;
@@ -20,8 +21,6 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.*;
 import java.net.*;
-import java.time.Duration;
-import java.time.Instant;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -78,39 +77,25 @@ public class ParseAniDBManipulations {
 
                     Optional<RatingEntity> ratingsEntity = ongoing.ratingEntities().stream()
                             .max(Comparator.comparing(RatingEntity::added));
-                    if (ratingsEntity.isPresent() && Duration.between(ratingsEntity.get().added().toInstant(), Instant.now()).toHours() <= 23)
+                    if (ratingsEntity.isPresent() && AnimeUtil.daysBetween(ratingsEntity.get().added(), new Date()) == 0)
                         ratingsEntity.get()
                                 .anidbPermanent(permanentRating)
                                 .anidbTemporary(temporaryRating);
-                    else if (!ratingsEntity.isPresent() || Duration.between(ratingsEntity.get().added().toInstant(), Instant.now()).toHours() > 23)
-                        ongoing.ratingEntities().add(
+                   else ongoing.ratingEntities().add(
                                 new RatingEntity()
                                         .ongoingEntity(ongoing)
                                         .anidbPermanent(permanentRating)
                                         .anidbTemporary(temporaryRating));
                 }
 
-                boolean image = new File(getImagesLocationPath() + ongoing.aid() + ".jpg").exists();
-
-                if (ongoing.anidbEntity() != null)
-                    ongoing.anidbEntity()
-                            .ongoingEntity(ongoing)
-                            .url(url)
-                            .titleEN(titleEN)
-                            .description(description)
-                            .episodeCount(episodeCount)
-                            .picture(picture)
-                            .image(image);
-                else
-                    ongoing.anidbEntity(
-                            new AnidbEntity()
-                                    .ongoingEntity(ongoing)
-                                    .url(url)
-                                    .titleEN(titleEN)
-                                    .description(description)
-                                    .episodeCount(episodeCount)
-                                    .picture(picture)
-                                    .image(image));
+                ongoing.anidbEntity(
+                        new AnidbEntity()
+                                .ongoingEntity(ongoing)
+                                .url(url)
+                                .titleEN(titleEN)
+                                .description(description)
+                                .episodeCount(episodeCount)
+                                .picture(picture));
 
                 ongoingService.save(ongoing);
             } catch (Exception e) {

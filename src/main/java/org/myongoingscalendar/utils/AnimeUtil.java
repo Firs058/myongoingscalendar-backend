@@ -109,4 +109,32 @@ public class AnimeUtil {
                 .average();
         return average.isPresent() && (average.getAsDouble() >= 7.3);
     }
+
+    public static int daysBetween(Date date1, Date date2) {
+        Calendar dayOne = Calendar.getInstance();
+        dayOne.setTime(date1);
+
+        Calendar dayTwo = Calendar.getInstance();
+        dayTwo.setTime(date2);
+
+        if (dayOne.get(Calendar.YEAR) == dayTwo.get(Calendar.YEAR)) {
+            return Math.abs(dayOne.get(Calendar.DAY_OF_YEAR) - dayTwo.get(Calendar.DAY_OF_YEAR));
+        } else {
+            if (dayTwo.get(Calendar.YEAR) > dayOne.get(Calendar.YEAR)) {
+                Calendar temp = dayOne;
+                dayOne = dayTwo;
+                dayTwo = temp;
+            }
+            int extraDays = 0;
+
+            int dayOneOriginalYearDays = dayOne.get(Calendar.DAY_OF_YEAR);
+
+            while (dayOne.get(Calendar.YEAR) > dayTwo.get(Calendar.YEAR)) {
+                dayOne.add(Calendar.YEAR, -1);
+                extraDays += dayOne.getActualMaximum(Calendar.DAY_OF_YEAR);
+            }
+
+            return extraDays - dayTwo.get(Calendar.DAY_OF_YEAR) + dayOneOriginalYearDays;
+        }
+    }
 }

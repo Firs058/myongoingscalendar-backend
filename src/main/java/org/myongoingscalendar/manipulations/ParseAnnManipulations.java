@@ -6,6 +6,7 @@ import org.myongoingscalendar.entity.OngoingEntity;
 import org.myongoingscalendar.entity.RatingEntity;
 import org.myongoingscalendar.model.ANN.Ann;
 import org.myongoingscalendar.service.OngoingService;
+import org.myongoingscalendar.utils.AnimeUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -17,8 +18,6 @@ import javax.xml.bind.Unmarshaller;
 import java.math.BigDecimal;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.time.Duration;
-import java.time.Instant;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -67,13 +66,12 @@ public class ParseAnnManipulations {
 
                         Optional<RatingEntity> ratingsEntity = ongoing.ratingEntities().stream()
                                 .max(Comparator.comparing(RatingEntity::added));
-                        if (ratingsEntity.isPresent() && Duration.between(ratingsEntity.get().added().toInstant(), Instant.now()).toHours() <= 23)
+                        if (ratingsEntity.isPresent() && AnimeUtil.daysBetween(ratingsEntity.get().added(), new Date()) == 0)
                             ratingsEntity.get().ann(weightedScore);
-                        else if (!ratingsEntity.isPresent() || Duration.between(ratingsEntity.get().added().toInstant(), Instant.now()).toHours() > 23)
-                            ongoing.ratingEntities().add(
-                                    new RatingEntity()
-                                            .ongoingEntity(ongoing)
-                                            .ann(weightedScore));
+                        else ongoing.ratingEntities().add(
+                                new RatingEntity()
+                                        .ongoingEntity(ongoing)
+                                        .ann(weightedScore));
                     }
 
                     ongoingService.save(ongoing);
