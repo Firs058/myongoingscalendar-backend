@@ -25,7 +25,6 @@ import java.text.SimpleDateFormat;
 import java.time.ZoneId;
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * @author firs
@@ -339,9 +338,9 @@ public class OngoingRepositoryCustomImpl implements OngoingRepositoryCustom {
                     .setResultTransformer(Transformers.aliasToBean(Anime.class))
                     .getResultList();
             result.forEach(e -> {
-                e.date(AnimeUtil.ZonesManipulations(e.datestart().toInstant().getEpochSecond(), ZoneId.of(timezone), 1, locale));
+                e.day(AnimeUtil.makeDaySupport(e.datestart().toInstant().getEpochSecond(), ZoneId.of(timezone)));
+                e.day().date(AnimeUtil.ZonesManipulations(e.datestart().toInstant().getEpochSecond(), ZoneId.of(timezone), 1, locale));
                 e.time(AnimeUtil.ZonesManipulations(e.datestart().toInstant().getEpochSecond(), ZoneId.of(timezone), 2, locale));
-                e.elapsed(AnimeUtil.checkElapsed(e.datestart().toInstant().getEpochSecond(), ZoneId.of(timezone)));
             });
             return result;
         } catch (HibernateException e) {
@@ -387,9 +386,9 @@ public class OngoingRepositoryCustomImpl implements OngoingRepositoryCustom {
                     .setResultTransformer(Transformers.aliasToBean(Anime.class))
                     .getResultList();
             result.forEach(e -> {
-                e.date(AnimeUtil.ZonesManipulations(e.datestart().toInstant().getEpochSecond(), ZoneId.of(timezone), 1, locale));
+                e.day(AnimeUtil.makeDaySupport(e.datestart().toInstant().getEpochSecond(), ZoneId.of(timezone)));
+                e.day().date(AnimeUtil.ZonesManipulations(e.datestart().toInstant().getEpochSecond(), ZoneId.of(timezone), 1, locale));
                 e.time(AnimeUtil.ZonesManipulations(e.datestart().toInstant().getEpochSecond(), ZoneId.of(timezone), 2, locale));
-                e.elapsed(AnimeUtil.checkElapsed(e.datestart().toInstant().getEpochSecond(), ZoneId.of(timezone)));
             });
             return result;
         } catch (HibernateException e) {
@@ -479,9 +478,9 @@ public class OngoingRepositoryCustomImpl implements OngoingRepositoryCustom {
                     .setResultTransformer(Transformers.aliasToBean(Anime.class))
                     .getResultList();
             result.forEach(e -> {
-                e.date(AnimeUtil.ZonesManipulations(e.datestart().toInstant().getEpochSecond(), ZoneId.of(timezone), 1, locale));
+                e.day(AnimeUtil.makeDaySupport(e.datestart().toInstant().getEpochSecond(), ZoneId.of(timezone)));
+                e.day().date(AnimeUtil.ZonesManipulations(e.datestart().toInstant().getEpochSecond(), ZoneId.of(timezone), 1, locale));
                 e.time(AnimeUtil.ZonesManipulations(e.datestart().toInstant().getEpochSecond(), ZoneId.of(timezone), 2, locale));
-                e.elapsed(AnimeUtil.checkElapsed(e.datestart().toInstant().getEpochSecond(), ZoneId.of(timezone)));
             });
             return result;
         } catch (HibernateException e) {
@@ -574,9 +573,9 @@ public class OngoingRepositoryCustomImpl implements OngoingRepositoryCustom {
                     .setResultTransformer(Transformers.aliasToBean(Anime.class))
                     .getResultList();
             result.forEach(e -> {
-                e.date(AnimeUtil.ZonesManipulations(e.datestart().toInstant().getEpochSecond(), ZoneId.of(timezone), 1, locale));
+                e.day(AnimeUtil.makeDaySupport(e.datestart().toInstant().getEpochSecond(), ZoneId.of(timezone)));
+                e.day().date(AnimeUtil.ZonesManipulations(e.datestart().toInstant().getEpochSecond(), ZoneId.of(timezone), 1, locale));
                 e.time(AnimeUtil.ZonesManipulations(e.datestart().toInstant().getEpochSecond(), ZoneId.of(timezone), 2, locale));
-                e.elapsed(AnimeUtil.checkElapsed(e.datestart().toInstant().getEpochSecond(), ZoneId.of(timezone)));
             });
             return result;
         } catch (HibernateException e) {

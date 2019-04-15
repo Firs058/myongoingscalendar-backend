@@ -8,6 +8,6 @@ import java.util.List;
 @Data
 @AllArgsConstructor
 public class ReturnTitleGrids {
-    private String day;
+    private Day day;
     private List<Anime> anime;
 }

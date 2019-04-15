@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.myongoingscalendar.model.*;
 
+import java.time.DayOfWeek;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -18,8 +19,8 @@ import java.util.stream.Collectors;
 public class AnimeUtil {
     public static List<ReturnTitleGrids> sort(List<Anime> animeDay) {
         return animeDay.stream()
-                .filter(anime -> !anime.elapsed())
-                .map(Anime::date)
+                .filter(anime -> !anime.day().elapsed())
+                .map(Anime::day)
                 .distinct()
                 .collect(Collectors.toList())
                 .stream()
@@ -27,7 +28,7 @@ public class AnimeUtil {
                         new ReturnTitleGrids(
                                 day,
                                 animeDay.stream()
-                                        .filter(e -> day.contains(e.date()))
+                                        .filter(e -> day.equals(e.day()))
                                         .collect(Collectors.toList())))
                 .collect(Collectors.toList());
     }
@@ -50,12 +51,15 @@ public class AnimeUtil {
         }
     }
 
-    public static Boolean checkElapsed(Long unixtime, ZoneId zoneId) {
+    public static Day makeDaySupport(Long unixtime, ZoneId zoneId) {
         Comparator<ZonedDateTime> comparator = Comparator.comparing(zdt -> zdt.truncatedTo(ChronoUnit.DAYS));
         Instant instant = Instant.ofEpochSecond(unixtime);
         ZonedDateTime zonedDateTime = ZonedDateTime.ofInstant(instant, zoneId);
         ZonedDateTime today = ZonedDateTime.now(zoneId);
-        return !(comparator.compare(zonedDateTime, today) >= 0);
+        return new Day()
+                .elapsed(comparator.compare(zonedDateTime, today) < 0)
+                .today(comparator.compare(zonedDateTime, today) == 0)
+                .weekend(zonedDateTime.getDayOfWeek().equals(DayOfWeek.SATURDAY) || zonedDateTime.getDayOfWeek().equals(DayOfWeek.SUNDAY));
     }
 
     public static List<Ratings> createRatings(Object[]... args) {

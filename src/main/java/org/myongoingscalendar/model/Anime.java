@@ -27,10 +27,8 @@ public class Anime {
     @JsonIgnore
     private Date datestart;
     private BigInteger tid;
-    @JsonIgnore
-    private String date;
     private String time;
-    private boolean elapsed;
+    private Day day;
     private String title;
     private String titleen;
     private int episode;
