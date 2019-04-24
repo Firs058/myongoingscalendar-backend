@@ -128,6 +128,6 @@ public class ParseMALManipulations {
     }
 
     private String parseAndCleanMALTrailerUrl(String input) {
-        return input.substring(0, input.indexOf("?"));
+        return input.substring(0, input.indexOf("?")).intern();
     }
 }
