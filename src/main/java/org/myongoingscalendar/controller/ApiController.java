@@ -1,5 +1,6 @@
 package org.myongoingscalendar.controller;
 
+import org.myongoingscalendar.entity.UserSettingsEntity;
 import org.myongoingscalendar.manipulations.DBManipulations;
 import org.myongoingscalendar.model.*;
 import org.myongoingscalendar.elastic.service.ElasticAnimeService;
@@ -36,18 +37,12 @@ public class ApiController {
     }
 
     @RequestMapping(value = "/calendar")
-    public AjaxResponse returnAllOngoings(@RequestBody UserTimezone userTimezone, Locale locale) {
+    public AjaxResponse returnOngoings(@RequestBody UserSettingsEntity userSettingsEntity, Locale locale) {
         return new AjaxResponse<>(
                 new Status(11000, "OK"),
-                ongoingServiceCustom.getOngoingsFull(userTimezone.getUserTimezone(), locale)
-        );
-    }
-
-    @RequestMapping(value = "/calendar_min")
-    public AjaxResponse returnAllOngoingsMin(@RequestBody UserTimezone userTimezone, Locale locale) {
-        return new AjaxResponse<>(
-                new Status(11000, "OK"),
-                ongoingServiceCustom.getOngoingsMin(userTimezone.getUserTimezone(), locale)
+                userSettingsEntity.hideRepeats()
+                        ? ongoingServiceCustom.getOngoingsMin(userSettingsEntity.timezone(), locale)
+                        : ongoingServiceCustom.getOngoingsFull(userSettingsEntity.timezone(), locale)
         );
     }
 

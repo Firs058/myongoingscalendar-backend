@@ -15,7 +15,6 @@ import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
-import java.security.Principal;
 import java.util.Locale;
 import java.util.stream.Collectors;
 
@@ -36,19 +35,13 @@ public class UserController {
         this.ongoingServiceCustom = ongoingServiceCustom;
     }
 
-    @RequestMapping(value = "/my_calendar")
-    public AjaxResponse returnMyOngoings(@RequestBody UserTimezone userTimezone, @AuthenticationPrincipal JwtUser user, Locale locale) {
+    @RequestMapping(value = "/calendar")
+    public AjaxResponse returnMyOngoings(@RequestBody UserSettingsEntity userSettingsEntity, @AuthenticationPrincipal JwtUser user, Locale locale) {
         return new AjaxResponse<>(
                 new Status(11000, "OK"),
-                ongoingServiceCustom.getUserOngoingsFull(userTimezone.getUserTimezone(), user.getId(), locale)
-        );
-    }
-
-    @RequestMapping(value = "/my_calendar_min")
-    public AjaxResponse returnMyOngoingsMin(@RequestBody UserTimezone userTimezone, @AuthenticationPrincipal JwtUser user, Locale locale, Principal principal) {
-        return new AjaxResponse<>(
-                new Status(11000, "OK"),
-                ongoingServiceCustom.getUserOngoingsMin(userTimezone.getUserTimezone(), user.getId(), locale)
+                userSettingsEntity.hideRepeats()
+                        ? ongoingServiceCustom.getUserOngoingsMin(userSettingsEntity.timezone(), user.getId(), locale)
+                        : ongoingServiceCustom.getUserOngoingsFull(userSettingsEntity.timezone(), user.getId(), locale)
         );
     }
 
