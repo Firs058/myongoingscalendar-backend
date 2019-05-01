@@ -81,21 +81,29 @@ public class ParseAniDBManipulations {
                         ratingsEntity.get()
                                 .anidbPermanent(permanentRating)
                                 .anidbTemporary(temporaryRating);
-                   else ongoing.ratingEntities().add(
-                                new RatingEntity()
-                                        .ongoingEntity(ongoing)
-                                        .anidbPermanent(permanentRating)
-                                        .anidbTemporary(temporaryRating));
+                    else ongoing.ratingEntities().add(
+                            new RatingEntity()
+                                    .ongoingEntity(ongoing)
+                                    .anidbPermanent(permanentRating)
+                                    .anidbTemporary(temporaryRating));
                 }
 
-                ongoing.anidbEntity(
-                        new AnidbEntity()
-                                .ongoingEntity(ongoing)
-                                .url(url)
-                                .titleEN(titleEN)
-                                .description(description)
-                                .episodeCount(episodeCount)
-                                .picture(picture));
+                if (ongoing.anidbEntity() == null)
+                    ongoing.anidbEntity(
+                            new AnidbEntity()
+                                    .ongoingEntity(ongoing)
+                                    .url(url)
+                                    .titleEN(titleEN)
+                                    .description(description)
+                                    .episodeCount(episodeCount)
+                                    .picture(picture));
+                else ongoing.anidbEntity()
+                        .ongoingEntity(ongoing)
+                        .url(url)
+                        .titleEN(titleEN)
+                        .description(description)
+                        .episodeCount(episodeCount)
+                        .picture(picture);
 
                 ongoingService.save(ongoing);
             } catch (Exception e) {
