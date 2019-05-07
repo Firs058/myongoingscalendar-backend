@@ -130,8 +130,8 @@ public class ParseAniDBManipulations {
         List<OngoingEntity> ongoings = ongoingService.getCurrentOngoingsWithoutImage();
         for (OngoingEntity ongoing : ongoings) {
             try {
-                Boolean download = downloadImages(anidbImagesPath, getImagesLocationPath(), ongoing.anidbEntity().picture(), ongoing.aid());
-                if (download) {
+                Boolean downloaded = downloadImage(anidbImagesPath, getImagesLocationPath(), ongoing.anidbEntity().picture(), ongoing.aid());
+                if (downloaded) {
                     ongoing.anidbEntity().image(true);
                     ongoingService.save(ongoing);
                 }
@@ -214,9 +214,11 @@ public class ParseAniDBManipulations {
                 : null;
     }
 
-    private Boolean downloadImages(String url, String saveTo, String picture, Long aid) {
+    private Boolean downloadImage(String url, String saveTo, String picture, Long aid) {
         try {
-            InputStream in = new BufferedInputStream(new URL(url + picture).openStream());
+            HttpURLConnection httpConn = (HttpURLConnection) new URL(url + picture).openConnection();
+            httpConn.addRequestProperty("User-Agent", "Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:56.0) Gecko/20100101 Firefox/56.0");
+            InputStream in = new BufferedInputStream(httpConn.getInputStream());
             OutputStream out = new BufferedOutputStream(new FileOutputStream(saveTo + aid + ".jpg"));
             for (int i; (i = in.read()) != -1; ) {
                 out.write(i);
