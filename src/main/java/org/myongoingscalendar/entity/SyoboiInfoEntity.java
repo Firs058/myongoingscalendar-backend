@@ -11,6 +11,9 @@ import lombok.experimental.Accessors;
 
 import javax.persistence.*;
 import java.io.Serializable;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 /**
  * @author firs
@@ -84,4 +87,15 @@ public class SyoboiInfoEntity implements Serializable {
     @JsonProperty("SubTitles")
     @Column(columnDefinition = "text")
     private String subtitles;
+    @Transient
+    private Boolean outdated;
+
+    @PostLoad
+    private void onLoad() {
+        try {
+            this.outdated = new SimpleDateFormat("MM-yyyy").parse(this.firstEndMonth + "-" + this.firstEndYear).before(new Date());
+        } catch (ParseException e) {
+            this.outdated = false;
+        }
+    }
 }

@@ -78,7 +78,7 @@ public class OngoingRepositoryCustomImpl implements OngoingRepositoryCustom {
         return new UserTitle()
                 .marked(false)
                 .broadcast(createTitleBroadcast(timezone, tid, locale))
-                .title(geData(tid))
+                .title(getTitleData(tid))
                 .comments(commentServiceCustom.getComments(tid, "root", 0));
     }
 
@@ -89,21 +89,23 @@ public class OngoingRepositoryCustomImpl implements OngoingRepositoryCustom {
                 .map(u -> new UserTitle()
                         .marked(u.usersTitleEntities().stream().anyMatch(t -> t.ongoingEntity().tid().equals(tid)))
                         .broadcast(createTitleBroadcast(u.userSettingsEntity().timezone(), tid, locale))
-                        .title(geData(tid))
+                        .title(getTitleData(tid))
                         .comments(commentServiceCustom.getUserComments(tid, "root", 0, userid)))
                 .orElse(new UserTitle());
     }
 
-    private Title geData(Long tid) {
+    private Title getTitleData(Long tid) {
         return ongoingService.findByTid(tid)
                 .map(ongoing -> {
-                    Title title = new Title().tid(tid);
+                    Title title = new Title()
+                            .tid(tid)
+                            .outdated(ongoing.syoboiInfoEntity().outdated() && ongoing.syoboiOngoingEntity() == null);
 
                     if (ongoing.syoboiInfoEntity() != null)
                         title
                                 .ja(ongoing.syoboiInfoEntity().title())
-                                .firstyear(ongoing.syoboiInfoEntity().firstYear())
-                                .firstmonth(ongoing.syoboiInfoEntity().firstMonth());
+                                .firstYear(ongoing.syoboiInfoEntity().firstYear())
+                                .firstMonth(ongoing.syoboiInfoEntity().firstMonth());
 
                     if (ongoing.anidbEntity() != null)
                         title

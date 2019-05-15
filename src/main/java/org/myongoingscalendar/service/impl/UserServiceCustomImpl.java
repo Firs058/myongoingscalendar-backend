@@ -29,6 +29,9 @@ public class UserServiceCustomImpl implements UserServiceCustom {
                 .map(userEntity ->
                         ongoingService.findByTid(tid)
                                 .map(ongoingEntity -> {
+                                    if (ongoingEntity.syoboiInfoEntity().outdated() && ongoingEntity.syoboiOngoingEntity() == null)
+                                        return new Status(10033, "You can't interact with outdated anime");
+
                                     UserTitleEntity userTitleEntity = new UserTitleEntity()
                                             .ongoingEntity(ongoingEntity)
                                             .userEntity(userEntity);

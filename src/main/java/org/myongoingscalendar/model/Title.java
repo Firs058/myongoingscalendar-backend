@@ -27,6 +27,7 @@ public class Title {
     private int episodes;
     private List<Links> links = new ArrayList<>();
     private List<GenreEntity> genres = new ArrayList<>();
-    private Integer firstyear;
-    private Integer firstmonth;
+    private Integer firstYear;
+    private Integer firstMonth;
+    private boolean outdated;
 }
