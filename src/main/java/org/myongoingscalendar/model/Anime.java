@@ -28,6 +28,7 @@ public class Anime {
     private Date datestart;
     private BigInteger tid;
     private String time;
+    @JsonIgnore
     private Day day;
     private String title;
     private String titleen;

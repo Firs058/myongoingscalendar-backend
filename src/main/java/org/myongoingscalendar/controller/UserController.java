@@ -84,6 +84,7 @@ public class UserController {
                 .orElse(new AjaxResponse<>(new Status(10012, "You must be logged")));
     }
 
+    @Transactional
     @RequestMapping(value = "/nickname/change")
     public AjaxResponse nicknamePass(@RequestBody UserSettingsEntity settings, @AuthenticationPrincipal JwtUser jwtUser) {
         return userService.get(jwtUser.getId())
