@@ -64,7 +64,7 @@ public class ParseMALManipulations {
                     }
                     in.close();
                     final JikanAnime jikanAnime = new ObjectMapper().readValue(Jsoup.parse(content.toString()).text(), JikanAnime.class);
-                    List<MalTitleGenreEntity> genresList = jikanAnime.genre().stream()
+                    List<MalTitleGenreEntity> genresList = jikanAnime.genres().stream()
                             .map(genre -> {
                                 Optional<GenreEntity> existentGenre = genreService.findByName(genre.name());
                                 if (!existentGenre.isPresent())
