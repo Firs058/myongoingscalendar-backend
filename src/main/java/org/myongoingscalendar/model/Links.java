@@ -14,4 +14,5 @@ import lombok.experimental.Accessors;
 public class Links {
     private String name;
     private String link;
+    private String icon;
 }

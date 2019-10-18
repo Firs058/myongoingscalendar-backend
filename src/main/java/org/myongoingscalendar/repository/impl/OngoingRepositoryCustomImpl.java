@@ -117,8 +117,8 @@ public class OngoingRepositoryCustomImpl implements OngoingRepositoryCustom {
                                 ))
                                 .episodes(ongoing.anidbEntity().episodeCount())
                                 .links().addAll(AnimeUtil.createLinks(
-                                new Object[]{"AniDB", anidbAnimeUrlPath, ongoing.aid()},
-                                new Object[]{"Official site", null, ongoing.anidbEntity().url()}
+                                new Object[]{"AniDB", anidbAnimeUrlPath, ongoing.aid(), "/images/anidb.png"},
+                                new Object[]{"Official site", null, ongoing.anidbEntity().url(), "/images/official.png"}
                         ));
                     else title.image(new Image("/images/noimage.svg", "/images/noimage.svg", null));
 
@@ -127,11 +127,11 @@ public class OngoingRepositoryCustomImpl implements OngoingRepositoryCustom {
                                 .description(ongoing.malEntity().description())
                                 .trailer(ongoing.malEntity().trailerUrl())
                                 .genres(ongoing.malTitleGenreEntities().stream().map(MalTitleGenreEntity::genreEntity).collect(Collectors.toList()))
-                                .links().addAll(AnimeUtil.createLinks(new Object[]{"MAL", malAnimeUrlPath, ongoing.malid()}));
+                                .links().addAll(AnimeUtil.createLinks(new Object[]{"MAL", malAnimeUrlPath, ongoing.malid(), "/images/mal.png"}));
 
                     if (ongoing.annid() != null)
                         title
-                                .links().addAll(AnimeUtil.createLinks(new Object[]{"ANN", annAnimeUrlPath, ongoing.annid()}));
+                                .links().addAll(AnimeUtil.createLinks(new Object[]{"ANN", annAnimeUrlPath, ongoing.annid(), "/images/ann.png"}));
 
                     if (ongoing.ratingEntities() != null) {
                         List<Datasets> datasets = new ArrayList<>();

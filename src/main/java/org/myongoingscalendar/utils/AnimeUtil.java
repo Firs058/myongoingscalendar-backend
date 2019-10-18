@@ -76,7 +76,9 @@ public class AnimeUtil {
                 .filter(arg -> arg[2] != null)
                 .map(arg -> new Links()
                         .name((String) arg[0])
-                        .link((arg[1] != null) ? (String) arg[1] + arg[2] : (String) arg[2]))
+                        .link((arg[1] != null) ? (String) arg[1] + arg[2] : (String) arg[2])
+                        .icon((String) arg[3])
+                )
                 .collect(Collectors.toList());
     }
 
