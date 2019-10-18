@@ -82,50 +82,54 @@ public class CommentServiceCustomImpl implements CommentServiceCustom {
     @Override
     @Transactional
     public Status addEmotion(Long tid, Long comment_id, Emotion emotion, Long userid) {
-        return commentRepository.getByIdAndOngoingEntity_Tid(comment_id, tid)
-                .map(commentEntity -> {
-                    LikeEntity like = new LikeEntity().commentEntity(commentEntity).userEntity(new UserEntity().id(userid));
-                    DislikeEntity dislike = new DislikeEntity().commentEntity(commentEntity).userEntity(new UserEntity().id(userid));
-                    switch (emotion) {
-                        case like:
-                            return likeService.findByCommentEntity_OngoingEntity_TidAndCommentEntity_Id(tid, comment_id)
-                                    .map(likeEntity -> new Status(10028, "Already liked"))
-                                    .orElseGet(() -> {
-                                        likeService.save(like);
-                                        dislikeService.findByCommentEntity_OngoingEntity_TidAndCommentEntity_Id(tid, comment_id)
-                                                .ifPresent(dislikeService::delete);
-                                        return new Status(11012, "Like added");
-                                    });
-                        case dislike:
-                            return dislikeService.findByCommentEntity_OngoingEntity_TidAndCommentEntity_Id(tid, comment_id)
-                                    .map(dislikeEntity -> new Status(10029, "Already disliked"))
-                                    .orElseGet(() -> {
-                                        dislikeService.save(dislike);
-                                        likeService.findByCommentEntity_OngoingEntity_TidAndCommentEntity_Id(tid, comment_id)
-                                                .ifPresent(likeService::delete);
-                                        return new Status(11013, "Dislike added");
-                                    });
-                        default:
-                            return new Status(10016, "Server error. What you expect?");
-                    }
-                })
-                .orElse(new Status(10018, "Not found"));
+        return userService.get(userid)
+                .map(u -> commentRepository.getByIdAndOngoingEntity_Tid(comment_id, tid)
+                        .map(commentEntity -> {
+                            LikeEntity like = new LikeEntity().commentEntity(commentEntity).userEntity(u);
+                            DislikeEntity dislike = new DislikeEntity().commentEntity(commentEntity).userEntity(u);
+                            switch (emotion) {
+                                case like:
+                                    return likeService.findByCommentEntity_OngoingEntity_TidAndCommentEntity_Id(tid, comment_id)
+                                            .map(likeEntity -> new Status(10028, "Already liked"))
+                                            .orElseGet(() -> {
+                                                likeService.save(like);
+                                                dislikeService.findByCommentEntity_OngoingEntity_TidAndCommentEntity_Id(tid, comment_id)
+                                                        .ifPresent(dislikeService::delete);
+                                                return new Status(11012, "Like added");
+                                            });
+                                case dislike:
+                                    return dislikeService.findByCommentEntity_OngoingEntity_TidAndCommentEntity_Id(tid, comment_id)
+                                            .map(dislikeEntity -> new Status(10029, "Already disliked"))
+                                            .orElseGet(() -> {
+                                                dislikeService.save(dislike);
+                                                likeService.findByCommentEntity_OngoingEntity_TidAndCommentEntity_Id(tid, comment_id)
+                                                        .ifPresent(likeService::delete);
+                                                return new Status(11013, "Dislike added");
+                                            });
+                                default:
+                                    return new Status(10016, "Server error. What you expect?");
+                            }
+                        })
+                        .orElse(new Status(10018, "Not found")))
+                .orElseGet(() -> new Status(10012, "You must be logged"));
     }
 
     @Override
     @Transactional
     public Status addReport(Long tid, Long comment_id, Long userid) {
-        return commentRepository.getByIdAndOngoingEntity_Tid(comment_id, tid)
-                .map(commentEntity -> {
-                    ReportEntity report = new ReportEntity().commentEntity(commentEntity).userEntity(new UserEntity().id(userid));
-                    return reportService.findByCommentEntity_OngoingEntity_TidAndCommentEntity_Id(tid, comment_id)
-                            .map(reportEntity -> new Status(10030, "Already reported"))
-                            .orElseGet(() -> {
-                                reportService.save(report);
-                                return new Status(11014, "Thanks for report");
-                            });
-                })
-                .orElse(new Status(10018, "Not found"));
+        return userService.get(userid)
+                .map(u -> commentRepository.getByIdAndOngoingEntity_Tid(comment_id, tid)
+                        .map(commentEntity -> {
+                            ReportEntity report = new ReportEntity().commentEntity(commentEntity).userEntity(u);
+                            return reportService.findByCommentEntity_OngoingEntity_TidAndCommentEntity_Id(tid, comment_id)
+                                    .map(reportEntity -> new Status(10030, "Already reported"))
+                                    .orElseGet(() -> {
+                                        reportService.save(report);
+                                        return new Status(11014, "Thanks for report");
+                                    });
+                        })
+                        .orElse(new Status(10018, "Not found")))
+                .orElseGet(() -> new Status(10012, "You must be logged"));
     }
 
     @Override
