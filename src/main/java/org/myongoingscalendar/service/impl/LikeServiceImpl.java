@@ -43,8 +43,8 @@ public class LikeServiceImpl implements LikeService {
     }
 
     @Override
-    public Optional<LikeEntity> findByCommentEntity_OngoingEntity_TidAndCommentEntity_IdAndUserEntityId(Long tid, Long comment_id, Long user_id) {
-        return likeRepository.findByCommentEntity_OngoingEntity_TidAndCommentEntity_IdAndUserEntityId(tid, comment_id, user_id);
+    public Optional<LikeEntity> findByCommentEntity_OngoingEntity_TidAndCommentEntity_Id(Long tid, Long comment_id) {
+        return likeRepository.findByCommentEntity_OngoingEntity_TidAndCommentEntity_Id(tid, comment_id);
     }
 
     @Override

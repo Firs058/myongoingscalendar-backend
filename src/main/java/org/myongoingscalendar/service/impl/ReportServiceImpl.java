@@ -43,8 +43,8 @@ public class ReportServiceImpl implements ReportService {
     }
 
     @Override
-    public Optional<ReportEntity> findByCommentEntity_OngoingEntity_TidAndCommentEntity_IdAndUserEntityId(Long tid, Long comment_id, Long user_id) {
-        return reportRepository.findByCommentEntity_OngoingEntity_TidAndCommentEntity_IdAndUserEntityId(tid, comment_id, user_id);
+    public Optional<ReportEntity> findByCommentEntity_OngoingEntity_TidAndCommentEntity_Id(Long tid, Long comment_id) {
+        return reportRepository.findByCommentEntity_OngoingEntity_TidAndCommentEntity_Id(tid, comment_id);
     }
 
     @Override

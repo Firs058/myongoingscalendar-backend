@@ -17,7 +17,7 @@ public interface LikeService {
 
     List<LikeEntity> getAll();
 
-    Optional<LikeEntity> findByCommentEntity_OngoingEntity_TidAndCommentEntity_IdAndUserEntityId(Long tid, Long comment_id, Long user_id);
+    Optional<LikeEntity> findByCommentEntity_OngoingEntity_TidAndCommentEntity_Id(Long tid, Long comment_id);
 
     void delete(LikeEntity likeEntity);
 

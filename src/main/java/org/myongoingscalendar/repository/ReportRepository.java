@@ -11,5 +11,5 @@ import java.util.Optional;
  */
 @Repository
 public interface ReportRepository extends JpaRepository<ReportEntity, Long> {
-    Optional<ReportEntity> findByCommentEntity_OngoingEntity_TidAndCommentEntity_IdAndUserEntityId(Long tid, Long comment_id, Long user_id);
+    Optional<ReportEntity> findByCommentEntity_OngoingEntity_TidAndCommentEntity_Id(Long tid, Long comment_id);
 }

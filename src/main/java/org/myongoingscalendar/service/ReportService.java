@@ -17,7 +17,7 @@ public interface ReportService {
 
     List<ReportEntity> getAll();
 
-    Optional<ReportEntity> findByCommentEntity_OngoingEntity_TidAndCommentEntity_IdAndUserEntityId(Long tid, Long comment_id, Long user_id);
+    Optional<ReportEntity> findByCommentEntity_OngoingEntity_TidAndCommentEntity_Id(Long tid, Long comment_id);
 
     void delete(ReportEntity reportEntity);
 

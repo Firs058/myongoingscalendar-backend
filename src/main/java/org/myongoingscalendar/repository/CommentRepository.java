@@ -21,7 +21,7 @@ public interface CommentRepository extends JpaRepository<CommentEntity, Long> {
     @Query(value = "select cast(c.path as TEXT) from comments c where c.id = ?1", nativeQuery = true)
     String gePathtById(Long id);
 
-    Optional<CommentEntity> getByIdAndOngoingEntity_TidAndUserEntity_Id(Long id, Long tid, Long user_id);
+    Optional<CommentEntity> getByIdAndOngoingEntity_Tid(Long id, Long tid);
 }
 
 

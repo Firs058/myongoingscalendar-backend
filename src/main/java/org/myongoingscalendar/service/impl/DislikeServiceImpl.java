@@ -43,8 +43,8 @@ public class DislikeServiceImpl implements DislikeService {
     }
 
     @Override
-    public Optional<DislikeEntity> findByCommentEntity_OngoingEntity_TidAndCommentEntity_IdAndUserEntityId(Long tid, Long comment_id, Long user_id) {
-        return dislikeRepository.findByCommentEntity_OngoingEntity_TidAndCommentEntity_IdAndUserEntityId(tid, comment_id, user_id);
+    public Optional<DislikeEntity> findByCommentEntity_OngoingEntity_TidAndCommentEntity_Id(Long tid, Long comment_id) {
+        return dislikeRepository.findByCommentEntity_OngoingEntity_TidAndCommentEntity_Id(tid, comment_id);
     }
 
     @Override

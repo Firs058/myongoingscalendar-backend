@@ -1,9 +1,6 @@
 package org.myongoingscalendar.service.impl;
 
-import org.myongoingscalendar.entity.CommentEntity;
-import org.myongoingscalendar.entity.DislikeEntity;
-import org.myongoingscalendar.entity.LikeEntity;
-import org.myongoingscalendar.entity.ReportEntity;
+import org.myongoingscalendar.entity.*;
 import org.myongoingscalendar.model.Comment;
 import org.myongoingscalendar.model.Comments;
 import org.myongoingscalendar.model.Emotion;
@@ -85,26 +82,26 @@ public class CommentServiceCustomImpl implements CommentServiceCustom {
     @Override
     @Transactional
     public Status addEmotion(Long tid, Long comment_id, Emotion emotion, Long userid) {
-        return commentRepository.getByIdAndOngoingEntity_TidAndUserEntity_Id(comment_id, tid, userid)
+        return commentRepository.getByIdAndOngoingEntity_Tid(comment_id, tid)
                 .map(commentEntity -> {
-                    LikeEntity like = new LikeEntity().commentEntity(commentEntity).userEntity(commentEntity.userEntity());
-                    DislikeEntity dislike = new DislikeEntity().commentEntity(commentEntity).userEntity(commentEntity.userEntity());
+                    LikeEntity like = new LikeEntity().commentEntity(commentEntity).userEntity(new UserEntity().id(userid));
+                    DislikeEntity dislike = new DislikeEntity().commentEntity(commentEntity).userEntity(new UserEntity().id(userid));
                     switch (emotion) {
                         case like:
-                            return likeService.findByCommentEntity_OngoingEntity_TidAndCommentEntity_IdAndUserEntityId(tid, comment_id, userid)
+                            return likeService.findByCommentEntity_OngoingEntity_TidAndCommentEntity_Id(tid, comment_id)
                                     .map(likeEntity -> new Status(10028, "Already liked"))
                                     .orElseGet(() -> {
                                         likeService.save(like);
-                                        dislikeService.findByCommentEntity_OngoingEntity_TidAndCommentEntity_IdAndUserEntityId(tid, comment_id, userid)
+                                        dislikeService.findByCommentEntity_OngoingEntity_TidAndCommentEntity_Id(tid, comment_id)
                                                 .ifPresent(dislikeService::delete);
                                         return new Status(11012, "Like added");
                                     });
                         case dislike:
-                            return dislikeService.findByCommentEntity_OngoingEntity_TidAndCommentEntity_IdAndUserEntityId(tid, comment_id, userid)
+                            return dislikeService.findByCommentEntity_OngoingEntity_TidAndCommentEntity_Id(tid, comment_id)
                                     .map(dislikeEntity -> new Status(10029, "Already disliked"))
                                     .orElseGet(() -> {
                                         dislikeService.save(dislike);
-                                        likeService.findByCommentEntity_OngoingEntity_TidAndCommentEntity_IdAndUserEntityId(tid, comment_id, userid)
+                                        likeService.findByCommentEntity_OngoingEntity_TidAndCommentEntity_Id(tid, comment_id)
                                                 .ifPresent(likeService::delete);
                                         return new Status(11013, "Dislike added");
                                     });
@@ -118,10 +115,10 @@ public class CommentServiceCustomImpl implements CommentServiceCustom {
     @Override
     @Transactional
     public Status addReport(Long tid, Long comment_id, Long userid) {
-        return commentRepository.getByIdAndOngoingEntity_TidAndUserEntity_Id(comment_id, tid, userid)
+        return commentRepository.getByIdAndOngoingEntity_Tid(comment_id, tid)
                 .map(commentEntity -> {
-                    ReportEntity report = new ReportEntity().commentEntity(commentEntity).userEntity(commentEntity.userEntity());
-                    return reportService.findByCommentEntity_OngoingEntity_TidAndCommentEntity_IdAndUserEntityId(tid, comment_id, userid)
+                    ReportEntity report = new ReportEntity().commentEntity(commentEntity).userEntity(new UserEntity().id(userid));
+                    return reportService.findByCommentEntity_OngoingEntity_TidAndCommentEntity_Id(tid, comment_id)
                             .map(reportEntity -> new Status(10030, "Already reported"))
                             .orElseGet(() -> {
                                 reportService.save(report);

@@ -17,7 +17,7 @@ public interface DislikeService {
 
     List<DislikeEntity> getAll();
 
-    Optional<DislikeEntity> findByCommentEntity_OngoingEntity_TidAndCommentEntity_IdAndUserEntityId(Long tid, Long comment_id, Long user_id);
+    Optional<DislikeEntity> findByCommentEntity_OngoingEntity_TidAndCommentEntity_Id(Long tid, Long comment_id);
 
     void delete(DislikeEntity dislikeEntity);
 
