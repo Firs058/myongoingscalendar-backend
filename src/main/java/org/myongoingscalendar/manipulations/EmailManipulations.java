@@ -51,7 +51,7 @@ public class EmailManipulations {
     @Async
     public void sendRecoverPassMail(String domainAddress, UserEntity user) {
         try {
-            String confirmationUrl = domainAddress + "/confirm/recover?token=" + user.confirmToken();
+            String confirmationUrl = domainAddress + "/confirm/recover?token=" + user.recoverToken();
             MimeMessage mime = this.javaMailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(mime, true);
             String year = (new DateTime().getYear() == 2017) ? String.valueOf(new DateTime().getYear()) : "2017 - " + new DateTime().getYear();

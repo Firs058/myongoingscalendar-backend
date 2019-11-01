@@ -102,7 +102,8 @@ public class RegistrationController {
                     if (u.password() == null)
                         return new AjaxResponse<>(new Status(10032, "Password recovery is not available for accounts created through a social network"));
                     u.recoverToken(UUID.randomUUID().toString());
-                    emailManipulations.sendRecoverPassMail(urlDataDAO.getUrlData(request).getDomainAddress(), user);
+                    userService.save(u);
+                    emailManipulations.sendRecoverPassMail(urlDataDAO.getUrlData(request).getDomainAddress(), u);
                     return new AjaxResponse<>(new Status(11003, "OK, check you mail for recover you password"));
                 })
                 .orElse(new AjaxResponse<>(new Status(10013, "Sorry, account with that email not existed")));

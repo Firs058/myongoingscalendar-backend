@@ -129,7 +129,6 @@ public class ParseSyoboiManipulations {
                         Element lastRevisionElement = idElement.nextElementSibling();
 
                         Long tid = Long.parseLong(idElement.text().trim());
-                        String title = titleNameElement.text().trim();
                         String dateStart = dateStartElement.text().trim();
                         Date lastRevision = Timestamp.valueOf(lastRevisionElement.text().trim());
 
@@ -158,19 +157,12 @@ public class ParseSyoboiManipulations {
                         .filter(t -> t.tid().equals(e.tid()))
                         .findFirst()
                         .map(f -> {
-                            if (e.syoboiOngoingEntity() != null)
-                                e.syoboiOngoingEntity()
-                                        .dateStart(f.syoboiOngoingEntity().dateStart())
-                                        .lastRevision(f.syoboiOngoingEntity().lastRevision());
-
-                            else e.syoboiOngoingEntity(
-                                    new SyoboiOngoingEntity()
-                                            .ongoingEntity(e)
-                                            .dateStart(f.syoboiOngoingEntity().dateStart())
-                                            .lastRevision(f.syoboiOngoingEntity().lastRevision()));
+                            e.syoboiOngoingEntity()
+                                    .ongoingEntity(e)
+                                    .dateStart(f.syoboiOngoingEntity().dateStart())
+                                    .lastRevision(f.syoboiOngoingEntity().lastRevision());
                             return e;
                         })
-                        .orElseGet(() -> e.syoboiOngoingEntity(null))
         );
 
         if (existentList.size() > 0) ongoingService.saveAll(existentList);
@@ -180,6 +172,14 @@ public class ParseSyoboiManipulations {
                 .collect(Collectors.toList());
 
         if (notInDB.size() > 0) ongoingService.saveAll(notInDB);
+
+        List<OngoingEntity> toDelete = ongoingService.getCurrentOngoings().stream()
+                .filter(os -> tempOngoingEntityList.stream().noneMatch(ns -> os.tid().equals(ns.tid())))
+                .collect(Collectors.toList());
+
+        toDelete.forEach(e-> e.syoboiOngoingEntity(null));
+
+        if (toDelete.size() > 0) ongoingService.saveAll(toDelete);
     }
 
     @Transactional

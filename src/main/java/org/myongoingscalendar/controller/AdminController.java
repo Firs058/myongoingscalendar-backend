@@ -7,6 +7,7 @@ import org.myongoingscalendar.elastic.FillElastic;
 import org.myongoingscalendar.manipulations.ParseAniDBManipulations;
 import org.myongoingscalendar.manipulations.ParseAnnManipulations;
 import org.myongoingscalendar.manipulations.ParseMALManipulations;
+import org.myongoingscalendar.manipulations.ParseSyoboiManipulations;
 import org.myongoingscalendar.model.*;
 import org.myongoingscalendar.service.OngoingService;
 import org.myongoingscalendar.service.UserService;
@@ -21,15 +22,17 @@ public class AdminController {
     private final ParseAniDBManipulations parseAniDBManipulations;
     private final ParseMALManipulations parseMALManipulations;
     private final ParseAnnManipulations parseAnnManipulations;
+    private final ParseSyoboiManipulations parseSyoboiManipulations;
     private final FillElastic fillElastic;
     private final OngoingService ongoingService;
     private final UserService userService;
 
     @Autowired
-    public AdminController(ParseAniDBManipulations parseAniDBManipulations, ParseMALManipulations parseMALManipulations, ParseAnnManipulations parseAnnManipulations, FillElastic fillElastic, OngoingService ongoingService, UserService userService) {
+    public AdminController(ParseAniDBManipulations parseAniDBManipulations, ParseMALManipulations parseMALManipulations, ParseAnnManipulations parseAnnManipulations, ParseSyoboiManipulations parseSyoboiManipulations, FillElastic fillElastic, OngoingService ongoingService, UserService userService) {
         this.parseAniDBManipulations = parseAniDBManipulations;
         this.parseMALManipulations = parseMALManipulations;
         this.parseAnnManipulations = parseAnnManipulations;
+        this.parseSyoboiManipulations = parseSyoboiManipulations;
         this.fillElastic = fillElastic;
         this.ongoingService = ongoingService;
         this.userService = userService;
@@ -116,6 +119,13 @@ public class AdminController {
     @PostMapping("/anidb/all")
     public AjaxResponse forceParseAniDBForAll() {
         parseAniDBManipulations.parseAniDBForAll();
+        ongoingService.clearOngoingsCache();
+        return new AjaxResponse<>(new Status(11000, "OK"));
+    }
+
+    @PostMapping("/syoboi")
+    public AjaxResponse forceParseSyoboiForCurrentOngoings() {
+        parseSyoboiManipulations.parseSyoboiAnimeOngoingsList();
         ongoingService.clearOngoingsCache();
         return new AjaxResponse<>(new Status(11000, "OK"));
     }
