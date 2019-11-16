@@ -187,7 +187,8 @@ public class OngoingRepositoryCustomImpl implements OngoingRepositoryCustom {
                     ElasticAnime elasticAnime = new ElasticAnime()
                             .tid(ongoing.tid())
                             .ja(ongoing.syoboiInfoEntity().title())
-                            .dateStart(AnimeUtil.createDateStart(ongoing.syoboiInfoEntity().firstYear(), ongoing.syoboiInfoEntity().firstMonth()));
+                            .dateStart(AnimeUtil.createDateStart(ongoing.syoboiInfoEntity().firstYear(), ongoing.syoboiInfoEntity().firstMonth()))
+                            .outdated(ongoing.syoboiInfoEntity().outdated() && ongoing.syoboiOngoingEntity() == null);
 
                     if (ongoing.anidbEntity() != null)
                         elasticAnime

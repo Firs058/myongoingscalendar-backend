@@ -2,16 +2,18 @@ package org.myongoingscalendar.utils;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.myongoingscalendar.elastic.model.ElasticAnime;
 import org.myongoingscalendar.model.*;
 
-import java.time.DayOfWeek;
-import java.time.Instant;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
+import java.time.*;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeFormatterBuilder;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
+
+import static java.time.temporal.ChronoField.DAY_OF_MONTH;
+import static java.time.temporal.ChronoUnit.DAYS;
 
 /**
  * @author firs
@@ -52,7 +54,7 @@ public class AnimeUtil {
     }
 
     public static Day makeDaySupport(Long unixtime, ZoneId zoneId) {
-        Comparator<ZonedDateTime> comparator = Comparator.comparing(zdt -> zdt.truncatedTo(ChronoUnit.DAYS));
+        Comparator<ZonedDateTime> comparator = Comparator.comparing(zdt -> zdt.truncatedTo(DAYS));
         Instant instant = Instant.ofEpochSecond(unixtime);
         ZonedDateTime zonedDateTime = ZonedDateTime.ofInstant(instant, zoneId);
         ZonedDateTime today = ZonedDateTime.now(zoneId);
@@ -142,5 +144,33 @@ public class AnimeUtil {
 
             return extraDays - dayTwo.get(Calendar.DAY_OF_YEAR) + dayOneOriginalYearDays;
         }
+    }
+
+    public static List<ElasticAnime> createWatchingStatus(List<ElasticAnime> elasticAnimes, List<Long> added, List<Long> dropped) {
+        DateTimeFormatter formatter =  new DateTimeFormatterBuilder()
+                .appendPattern("yyyy-MM")
+                .parseDefaulting(DAY_OF_MONTH, 1)
+                .toFormatter();
+
+        elasticAnimes.forEach(e -> {
+            LocalDate start = LocalDate.parse(e.dateStart(), formatter);
+            long days = DAYS.between(start, LocalDate.now());
+            if (days <= 14) e.watchingStatus(WatchingStatus.NEW);
+        });
+
+        if (added.size() > 0){
+            elasticAnimes.stream()
+                    .filter(e -> added.stream().anyMatch(a -> e.tid().equals(a)))
+                    .forEach(e -> e.watchingStatus(WatchingStatus.WATCHING));
+            elasticAnimes.stream()
+                    .filter(e -> added.stream().anyMatch(a -> e.tid().equals(a) && e.outdated()))
+                    .forEach(e -> e.watchingStatus(WatchingStatus.WATCHED));
+        }
+        if (dropped.size() > 0)
+            elasticAnimes.stream()
+                    .filter(e -> dropped.stream().anyMatch(a -> e.tid().equals(a)))
+                    .forEach(e -> e.watchingStatus(WatchingStatus.DROPPED));
+
+        return elasticAnimes;
     }
 }

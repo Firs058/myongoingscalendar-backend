@@ -19,7 +19,11 @@ public interface ElasticAnimeService {
 
     Iterable<ElasticAnime> findAll();
 
+    SearchResult autocompleteForUser(ElasticQuery elasticQuery, int size, Long userid);
+
     SearchResult autocomplete(ElasticQuery elasticQuery, int size);
 
     List<SortedOngoings> getCurrentOngoingsList();
+
+    List<SortedOngoings> getUserCurrentOngoingsList(Long userid);
 }

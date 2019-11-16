@@ -1,14 +1,20 @@
 package org.myongoingscalendar.elastic.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.elasticsearch.index.query.*;
 import org.elasticsearch.search.sort.SortBuilders;
 import org.myongoingscalendar.entity.OngoingEntity;
+import org.myongoingscalendar.entity.UserTitleDropEntity;
+import org.myongoingscalendar.entity.UserTitleEntity;
 import org.myongoingscalendar.model.ElasticQuery;
 import org.myongoingscalendar.model.SearchResult;
 import org.myongoingscalendar.elastic.model.ElasticAnime;
 import org.myongoingscalendar.elastic.repository.AnimeRepository;
 import org.myongoingscalendar.model.SortedOngoings;
 import org.myongoingscalendar.service.OngoingService;
+import org.myongoingscalendar.service.UserTitleDropService;
+import org.myongoingscalendar.service.UserTitleService;
+import org.myongoingscalendar.utils.AnimeUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.PageRequest;
@@ -16,6 +22,7 @@ import org.springframework.data.elasticsearch.core.ElasticsearchTemplate;
 import org.springframework.data.elasticsearch.core.query.NativeSearchQueryBuilder;
 import org.springframework.data.elasticsearch.core.query.SearchQuery;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -28,12 +35,16 @@ public class ElasticAnimeServiceImpl implements ElasticAnimeService {
     private final AnimeRepository animeRepository;
     private final OngoingService ongoingService;
     private final ElasticsearchTemplate elasticsearchTemplate;
+    private final UserTitleDropService userTitleDropService;
+    private final UserTitleService userTitleService;
 
     @Autowired
-    public ElasticAnimeServiceImpl(AnimeRepository animeRepository, OngoingService ongoingService, ElasticsearchTemplate elasticsearchTemplate) {
+    public ElasticAnimeServiceImpl(AnimeRepository animeRepository, OngoingService ongoingService, ElasticsearchTemplate elasticsearchTemplate, UserTitleDropService userTitleDropService, UserTitleService userTitleService) {
         this.animeRepository = animeRepository;
         this.ongoingService = ongoingService;
         this.elasticsearchTemplate = elasticsearchTemplate;
+        this.userTitleDropService = userTitleDropService;
+        this.userTitleService = userTitleService;
     }
 
     public ElasticAnime save(ElasticAnime anime) {
@@ -49,14 +60,18 @@ public class ElasticAnimeServiceImpl implements ElasticAnimeService {
     }
 
     public List<ElasticAnime> findByTids(List<Long> tids) {
-        return (List<ElasticAnime>) animeRepository.findAllById(tids);
+        List<ElasticAnime> elasticAnimeList = (List<ElasticAnime>) animeRepository.findAllById(tids);
+        return elasticAnimeList.stream()
+                .filter(Objects::nonNull)
+                .filter(e -> Objects.nonNull(e.dateStart()))
+                .collect(Collectors.toList());
     }
 
     public Iterable<ElasticAnime> findAll() {
         return animeRepository.findAll();
     }
 
-    public SearchResult autocomplete(ElasticQuery elasticQuery, int size) {
+    private SearchResult makeQuery(ElasticQuery elasticQuery, int size) {
         BoolQueryBuilder filters = new BoolQueryBuilder();
         if (elasticQuery.page() == null) elasticQuery.page(1);
 
@@ -91,19 +106,49 @@ public class ElasticAnimeServiceImpl implements ElasticAnimeService {
 
         return elasticsearchTemplate.query(elasticQuery.query().length() != 0 ? withQuery : withoutQuery, response -> {
             long totalHits = response.getHits().getTotalHits();
-            List<Map<String, Object>> animes = new ArrayList<>();
-            response.getHits().forEach(hit -> animes.add(hit.getSourceAsMap()));
+            List<ElasticAnime> animes = new ArrayList<>();
+            response.getHits().forEach(hit -> animes.add(new ObjectMapper().convertValue(hit.getSourceAsMap(), ElasticAnime.class)));
             return new SearchResult(animes, totalHits);
         });
+    }
+
+    public SearchResult autocomplete(ElasticQuery elasticQuery, int size) {
+        return makeQuery(elasticQuery, size);
+    }
+
+    @Transactional
+    public SearchResult autocompleteForUser(ElasticQuery elasticQuery, int size, Long userid) {
+        SearchResult searchResult = makeQuery(elasticQuery, size);
+        List<Long> searchedTids = searchResult.getAnimes().stream().map(ElasticAnime::tid).collect(Collectors.toList());
+
+        List<Long> addedTids = userTitleService.getCurrentOngoingsAddedByUser(searchedTids, userid).stream().map(UserTitleEntity::ongoingEntity).map(OngoingEntity::tid).collect(Collectors.toList());
+        List<Long> droppedTids = userTitleDropService.getCurrentOngoingsAddedByUser(searchedTids, userid).stream().map(UserTitleDropEntity::ongoingEntity).map(OngoingEntity::tid).collect(Collectors.toList());
+
+        searchResult.setAnimes(AnimeUtil.createWatchingStatus(searchResult.getAnimes(), addedTids, droppedTids));
+        return searchResult;
     }
 
     @Override
     @Cacheable("getCurrentOngoingsList")
     public List<SortedOngoings> getCurrentOngoingsList() {
-        List<ElasticAnime> elasticAnimes = findByTids(ongoingService.getCurrentOngoings().stream().map(OngoingEntity::tid).collect(Collectors.toList())).stream()
-                .filter(Objects::nonNull)
-                .filter(e -> Objects.nonNull(e.dateStart()))
-                .collect(Collectors.toList());
+        List<ElasticAnime> elasticAnimes = findByTids(ongoingService.getCurrentOngoings().stream().map(OngoingEntity::tid).collect(Collectors.toList()));
+        List<ElasticAnime> elasticAnimesWithWatchingStatus = AnimeUtil.createWatchingStatus(elasticAnimes, Collections.emptyList(), Collections.emptyList());
+        return sortCurrentOngoingsList(elasticAnimesWithWatchingStatus);
+    }
+
+    @Transactional
+    @Override
+    public List<SortedOngoings> getUserCurrentOngoingsList(Long userid) {
+        List<Long> currentOngoingsTids = ongoingService.getCurrentOngoings().stream().map(OngoingEntity::tid).collect(Collectors.toList());
+        List<ElasticAnime> elasticAnimes = findByTids(currentOngoingsTids);
+
+        List<Long> addedTids = userTitleService.getCurrentOngoingsAddedByUser(currentOngoingsTids, userid).stream().map(UserTitleEntity::ongoingEntity).map(OngoingEntity::tid).collect(Collectors.toList());
+        List<Long> droppedTids = userTitleDropService.getCurrentOngoingsAddedByUser(currentOngoingsTids, userid).stream().map(UserTitleDropEntity::ongoingEntity).map(OngoingEntity::tid).collect(Collectors.toList());
+
+        return sortCurrentOngoingsList(AnimeUtil.createWatchingStatus(elasticAnimes, addedTids, droppedTids));
+    }
+
+    private List<SortedOngoings> sortCurrentOngoingsList(List<ElasticAnime> elasticAnimes) {
         return elasticAnimes.stream()
                 .map(ElasticAnime::dateStart)
                 .distinct()

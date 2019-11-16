@@ -1,5 +1,6 @@
 package org.myongoingscalendar.controller;
 
+import org.myongoingscalendar.elastic.service.ElasticAnimeService;
 import org.myongoingscalendar.entity.UserAuthorityEntity;
 import org.myongoingscalendar.entity.UserEntity;
 import org.myongoingscalendar.manipulations.DBManipulations;
@@ -26,13 +27,15 @@ public class UserController {
     private final UserServiceCustom userServiceCustom;
     private final DBManipulations dbManipulations;
     private final OngoingServiceCustom ongoingServiceCustom;
+    private final ElasticAnimeService elasticAnimeService;
 
     @Autowired
-    public UserController(UserService userService, UserServiceCustom userServiceCustom, DBManipulations dbManipulations, OngoingServiceCustom ongoingServiceCustom) {
+    public UserController(UserService userService, UserServiceCustom userServiceCustom, DBManipulations dbManipulations, OngoingServiceCustom ongoingServiceCustom, ElasticAnimeService elasticAnimeService) {
         this.userService = userService;
         this.userServiceCustom = userServiceCustom;
         this.dbManipulations = dbManipulations;
         this.ongoingServiceCustom = ongoingServiceCustom;
+        this.elasticAnimeService = elasticAnimeService;
     }
 
     @RequestMapping(value = "/calendar")
@@ -56,6 +59,22 @@ public class UserController {
     @RequestMapping(value = "/title/{tid}/toggle")
     public AjaxResponse returnToggleTitleStatus(@PathVariable("tid") Long tid, @AuthenticationPrincipal JwtUser user) {
         return new AjaxResponse(userServiceCustom.toggleUserTid(tid, user.getId()));
+    }
+
+    @RequestMapping(value = "/title/list")
+    public AjaxResponse returnTitlesList(@AuthenticationPrincipal JwtUser user) {
+        return new AjaxResponse<>(
+                new Status(11000, "OK"),
+                elasticAnimeService.getUserCurrentOngoingsList(user.getId())
+        );
+    }
+
+    @RequestMapping(value = "/es/autocomplete")
+    public AjaxResponse setESAutocomplete(@RequestBody ElasticQuery elasticQuery, @AuthenticationPrincipal JwtUser user) {
+        return new AjaxResponse<>(
+                new Status(11000, "OK"),
+                elasticAnimeService.autocompleteForUser(elasticQuery, 12, user.getId())
+        );
     }
 
     @Transactional

@@ -1,10 +1,12 @@
 package org.myongoingscalendar.service.impl;
 
+import org.myongoingscalendar.entity.UserTitleDropEntity;
 import org.myongoingscalendar.entity.UserTitleEntity;
 import org.myongoingscalendar.model.Status;
 import org.myongoingscalendar.service.OngoingService;
 import org.myongoingscalendar.service.UserService;
 import org.myongoingscalendar.service.UserServiceCustom;
+import org.myongoingscalendar.service.UserTitleDropService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -16,10 +18,12 @@ public class UserServiceCustomImpl implements UserServiceCustom {
 
     private final UserService userService;
     private final OngoingService ongoingService;
+    private final UserTitleDropService userTitleDropService;
 
-    public UserServiceCustomImpl(UserService userService, OngoingService ongoingService) {
+    public UserServiceCustomImpl(UserService userService, OngoingService ongoingService, UserTitleDropService userTitleDropService) {
         this.userService = userService;
         this.ongoingService = ongoingService;
+        this.userTitleDropService = userTitleDropService;
     }
 
     @Override
@@ -41,10 +45,12 @@ public class UserServiceCustomImpl implements UserServiceCustom {
                                             .findAny()
                                             .map(f -> {
                                                 userEntity.usersTitleEntities().remove(f);
+                                                userEntity.userTitleDropEntities().add(new UserTitleDropEntity().userEntity(userEntity).ongoingEntity(ongoingEntity));
                                                 userService.save(userEntity);
                                                 return new Status(11007, "Title removed");
                                             })
                                             .orElseGet(() -> {
+                                                userTitleDropService.findByOngoingEntity_TidAndUserEntity_Id(tid, user_id).ifPresent(d -> userEntity.userTitleDropEntities().remove(d));
                                                 userEntity.usersTitleEntities().add(userTitleEntity);
                                                 userService.save(userEntity);
                                                 return new Status(11008, "Title added");

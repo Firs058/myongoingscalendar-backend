@@ -46,6 +46,8 @@ public class UserEntity implements Serializable {
     private UserSettingsEntity userSettingsEntity;
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "userEntity", orphanRemoval = true)
     private List<UserTitleEntity> usersTitleEntities;
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "userEntity", orphanRemoval = true)
+    private List<UserTitleDropEntity> userTitleDropEntities;
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, mappedBy = "userEntity", orphanRemoval = true)
     private List<UserAuthorityEntity> authorityEntities;
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "userEntity", orphanRemoval = true)

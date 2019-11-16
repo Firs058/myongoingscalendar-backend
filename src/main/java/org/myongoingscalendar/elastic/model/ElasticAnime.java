@@ -9,6 +9,7 @@ import org.myongoingscalendar.model.Image;
 import org.myongoingscalendar.model.Ratings;
 import org.myongoingscalendar.entity.ChannelEntity;
 import org.myongoingscalendar.entity.GenreEntity;
+import org.myongoingscalendar.model.WatchingStatus;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.elasticsearch.annotations.*;
 
@@ -35,4 +36,6 @@ public class ElasticAnime {
     private List<GenreEntity> genres;
     private List<Ratings> ratings;
     private List<ChannelEntity> channels;
+    private WatchingStatus watchingStatus;
+    private Boolean outdated;
 }

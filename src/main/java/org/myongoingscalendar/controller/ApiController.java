@@ -78,14 +78,6 @@ public class ApiController {
         );
     }
 
-    @RequestMapping(value = "/es/{tid}")
-    public AjaxResponse setESTidSearch(@PathVariable("tid") Long tid) {
-        return elasticAnimeService.findByTid(tid)
-                .map(r -> new AjaxResponse<>(new Status(11000, "OK"), r))
-                .orElse(new AjaxResponse<>(new Status(10018, "Not found")));
-
-    }
-
     @RequestMapping(value = "/es/autocomplete")
     public AjaxResponse setESAutocomplete(@RequestBody ElasticQuery elasticQuery) {
         return new AjaxResponse<>(

@@ -1,5 +1,7 @@
 package org.myongoingscalendar.service.impl;
 
+import org.myongoingscalendar.entity.OngoingEntity;
+import org.myongoingscalendar.entity.UserEntity;
 import org.myongoingscalendar.entity.UserTitleEntity;
 import org.myongoingscalendar.repository.UserTitleRepository;
 import org.myongoingscalendar.service.UserTitleService;
@@ -40,6 +42,11 @@ public class UserTitleServiceImpl implements UserTitleService {
     @Override
     public List<UserTitleEntity> getAll() {
         return userTitleRepository.findAll();
+    }
+
+    @Override
+    public List<UserTitleEntity> getCurrentOngoingsAddedByUser(List<Long> ongoingEntities, Long userid) {
+        return userTitleRepository.findByOngoingEntity_TidInAndUserEntity_Id(ongoingEntities, userid);
     }
 
     @Override
