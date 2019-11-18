@@ -174,11 +174,10 @@ public class OngoingRepositoryCustomImpl implements OngoingRepositoryCustom {
                                                 .datasets(datasets)
                                 );
 
-                        double avg = title.ratings().stream().mapToDouble(Ratings::score).average().getAsDouble();
-                        title.avgRating(
-                                BigDecimal.valueOf(avg)
-                                        .setScale(2, RoundingMode.HALF_UP)
-                                        .doubleValue());
+                        title.ratings().stream()
+                                .mapToDouble(Ratings::score)
+                                .average()
+                                .ifPresent(v -> title.avgRating(BigDecimal.valueOf(v).setScale(2, RoundingMode.HALF_UP).doubleValue()));
                     }
 
                     return title;
