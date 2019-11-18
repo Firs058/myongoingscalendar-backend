@@ -21,6 +21,8 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.PersistenceUnit;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.text.SimpleDateFormat;
 import java.time.ZoneId;
 import java.util.*;
@@ -172,7 +174,11 @@ public class OngoingRepositoryCustomImpl implements OngoingRepositoryCustom {
                                                 .datasets(datasets)
                                 );
 
-                        title.avgRating(title.ratings().stream().mapToDouble(Ratings::score).average().getAsDouble());
+                        double avg = title.ratings().stream().mapToDouble(Ratings::score).average().getAsDouble();
+                        title.avgRating(
+                                BigDecimal.valueOf(avg)
+                                        .setScale(2, RoundingMode.HALF_UP)
+                                        .doubleValue());
                     }
 
                     return title;
