@@ -171,6 +171,8 @@ public class OngoingRepositoryCustomImpl implements OngoingRepositoryCustom {
                                                 .labels(ongoing.ratingEntities().stream().sorted(Comparator.comparing(RatingEntity::added)).map(e -> new SimpleDateFormat("dd/MM/yyyy").format(e.added())).toArray())
                                                 .datasets(datasets)
                                 );
+
+                        title.avgRating(title.ratings().stream().mapToDouble(Ratings::score).average().getAsDouble());
                     }
 
                     return title;
