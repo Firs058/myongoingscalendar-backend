@@ -156,13 +156,7 @@ public class ParseSyoboiManipulations {
                 tempOngoingEntityList.stream()
                         .filter(t -> t.tid().equals(e.tid()))
                         .findFirst()
-                        .map(f -> {
-                            e.syoboiOngoingEntity()
-                                    .ongoingEntity(e)
-                                    .dateStart(f.syoboiOngoingEntity().dateStart())
-                                    .lastRevision(f.syoboiOngoingEntity().lastRevision());
-                            return e;
-                        })
+                        .map(f -> e.syoboiOngoingEntity(f.syoboiOngoingEntity()))
         );
 
         if (existentList.size() > 0) ongoingService.saveAll(existentList);
