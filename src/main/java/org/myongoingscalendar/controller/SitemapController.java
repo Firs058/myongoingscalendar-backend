@@ -3,8 +3,10 @@ package org.myongoingscalendar.controller;
 import org.apache.tomcat.util.http.fileupload.IOUtils;
 import org.myongoingscalendar.SEO.XmlUrl;
 import org.myongoingscalendar.SEO.XmlUrlSet;
+import org.myongoingscalendar.entity.OngoingEntity;
 import org.myongoingscalendar.model.UrlDataDAO;
 import org.myongoingscalendar.service.OngoingService;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -15,6 +17,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 
 import static org.springframework.web.bind.annotation.RequestMethod.GET;
 
@@ -29,17 +32,22 @@ public class SitemapController {
         this.ongoingService = ongoingService;
     }
 
-    @RequestMapping(value = "/sitemap.xml")
+    @RequestMapping(value = "/sitemap.xml", produces = MediaType.APPLICATION_XML_VALUE)
     @ResponseBody
     public XmlUrlSet main(HttpServletRequest request) {
         XmlUrlSet xmlUrlSet = new XmlUrlSet();
         create(request, xmlUrlSet, "", XmlUrl.Priority.HIGH);
         create(request, xmlUrlSet, "/list", XmlUrl.Priority.HIGH);
-        create(request, xmlUrlSet, "/about", XmlUrl.Priority.HIGH);
-        create(request, xmlUrlSet, "/registration", XmlUrl.Priority.HIGH);
-        create(request, xmlUrlSet, "/login", XmlUrl.Priority.HIGH);
-        create(request, xmlUrlSet, "/recover", XmlUrl.Priority.HIGH);
-        ongoingService.getAll().forEach(titlesList -> create(request, xmlUrlSet, "/title/" + titlesList.tid(), XmlUrl.Priority.HIGH));
+        create(request, xmlUrlSet, "/about", XmlUrl.Priority.MEDIUM);
+        create(request, xmlUrlSet, "/registration", XmlUrl.Priority.MEDIUM);
+        create(request, xmlUrlSet, "/login", XmlUrl.Priority.MEDIUM);
+        create(request, xmlUrlSet, "/recover", XmlUrl.Priority.MEDIUM);
+        List<OngoingEntity> all = ongoingService.getAll();
+        List<OngoingEntity> ongoings = ongoingService.getCurrentOngoings();
+        ongoings.forEach(titlesList -> create(request, xmlUrlSet, "/title/" + titlesList.tid(), XmlUrl.Priority.HIGH));
+        all.stream()
+                .filter(a -> ongoings.stream().noneMatch(b -> b.tid().equals(a.tid())))
+                .forEach(titlesList -> create(request, xmlUrlSet, "/title/" + titlesList.tid(), XmlUrl.Priority.MEDIUM));
         return xmlUrlSet;
     }
 

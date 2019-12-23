@@ -32,6 +32,7 @@ public class XmlUrl {
 
     private String changefreq = "daily";
 
+    @XmlElement
     private String priority;
 
     public XmlUrl() {
