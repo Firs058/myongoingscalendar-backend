@@ -28,6 +28,8 @@ public interface OngoingService {
 
     List<OngoingEntity> getAll();
 
+    List<OngoingEntity> findAllByAidIsNotNullOrMalidIsNotNullOrAnnidIsNotNull();
+
     List<OngoingEntity> getCurrentOngoings();
 
     List<OngoingEntity> getCurrentOngoingsWithoutImage();

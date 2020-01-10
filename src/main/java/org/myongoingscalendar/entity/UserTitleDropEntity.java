@@ -33,8 +33,11 @@ public class UserTitleDropEntity implements Serializable {
     @JoinColumn(name = "user_id", referencedColumnName = "id", nullable = false)
     @ManyToOne(fetch = FetchType.LAZY)
     private UserEntity userEntity;
-    @CreationTimestamp
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "date_added", columnDefinition = "timestamp with time zone", nullable = false)
     private Date dateAdded;
+    @CreationTimestamp
+    @Temporal(TemporalType.TIMESTAMP)
+    @Column(name = "date_dropped", columnDefinition = "timestamp with time zone", nullable = false)
+    private Date dateDropped;
 }

@@ -45,7 +45,7 @@ public class UserServiceCustomImpl implements UserServiceCustom {
                                             .findAny()
                                             .map(f -> {
                                                 userEntity.usersTitleEntities().remove(f);
-                                                userEntity.userTitleDropEntities().add(new UserTitleDropEntity().userEntity(userEntity).ongoingEntity(ongoingEntity));
+                                                userEntity.userTitleDropEntities().add(new UserTitleDropEntity().userEntity(userEntity).ongoingEntity(ongoingEntity).dateAdded(f.dateAdded()));
                                                 userService.save(userEntity);
                                                 return new Status(11007, "Title removed");
                                             })

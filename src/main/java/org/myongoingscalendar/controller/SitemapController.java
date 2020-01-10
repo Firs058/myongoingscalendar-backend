@@ -42,7 +42,7 @@ public class SitemapController {
         create(request, xmlUrlSet, "/registration", XmlUrl.Priority.MEDIUM);
         create(request, xmlUrlSet, "/login", XmlUrl.Priority.MEDIUM);
         create(request, xmlUrlSet, "/recover", XmlUrl.Priority.MEDIUM);
-        List<OngoingEntity> all = ongoingService.getAll();
+        List<OngoingEntity> all = ongoingService.findAllByAidIsNotNullOrMalidIsNotNullOrAnnidIsNotNull();
         List<OngoingEntity> ongoings = ongoingService.getCurrentOngoings();
         ongoings.forEach(titlesList -> create(request, xmlUrlSet, "/title/" + titlesList.tid(), XmlUrl.Priority.HIGH));
         all.stream()

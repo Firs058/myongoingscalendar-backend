@@ -23,6 +23,8 @@ public interface OngoingRepository extends JpaRepository<OngoingEntity, Long> {
 
     List<OngoingEntity> findByAidIsNotNull();
 
+    List<OngoingEntity> findAllByAidIsNotNullOrMalidIsNotNullOrAnnidIsNotNull();
+
     @Query("select o from OngoingEntity o join o.syoboiOngoingEntity s where s is not null")
     List<OngoingEntity> getCurrentOngoings();
 

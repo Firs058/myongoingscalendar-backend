@@ -72,6 +72,11 @@ public class OngoingServiceImpl implements OngoingService {
     }
 
     @Override
+    public List<OngoingEntity> findAllByAidIsNotNullOrMalidIsNotNullOrAnnidIsNotNull() {
+        return ongoingRepository.findAllByAidIsNotNullOrMalidIsNotNullOrAnnidIsNotNull();
+    }
+
+    @Override
     public List<OngoingEntity> getCurrentOngoings() {
         return ongoingRepository.getCurrentOngoings();
     }

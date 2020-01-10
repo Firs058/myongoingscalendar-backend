@@ -101,7 +101,7 @@ public class OngoingRepositoryCustomImpl implements OngoingRepositoryCustom {
                 .map(ongoing -> {
                     Title title = new Title()
                             .tid(tid)
-                            .outdated(ongoing.syoboiInfoEntity().outdated() && ongoing.syoboiOngoingEntity() == null);
+                            .outdated(ongoing.syoboiInfoEntity() == null || (ongoing.syoboiInfoEntity().outdated() && ongoing.syoboiOngoingEntity() == null));
 
                     if (ongoing.syoboiInfoEntity() != null)
                         title
