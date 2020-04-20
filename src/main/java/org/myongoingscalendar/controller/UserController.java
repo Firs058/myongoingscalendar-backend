@@ -1,12 +1,15 @@
 package org.myongoingscalendar.controller;
 
 import org.myongoingscalendar.elastic.service.ElasticAnimeService;
+import org.myongoingscalendar.entity.FeedbackEntity;
 import org.myongoingscalendar.entity.UserAuthorityEntity;
 import org.myongoingscalendar.entity.UserEntity;
 import org.myongoingscalendar.manipulations.DBManipulations;
+import org.myongoingscalendar.manipulations.ReCaptchaManipulations;
 import org.myongoingscalendar.model.*;
 import org.myongoingscalendar.entity.UserSettingsEntity;
 import org.myongoingscalendar.security.JwtUser;
+import org.myongoingscalendar.service.FeedbackService;
 import org.myongoingscalendar.service.OngoingServiceCustom;
 import org.myongoingscalendar.service.UserService;
 import org.myongoingscalendar.service.UserServiceCustom;
@@ -28,14 +31,18 @@ public class UserController {
     private final DBManipulations dbManipulations;
     private final OngoingServiceCustom ongoingServiceCustom;
     private final ElasticAnimeService elasticAnimeService;
+    private final FeedbackService feedbackService;
+    private final ReCaptchaManipulations reCaptchaManipulations;
 
     @Autowired
-    public UserController(UserService userService, UserServiceCustom userServiceCustom, DBManipulations dbManipulations, OngoingServiceCustom ongoingServiceCustom, ElasticAnimeService elasticAnimeService) {
+    public UserController(UserService userService, UserServiceCustom userServiceCustom, DBManipulations dbManipulations, OngoingServiceCustom ongoingServiceCustom, ElasticAnimeService elasticAnimeService, FeedbackService feedbackService, ReCaptchaManipulations reCaptchaManipulations) {
         this.userService = userService;
         this.userServiceCustom = userServiceCustom;
         this.dbManipulations = dbManipulations;
         this.ongoingServiceCustom = ongoingServiceCustom;
         this.elasticAnimeService = elasticAnimeService;
+        this.feedbackService = feedbackService;
+        this.reCaptchaManipulations = reCaptchaManipulations;
     }
 
     @RequestMapping(value = "/calendar")
@@ -135,5 +142,19 @@ public class UserController {
                     return new AjaxResponse<>(new Status(11005, "Password changed"));
                 })
                 .orElse(new AjaxResponse<>(new Status(10012, "You must be logged")));
+    }
+
+    @RequestMapping(value = "/feedback/add")
+    public AjaxResponse addFeedback(@RequestBody Feedback feedback, @AuthenticationPrincipal JwtUser user) {
+        ReCaptchaGoogleResponse reCaptchaResponse = reCaptchaManipulations.verify(feedback.recaptchaToken());
+        if (reCaptchaResponse.isSuccess()) {
+            return userService.get(user.getId())
+                    .map(u -> {
+                        feedbackService.save(new FeedbackEntity().userEntity(u).text(feedback.text()));
+                        return new AjaxResponse<>(new Status(11018, "Thanks for feedback!"));
+                    })
+                    .orElse(new AjaxResponse<>(new Status(10012, "You must be logged")));
+        }
+        return new AjaxResponse<>(new Status(10008, "Invalid captcha"));
     }
 }

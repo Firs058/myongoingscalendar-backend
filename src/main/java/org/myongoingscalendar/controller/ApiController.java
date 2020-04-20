@@ -1,16 +1,13 @@
 package org.myongoingscalendar.controller;
 
+import org.myongoingscalendar.entity.FeedbackEntity;
 import org.myongoingscalendar.entity.UserSettingsEntity;
 import org.myongoingscalendar.manipulations.DBManipulations;
+import org.myongoingscalendar.manipulations.ReCaptchaManipulations;
 import org.myongoingscalendar.model.*;
 import org.myongoingscalendar.elastic.service.ElasticAnimeService;
-import org.myongoingscalendar.security.JwtUser;
-import org.myongoingscalendar.service.CommentServiceCustom;
-import org.myongoingscalendar.service.GenreService;
-import org.myongoingscalendar.service.OngoingServiceCustom;
-import org.myongoingscalendar.service.SyoboiInfoService;
+import org.myongoingscalendar.service.*;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Locale;
@@ -24,16 +21,20 @@ public class ApiController {
     private final SyoboiInfoService syoboiInfoService;
     private final GenreService genreService;
     private final CommentServiceCustom commentServiceCustom;
+    private final FeedbackService feedbackService;
     private final DBManipulations dbManipulations;
+    private final ReCaptchaManipulations reCaptchaManipulations;
 
     @Autowired
-    public ApiController(ElasticAnimeService elasticAnimeService, OngoingServiceCustom ongoingServiceCustom, SyoboiInfoService syoboiInfoService, GenreService genreService, CommentServiceCustom commentServiceCustom, DBManipulations dbManipulations) {
+    public ApiController(ElasticAnimeService elasticAnimeService, OngoingServiceCustom ongoingServiceCustom, SyoboiInfoService syoboiInfoService, GenreService genreService, CommentServiceCustom commentServiceCustom, FeedbackService feedbackService, DBManipulations dbManipulations, ReCaptchaManipulations reCaptchaManipulations) {
         this.elasticAnimeService = elasticAnimeService;
         this.ongoingServiceCustom = ongoingServiceCustom;
         this.syoboiInfoService = syoboiInfoService;
         this.genreService = genreService;
         this.commentServiceCustom = commentServiceCustom;
+        this.feedbackService = feedbackService;
         this.dbManipulations = dbManipulations;
+        this.reCaptchaManipulations = reCaptchaManipulations;
     }
 
     @RequestMapping(value = "/calendar")
@@ -55,7 +56,7 @@ public class ApiController {
     }
 
     @RequestMapping(value = "/title/{tid}/comments/{path}/{offset}")
-    public AjaxResponse getUserComments(@PathVariable("tid") Long tid, @PathVariable("path") String path, @PathVariable("offset") Integer offset, @AuthenticationPrincipal JwtUser user) {
+    public AjaxResponse getUserComments(@PathVariable("tid") Long tid, @PathVariable("path") String path, @PathVariable("offset") Integer offset) {
         return new AjaxResponse<>(
                 new Status(11000, "OK"),
                 commentServiceCustom.getComments(tid, path, offset)
@@ -89,6 +90,18 @@ public class ApiController {
     @RequestMapping("/timezones")
     public AjaxResponse getAllTimezones() {
         return new AjaxResponse<>(new Status(11000, "OK"), dbManipulations.getAllTimezones());
+    }
+
+    @RequestMapping(value = "/feedback/add")
+    public AjaxResponse addFeedback(@RequestBody Feedback feedback) {
+        ReCaptchaGoogleResponse reCaptchaResponse = reCaptchaManipulations.verify(feedback.recaptchaToken());
+        if (reCaptchaResponse.isSuccess()) {
+            feedbackService.save(new FeedbackEntity().userEntity(null).text(feedback.text()));
+            return new AjaxResponse<>(
+                    new Status(11018, "Thanks for feedback!")
+            );
+        }
+        return new AjaxResponse<>(new Status(10008, "Invalid captcha"));
     }
 }
 
