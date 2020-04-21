@@ -12,6 +12,7 @@ import org.myongoingscalendar.repository.OngoingRepositoryCustom;
 import org.myongoingscalendar.service.CommentServiceCustom;
 import org.myongoingscalendar.service.OngoingService;
 import org.myongoingscalendar.service.UserService;
+import org.myongoingscalendar.service.UserTitleService;
 import org.myongoingscalendar.utils.AnimeUtil;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.Cacheable;
@@ -38,6 +39,7 @@ public class OngoingRepositoryCustomImpl implements OngoingRepositoryCustom {
     private EntityManagerFactory entityManagerFactory;
     private final OngoingService ongoingService;
     private final UserService userService;
+    private final UserTitleService userTitleService;
     private final CommentServiceCustom commentServiceCustom;
     @Value("${links.anime.anidb}")
     private String anidbAnimeUrlPath;
@@ -46,9 +48,10 @@ public class OngoingRepositoryCustomImpl implements OngoingRepositoryCustom {
     @Value("${links.anime.ann}")
     private String annAnimeUrlPath;
 
-    public OngoingRepositoryCustomImpl(OngoingService ongoingService, UserService userService, CommentServiceCustom commentServiceCustom) {
+    public OngoingRepositoryCustomImpl(OngoingService ongoingService, UserService userService, UserTitleService userTitleService, CommentServiceCustom commentServiceCustom) {
         this.ongoingService = ongoingService;
         this.userService = userService;
+        this.userTitleService = userTitleService;
         this.commentServiceCustom = commentServiceCustom;
     }
 
@@ -89,7 +92,7 @@ public class OngoingRepositoryCustomImpl implements OngoingRepositoryCustom {
     public UserTitle getUserOngoingData(Long tid, String timezone, Long userid, Locale locale) {
         return userService.get(userid)
                 .map(u -> new UserTitle()
-                        .marked(u.usersTitleEntities().stream().anyMatch(t -> t.ongoingEntity().tid().equals(tid)))
+                        .marked(userTitleService.existsByOngoingEntity_Tid(tid))
                         .broadcast(createTitleBroadcast(u.userSettingsEntity().timezone(), tid, locale))
                         .title(getTitleData(tid))
                         .comments(commentServiceCustom.getUserComments(tid, "root", 0, userid)))

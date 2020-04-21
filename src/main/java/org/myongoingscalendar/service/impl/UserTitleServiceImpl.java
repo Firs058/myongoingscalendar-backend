@@ -1,7 +1,5 @@
 package org.myongoingscalendar.service.impl;
 
-import org.myongoingscalendar.entity.OngoingEntity;
-import org.myongoingscalendar.entity.UserEntity;
 import org.myongoingscalendar.entity.UserTitleEntity;
 import org.myongoingscalendar.repository.UserTitleRepository;
 import org.myongoingscalendar.service.UserTitleService;
@@ -37,6 +35,11 @@ public class UserTitleServiceImpl implements UserTitleService {
     @Override
     public Optional<UserTitleEntity> get(Long id) {
         return Optional.of(userTitleRepository.getOne(id));
+    }
+
+    @Override
+    public Boolean existsByOngoingEntity_Tid(Long tid) {
+        return userTitleRepository.existsByOngoingEntity_Tid(tid);
     }
 
     @Override

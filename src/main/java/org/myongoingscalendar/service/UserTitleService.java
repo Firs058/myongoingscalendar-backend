@@ -1,7 +1,5 @@
 package org.myongoingscalendar.service;
 
-import org.myongoingscalendar.entity.OngoingEntity;
-import org.myongoingscalendar.entity.UserEntity;
 import org.myongoingscalendar.entity.UserTitleEntity;
 
 import java.util.List;
@@ -16,6 +14,8 @@ public interface UserTitleService {
     List<UserTitleEntity> saveAll(List<UserTitleEntity> userTitleEntityList);
 
     Optional<UserTitleEntity> get(Long id);
+
+    Boolean existsByOngoingEntity_Tid(Long tid);
 
     List<UserTitleEntity> getAll();
 

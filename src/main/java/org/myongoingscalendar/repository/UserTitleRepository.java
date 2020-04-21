@@ -13,4 +13,6 @@ import java.util.List;
 @Repository
 public interface UserTitleRepository extends JpaRepository<UserTitleEntity, Long> {
     List<UserTitleEntity> findByOngoingEntity_TidInAndUserEntity_Id(List<Long> ongoingEntities, Long userid);
+
+    Boolean existsByOngoingEntity_Tid(Long tid);
 }
