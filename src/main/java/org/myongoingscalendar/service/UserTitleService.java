@@ -19,7 +19,7 @@ public interface UserTitleService {
 
     List<UserTitleEntity> getAll();
 
-    List<Long> getCurrentOngoingsAddedByUser(List<Long> ongoingEntities, Long userid);
+    List<Long> getCurrentOngoingsTidsAddedByUser(List<Long> ongoingEntities, Long userid);
 
     void delete(UserTitleEntity userTitleEntity);
 

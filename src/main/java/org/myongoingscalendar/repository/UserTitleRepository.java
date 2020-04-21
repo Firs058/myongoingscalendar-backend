@@ -14,7 +14,7 @@ import java.util.List;
 @Repository
 public interface UserTitleRepository extends JpaRepository<UserTitleEntity, Long> {
     @Query("select u.ongoingEntity.tid from UserTitleEntity u where u.ongoingEntity.tid in ?1 and u.userEntity.id = ?2")
-    List<Long> getCurrentOngoingsAddedByUser(List<Long> ongoingEntities, Long userid);
+    List<Long> getCurrentOngoingsTidsAddedByUser(List<Long> ongoingEntities, Long userid);
 
     Boolean existsByOngoingEntity_Tid(Long tid);
 }

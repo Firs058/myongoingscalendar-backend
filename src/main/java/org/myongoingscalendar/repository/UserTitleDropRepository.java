@@ -15,7 +15,7 @@ import java.util.Optional;
 @Repository
 public interface UserTitleDropRepository extends JpaRepository<UserTitleDropEntity, Long> {
     @Query("select u.ongoingEntity.tid from UserTitleDropEntity u where u.ongoingEntity.tid in ?1 and u.userEntity.id = ?2")
-    List<Long> getCurrentOngoingsDroppedByUser(List<Long> ongoingEntities, Long userid);
+    List<Long> getCurrentOngoingsTidsDroppedByUser(List<Long> ongoingEntities, Long userid);
 
     Optional<UserTitleDropEntity> findByOngoingEntity_TidAndUserEntity_Id(Long tid, Long userid);
 }
