@@ -82,6 +82,11 @@ public class OngoingServiceImpl implements OngoingService {
     }
 
     @Override
+    public List<Long> getCurrentOngoingsTids() {
+        return ongoingRepository.getCurrentOngoingsTids();
+    }
+
+    @Override
     public List<OngoingEntity> getCurrentOngoingsWithoutImage() {
         return ongoingRepository.getCurrentOngoingsWithoutImage();
     }

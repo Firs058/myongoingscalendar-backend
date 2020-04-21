@@ -28,6 +28,9 @@ public interface OngoingRepository extends JpaRepository<OngoingEntity, Long> {
     @Query("select o from OngoingEntity o join o.syoboiOngoingEntity s where s is not null")
     List<OngoingEntity> getCurrentOngoings();
 
+    @Query("select o.tid from OngoingEntity o join o.syoboiOngoingEntity s where s is not null")
+    List<Long> getCurrentOngoingsTids();
+
     @Query("select o from OngoingEntity o join o.anidbEntity s where s is not null and s.image = false")
     List<OngoingEntity> getCurrentOngoingsWithoutImage();
 

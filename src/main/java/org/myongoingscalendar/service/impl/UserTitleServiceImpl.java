@@ -48,8 +48,8 @@ public class UserTitleServiceImpl implements UserTitleService {
     }
 
     @Override
-    public List<UserTitleEntity> getCurrentOngoingsAddedByUser(List<Long> ongoingEntities, Long userid) {
-        return userTitleRepository.findByOngoingEntity_TidInAndUserEntity_Id(ongoingEntities, userid);
+    public List<Long> getCurrentOngoingsAddedByUser(List<Long> ongoingEntities, Long userid) {
+        return userTitleRepository.getCurrentOngoingsAddedByUser(ongoingEntities, userid);
     }
 
     @Override

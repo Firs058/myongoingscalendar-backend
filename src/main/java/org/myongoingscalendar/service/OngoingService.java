@@ -32,6 +32,8 @@ public interface OngoingService {
 
     List<OngoingEntity> getCurrentOngoings();
 
+    List<Long> getCurrentOngoingsTids();
+
     List<OngoingEntity> getCurrentOngoingsWithoutImage();
 
     List<OngoingEntity> getCurrentOngoingsWithoutVibrant();

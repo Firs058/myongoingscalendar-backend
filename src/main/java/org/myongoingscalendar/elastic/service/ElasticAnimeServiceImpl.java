@@ -3,9 +3,6 @@ package org.myongoingscalendar.elastic.service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.elasticsearch.index.query.*;
 import org.elasticsearch.search.sort.SortBuilders;
-import org.myongoingscalendar.entity.OngoingEntity;
-import org.myongoingscalendar.entity.UserTitleDropEntity;
-import org.myongoingscalendar.entity.UserTitleEntity;
 import org.myongoingscalendar.model.ElasticQuery;
 import org.myongoingscalendar.model.SearchResult;
 import org.myongoingscalendar.elastic.model.ElasticAnime;
@@ -121,8 +118,8 @@ public class ElasticAnimeServiceImpl implements ElasticAnimeService {
         SearchResult searchResult = makeQuery(elasticQuery, size);
         List<Long> searchedTids = searchResult.getAnimes().stream().map(ElasticAnime::tid).collect(Collectors.toList());
 
-        List<Long> addedTids = userTitleService.getCurrentOngoingsAddedByUser(searchedTids, userid).stream().map(UserTitleEntity::ongoingEntity).map(OngoingEntity::tid).collect(Collectors.toList());
-        List<Long> droppedTids = userTitleDropService.getCurrentOngoingsAddedByUser(searchedTids, userid).stream().map(UserTitleDropEntity::ongoingEntity).map(OngoingEntity::tid).collect(Collectors.toList());
+        List<Long> addedTids = userTitleService.getCurrentOngoingsAddedByUser(searchedTids, userid);
+        List<Long> droppedTids = userTitleDropService.getCurrentOngoingsDroppedByUser(searchedTids, userid);
 
         searchResult.setAnimes(AnimeUtil.createWatchingStatus(searchResult.getAnimes(), addedTids, droppedTids));
         return searchResult;
@@ -131,7 +128,7 @@ public class ElasticAnimeServiceImpl implements ElasticAnimeService {
     @Override
     @Cacheable("getCurrentOngoingsList")
     public List<SortedOngoings> getCurrentOngoingsList() {
-        List<ElasticAnime> elasticAnimes = findByTids(ongoingService.getCurrentOngoings().stream().map(OngoingEntity::tid).collect(Collectors.toList()));
+        List<ElasticAnime> elasticAnimes = findByTids(ongoingService.getCurrentOngoingsTids());
         List<ElasticAnime> elasticAnimesWithWatchingStatus = AnimeUtil.createWatchingStatus(elasticAnimes, Collections.emptyList(), Collections.emptyList());
         return sortCurrentOngoingsList(elasticAnimesWithWatchingStatus);
     }
@@ -139,11 +136,11 @@ public class ElasticAnimeServiceImpl implements ElasticAnimeService {
     @Transactional
     @Override
     public List<SortedOngoings> getUserCurrentOngoingsList(Long userid) {
-        List<Long> currentOngoingsTids = ongoingService.getCurrentOngoings().stream().map(OngoingEntity::tid).collect(Collectors.toList());
+        List<Long> currentOngoingsTids = ongoingService.getCurrentOngoingsTids();
         List<ElasticAnime> elasticAnimes = findByTids(currentOngoingsTids);
 
-        List<Long> addedTids = userTitleService.getCurrentOngoingsAddedByUser(currentOngoingsTids, userid).stream().map(UserTitleEntity::ongoingEntity).map(OngoingEntity::tid).collect(Collectors.toList());
-        List<Long> droppedTids = userTitleDropService.getCurrentOngoingsAddedByUser(currentOngoingsTids, userid).stream().map(UserTitleDropEntity::ongoingEntity).map(OngoingEntity::tid).collect(Collectors.toList());
+        List<Long> addedTids = userTitleService.getCurrentOngoingsAddedByUser(currentOngoingsTids, userid);
+        List<Long> droppedTids = userTitleDropService.getCurrentOngoingsDroppedByUser(currentOngoingsTids, userid);
 
         return sortCurrentOngoingsList(AnimeUtil.createWatchingStatus(elasticAnimes, addedTids, droppedTids));
     }
