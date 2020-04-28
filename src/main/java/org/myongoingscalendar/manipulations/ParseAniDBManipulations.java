@@ -1,5 +1,6 @@
 package org.myongoingscalendar.manipulations;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vladmihalcea.hibernate.type.json.internal.JacksonUtil;
 import lombok.extern.slf4j.Slf4j;
 import net.coobird.thumbnailator.Thumbnails;
@@ -10,17 +11,28 @@ import org.jsoup.Jsoup;
 import org.myongoingscalendar.entity.AnidbEntity;
 import org.myongoingscalendar.entity.OngoingEntity;
 import org.myongoingscalendar.entity.RatingEntity;
+import org.myongoingscalendar.model.MIMEType;
 import org.myongoingscalendar.service.OngoingService;
 import org.myongoingscalendar.utils.AnimeUtil;
+import org.myongoingscalendar.utils.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
 import java.io.*;
 import java.net.*;
+import java.nio.charset.Charset;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -140,6 +152,7 @@ public class ParseAniDBManipulations {
                 log.error("Can't download image for aid: " + ongoing.aid(), e);
             }
         }
+        checkWebpImages();
         checkThumbnails();
         findHEXAndFillTable();
     }
@@ -175,33 +188,62 @@ public class ParseAniDBManipulations {
         }
     }
 
-    public void checkThumbnails() {
-        try {
-            File path = new File(getImagesLocationPath() + "thumbnails");
-            if (!path.exists()) {
-                if (path.mkdir()) makeThumbnails(path);
-                else log.error("Can't create folder: " + path.toString());
-            } else makeThumbnails(path);
-        } catch (IOException e) {
-            log.error("Can't make thumbnails", e);
+    public void checkWebpImages() {
+        Path imagesLocationPath = Paths.get(getImagesLocationPath());
+        MIMEType jpg = MIMEType.JPG;
+        MIMEType webp = MIMEType.WEBP;
+        Path pathOriginal = Paths.get(imagesLocationPath.toString(), jpg.toString());
+        Path pathConverted = Paths.get(imagesLocationPath.toString(), webp.toString());
+
+        List<File> original = Arrays.asList(Objects.requireNonNull(new File(pathOriginal.toUri()).listFiles((d, name) -> name.endsWith(MIMEType.getFormat(jpg)))));
+        List<File> converted = Arrays.asList(Objects.requireNonNull(new File(pathConverted.toUri()).listFiles((d, name) -> name.endsWith(MIMEType.getFormat(webp)))));
+        if (original.size() != converted.size()) {
+            File[] diff = original
+                    .stream()
+                    .filter(elem -> !converted.contains(elem))
+                    .toArray(File[]::new);
+
+            Arrays.stream(diff)
+                    .forEach(e -> convertImageToWebp(e, pathConverted, false));
         }
     }
 
-    private void makeThumbnails(File path) throws IOException {
-        List<File> parent = Arrays.asList(Objects.requireNonNull(new File(path.getParent()).listFiles((d, name) -> name.endsWith(".jpg"))));
-        List<File> child = Arrays.asList(Objects.requireNonNull(path.listFiles((d, name) -> name.endsWith(".jpg"))));
+    public void checkThumbnails() {
+        Path imagesLocationPath = Paths.get(getImagesLocationPath());
+        for (MIMEType mimeType : Arrays.asList(MIMEType.JPG, MIMEType.WEBP)) {
+            try {
+                URI uri = Paths.get(imagesLocationPath.toString(), mimeType.toString(), "thumbnails").toUri();
+                File file = new File(uri);
+                if (!file.exists()) {
+                    if (file.mkdir()) makeThumbnails(file, mimeType);
+                    else log.error("Can't create folder: " + uri.toString());
+                } else makeThumbnails(file, mimeType);
+            } catch (IOException e) {
+                log.error("Can't make ." + mimeType.toString() + " thumbnails", e);
+            }
+        }
+    }
+
+    private void makeThumbnails(File file, MIMEType mimeType) throws IOException {
+        List<File> parent = Arrays.asList(Objects.requireNonNull(new File(file.getParent()).listFiles((d, name) -> name.endsWith(MIMEType.getFormat(mimeType)))));
+        List<File> child = Arrays.asList(Objects.requireNonNull(file.listFiles((d, name) -> name.endsWith(MIMEType.getFormat(mimeType)))));
         if (parent.size() != child.size()) {
             File[] diff = parent
                     .stream()
                     .filter(elem -> !child.contains(elem))
                     .toArray(File[]::new);
 
-            Thumbnails.of(diff)
-                    .size(50, 50)
-                    .crop(Positions.CENTER)
-                    .outputFormat("jpg")
-                    .outputQuality(1.0)
-                    .toFiles(new File(getImagesLocationPath() + "thumbnails"), Rename.NO_CHANGE);
+            if (mimeType == MIMEType.JPG) {
+                Thumbnails.of(diff)
+                        .size(50, 50)
+                        .crop(Positions.CENTER)
+                        .outputFormat(mimeType.toString())
+                        .outputQuality(1.0)
+                        .toFiles(new File(getImagesLocationPath() + "thumbnails"), Rename.NO_CHANGE);
+            } else if (mimeType == MIMEType.WEBP) {
+                Arrays.stream(diff)
+                        .forEach(e -> convertImageToWebp(e, null, true));
+            }
         }
     }
 
@@ -228,6 +270,45 @@ public class ParseAniDBManipulations {
             return true;
         } catch (IOException e) {
             return false;
+        }
+    }
+
+    private void convertImageToWebp(File file, Path to, Boolean thumbnail) {
+        try {
+            URL url = new URL(UriComponentsBuilder.fromUriString("http://localhost:8085").build().toString());
+            HttpURLConnection con = (HttpURLConnection) url.openConnection();
+            con.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
+            con.setRequestMethod("POST");
+            con.setDoOutput(true);
+
+            ObjectMapper mapperObj = new ObjectMapper();
+            Map<String, String> inputMap = new HashMap<>();
+            inputMap.put("quality", "90");
+            if (thumbnail) {
+                inputMap.put("file", Paths.get(getImagesLocationPath(), MIMEType.JPG.toString(), "thumbnails", StringUtils.getBaseName(file.getName()) + MIMEType.getFormat(MIMEType.JPG)).toString());
+                inputMap.put("to", Paths.get(getImagesLocationPath(), MIMEType.WEBP.toString(), "thumbnails", StringUtils.getBaseName(file.getName()) + MIMEType.getFormat(MIMEType.WEBP)).toString());
+            } else {
+                inputMap.put("file", file.getAbsolutePath());
+                inputMap.put("to", Paths.get(to.toString(), StringUtils.getBaseName(file.getName()) + MIMEType.getFormat(MIMEType.WEBP)).toString());
+            }
+
+            try (OutputStream os = con.getOutputStream()) {
+                byte[] input = mapperObj.writeValueAsString(inputMap).getBytes("utf-8");
+                os.write(input, 0, input.length);
+            }
+
+            try (BufferedReader br = new BufferedReader(
+                    new InputStreamReader(con.getInputStream(), "utf-8"))) {
+                StringBuilder response = new StringBuilder();
+                String responseLine;
+                while ((responseLine = br.readLine()) != null) {
+                    response.append(responseLine.trim());
+                }
+                if (con.getResponseCode() == 200) log.info(response.toString());
+                else log.error(response.toString());
+            }
+        } catch (IOException e) {
+            log.error("Can't convert to webp: ", e);
         }
     }
 }

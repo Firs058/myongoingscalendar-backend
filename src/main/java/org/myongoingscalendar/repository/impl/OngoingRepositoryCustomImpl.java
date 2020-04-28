@@ -1,5 +1,8 @@
 package org.myongoingscalendar.repository.impl;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.hibernate.HibernateException;
 import org.hibernate.transform.Transformers;
@@ -116,27 +119,30 @@ public class OngoingRepositoryCustomImpl implements OngoingRepositoryCustom {
                         title
                                 .en(ongoing.anidbEntity().titleEN())
                                 .image(new Image(
-                                        AnimeUtil.createImagePath(ongoing.anidbEntity().image(), ImageType.full, ongoing.aid()),
-                                        AnimeUtil.createImagePath(ongoing.anidbEntity().image(), ImageType.thumbnail, ongoing.aid()),
-                                        AnimeUtil.createHEX(ongoing.anidbEntity().vibrant())
+                                        AnimeUtil.createHEX(ongoing.anidbEntity().vibrant()),
+                                        AnimeUtil.createImagePaths(ongoing.anidbEntity().image(), ongoing.aid())
                                 ))
                                 .episodes(ongoing.anidbEntity().episodeCount())
                                 .links().addAll(AnimeUtil.createLinks(
-                                new Object[]{"AniDB", anidbAnimeUrlPath, ongoing.aid(), "/images/anidb.png"},
-                                new Object[]{"Official site", null, ongoing.anidbEntity().url(), "/images/official.png"}
+                                new Object[]{"AniDB", anidbAnimeUrlPath, ongoing.aid(), new Image(AnimeUtil.createHEX(null), Arrays.asList(new ImagePath(MIMEType.PNG, ImageType.FULL, "/images/anidb.png"), new ImagePath(MIMEType.WEBP, ImageType.FULL, "/images/webp/anidb.webp")))},
+                                new Object[]{"Official site", null, ongoing.anidbEntity().url(), new Image(AnimeUtil.createHEX(null), Arrays.asList(new ImagePath(MIMEType.PNG, ImageType.FULL, "/images/official.png"), new ImagePath(MIMEType.WEBP, ImageType.FULL, "/images/webp/official.webp")))}
                         ));
-                    else title.image(new Image("/images/noimage.svg", "/images/noimage.svg", null));
+                    else
+                        title.image(new Image(
+                                AnimeUtil.createHEX(null),
+                                AnimeUtil.createImagePaths(false, null)
+                        ));
 
                     if (ongoing.malEntity() != null)
                         title
                                 .description(ongoing.malEntity().description())
                                 .trailer(ongoing.malEntity().trailerUrl())
                                 .genres(ongoing.malTitleGenreEntities().stream().map(MalTitleGenreEntity::genreEntity).collect(Collectors.toList()))
-                                .links().addAll(AnimeUtil.createLinks(new Object[]{"MAL", malAnimeUrlPath, ongoing.malid(), "/images/mal.png"}));
+                                .links().addAll(AnimeUtil.createLinks(new Object[]{"MAL", malAnimeUrlPath, ongoing.malid(), new Image(AnimeUtil.createHEX(null), Arrays.asList(new ImagePath(MIMEType.PNG, ImageType.FULL, "/images/mal.png"), new ImagePath(MIMEType.WEBP, ImageType.FULL, "/images/webp/mal.webp")))}));
 
                     if (ongoing.annid() != null)
                         title
-                                .links().addAll(AnimeUtil.createLinks(new Object[]{"ANN", annAnimeUrlPath, ongoing.annid(), "/images/ann.png"}));
+                                .links().addAll(AnimeUtil.createLinks(new Object[]{"ANN", annAnimeUrlPath, ongoing.annid(), new Image(AnimeUtil.createHEX(null), Arrays.asList(new ImagePath(MIMEType.PNG, ImageType.FULL, "/images/ann.png"), new ImagePath(MIMEType.WEBP, ImageType.FULL, "/images/webp/ann.webp")))}));
 
                     if (ongoing.ratingEntities() != null) {
                         List<Datasets> datasets = new ArrayList<>();
@@ -204,12 +210,15 @@ public class OngoingRepositoryCustomImpl implements OngoingRepositoryCustom {
                         elasticAnime
                                 .en(ongoing.anidbEntity().titleEN())
                                 .image(new Image(
-                                        AnimeUtil.createImagePath(ongoing.anidbEntity().image(), ImageType.full, ongoing.aid()),
-                                        AnimeUtil.createImagePath(ongoing.anidbEntity().image(), ImageType.thumbnail, ongoing.aid()),
-                                        AnimeUtil.createHEX(ongoing.anidbEntity().vibrant())
+                                        AnimeUtil.createHEX(ongoing.anidbEntity().vibrant()),
+                                        AnimeUtil.createImagePaths(ongoing.anidbEntity().image(), ongoing.aid())
                                 ))
                                 .episodes(ongoing.anidbEntity().episodeCount());
-                    else elasticAnime.image(new Image("/images/noimage.svg", "/images/noimage.svg", null));
+                    else
+                        elasticAnime.image(new Image(
+                                AnimeUtil.createHEX(null),
+                                AnimeUtil.createImagePaths(false, null)
+                        ));
 
                     if (ongoing.malEntity() != null)
                         elasticAnime
@@ -303,7 +312,7 @@ public class OngoingRepositoryCustomImpl implements OngoingRepositoryCustom {
             List<TitleBroadcast> result = entityManager
                     .createNativeQuery(query)
                     .setParameter("tid", tid)
-                    .unwrap(org.hibernate.Query.class)
+                    .unwrap(org.hibernate.query.Query.class)
                     .setResultTransformer(Transformers.aliasToBean(TitleBroadcast.class))
                     .getResultList();
             result.forEach(e -> {
@@ -325,17 +334,15 @@ public class OngoingRepositoryCustomImpl implements OngoingRepositoryCustom {
         try {
             String query = "SELECT\n" +
                     "  s.tid                                 AS tid,\n" +
+                    "  COALESCE(z.aid , -1)                  AS aid,\n" +
                     "  s.date_start                          AS datestart,\n" +
                     "  COALESCE(h.en, h.ja)                  AS channel,\n" +
                     "  s.shift                               AS shift,\n" +
                     "  i.title                               AS title,\n" +
                     "  a.title_en                            AS titleen,\n" +
                     "  s.episode                             AS episode,\n" +
-                    "  CASE\n" +
-                    "  WHEN a.image = TRUE\n" +
-                    "    THEN '/images/anime/thumbnails/' || CAST(z.aid AS TEXT) || '.jpg'\n" +
-                    "  ELSE '/images/noimage.svg'\n" +
-                    "  END                                   AS image\n" +
+                    "  COALESCE(a.image, false)              AS imagedownloaded,\n" +
+                    "  CAST(a.vibrant as TEXT)               AS vibrant\n" +
                     "FROM syoboi_timetable s\n" +
                     "  LEFT JOIN syoboi_ongoings o ON o.tid = s.tid\n" +
                     "  LEFT JOIN syoboi_info i ON o.tid = i.tid\n" +
@@ -347,14 +354,10 @@ public class OngoingRepositoryCustomImpl implements OngoingRepositoryCustom {
                     "ORDER BY s.date_start ASC";
             List<Anime> result = entityManager
                     .createNativeQuery(query)
-                    .unwrap(org.hibernate.Query.class)
+                    .unwrap(org.hibernate.query.Query.class)
                     .setResultTransformer(Transformers.aliasToBean(Anime.class))
                     .getResultList();
-            result.forEach(e -> {
-                e.day(AnimeUtil.makeDaySupport(e.datestart().toInstant().getEpochSecond(), ZoneId.of(timezone)));
-                e.day().date(AnimeUtil.ZonesManipulations(e.datestart().toInstant().getEpochSecond(), ZoneId.of(timezone), 1, locale));
-                e.time(AnimeUtil.ZonesManipulations(e.datestart().toInstant().getEpochSecond(), ZoneId.of(timezone), 2, locale));
-            });
+            result.forEach(e -> fillResultFields(e, timezone, locale));
             return result;
         } catch (HibernateException e) {
             log.error(e.getMessage(), e);
@@ -370,17 +373,15 @@ public class OngoingRepositoryCustomImpl implements OngoingRepositoryCustom {
         try {
             String query = "SELECT\n" +
                     "  s.tid                                 AS tid,\n" +
+                    "  COALESCE(z.aid , -1)                  AS aid,\n" +
                     "  s.date_start                          AS datestart,\n" +
                     "  COALESCE(h.en, h.ja)                  AS channel,\n" +
                     "  s.shift                               AS shift,\n" +
                     "  i.title                               AS title,\n" +
                     "  a.title_en                            AS titleen,\n" +
                     "  s.episode                             AS episode,\n" +
-                    "  CASE\n" +
-                    "  WHEN a.image = TRUE\n" +
-                    "    THEN '/images/anime/thumbnails/' || CAST(z.aid AS TEXT) || '.jpg'\n" +
-                    "  ELSE '/images/noimage.svg'\n" +
-                    "  END                                   AS image\n" +
+                    "  COALESCE(a.image, false)              AS imagedownloaded,\n" +
+                    "  CAST(a.vibrant as TEXT)               AS vibrant\n" +
                     "FROM syoboi_timetable s\n" +
                     "  LEFT JOIN syoboi_ongoings o ON o.tid = s.tid\n" +
                     "  LEFT JOIN syoboi_info i ON o.tid = i.tid\n" +
@@ -395,14 +396,10 @@ public class OngoingRepositoryCustomImpl implements OngoingRepositoryCustom {
             List<Anime> result = entityManager
                     .createNativeQuery(query)
                     .setParameter("id", userid)
-                    .unwrap(org.hibernate.Query.class)
+                    .unwrap(org.hibernate.query.Query.class)
                     .setResultTransformer(Transformers.aliasToBean(Anime.class))
                     .getResultList();
-            result.forEach(e -> {
-                e.day(AnimeUtil.makeDaySupport(e.datestart().toInstant().getEpochSecond(), ZoneId.of(timezone)));
-                e.day().date(AnimeUtil.ZonesManipulations(e.datestart().toInstant().getEpochSecond(), ZoneId.of(timezone), 1, locale));
-                e.time(AnimeUtil.ZonesManipulations(e.datestart().toInstant().getEpochSecond(), ZoneId.of(timezone), 2, locale));
-            });
+            result.forEach(e -> fillResultFields(e, timezone, locale));
             return result;
         } catch (HibernateException e) {
             log.error(e.getMessage(), e);
@@ -418,17 +415,15 @@ public class OngoingRepositoryCustomImpl implements OngoingRepositoryCustom {
         try {
             String query = "SELECT\n" +
                     "  s2.tid                                 AS tid,\n" +
+                    "  COALESCE(z.aid , -1)                   AS aid,\n" +
                     "  s2.datestart                           AS datestart,\n" +
                     "  COALESCE(h.en, h.ja)                   AS channel,\n" +
                     "  s2.shift                               AS shift,\n" +
                     "  i.title                                AS title,\n" +
                     "  a.title_en                             AS titleen,\n" +
                     "  s2.episode                             AS episode,\n" +
-                    "  CASE\n" +
-                    "  WHEN a.image = TRUE\n" +
-                    "    THEN '/images/anime/thumbnails/' || CAST(z.aid AS TEXT) || '.jpg'\n" +
-                    "  ELSE '/images/noimage.svg'\n" +
-                    "  END                                    AS image\n" +
+                    "  COALESCE(a.image, false)               AS imagedownloaded,\n" +
+                    "  CAST(a.vibrant as TEXT)                AS vibrant\n" +
                     "FROM (\n" +
                     "       WITH dates AS (\n" +
                     "           SELECT\n" +
@@ -487,14 +482,10 @@ public class OngoingRepositoryCustomImpl implements OngoingRepositoryCustom {
                     "ORDER BY s2.datestart, s2.episode ASC";
             List<Anime> result = entityManager
                     .createNativeQuery(query)
-                    .unwrap(org.hibernate.Query.class)
+                    .unwrap(org.hibernate.query.Query.class)
                     .setResultTransformer(Transformers.aliasToBean(Anime.class))
                     .getResultList();
-            result.forEach(e -> {
-                e.day(AnimeUtil.makeDaySupport(e.datestart().toInstant().getEpochSecond(), ZoneId.of(timezone)));
-                e.day().date(AnimeUtil.ZonesManipulations(e.datestart().toInstant().getEpochSecond(), ZoneId.of(timezone), 1, locale));
-                e.time(AnimeUtil.ZonesManipulations(e.datestart().toInstant().getEpochSecond(), ZoneId.of(timezone), 2, locale));
-            });
+            result.forEach(e -> fillResultFields(e, timezone, locale));
             return result;
         } catch (HibernateException e) {
             log.error(e.getMessage(), e);
@@ -510,17 +501,15 @@ public class OngoingRepositoryCustomImpl implements OngoingRepositoryCustom {
         try {
             String query = "SELECT\n" +
                     "  s2.tid                                 AS tid,\n" +
+                    "  COALESCE(z.aid , -1)                   AS aid,\n" +
                     "  s2.datestart                           AS datestart,\n" +
                     "  COALESCE(h.en, h.ja)                   AS channel,\n" +
                     "  s2.shift                               AS shift,\n" +
                     "  i.title                                AS title,\n" +
                     "  a.title_en                             AS titleen,\n" +
                     "  s2.episode                             AS episode,\n" +
-                    "  CASE\n" +
-                    "  WHEN a.image = TRUE\n" +
-                    "    THEN '/images/anime/thumbnails/' || CAST(z.aid AS TEXT) || '.jpg'\n" +
-                    "  ELSE '/images/noimage.svg'\n" +
-                    "  END                                    AS image\n" +
+                    "  COALESCE(a.image, false)               AS imagedownloaded,\n" +
+                    "  CAST(a.vibrant as TEXT)                AS vibrant\n" +
                     "FROM (\n" +
                     "       WITH dates AS (\n" +
                     "           SELECT\n" +
@@ -582,14 +571,10 @@ public class OngoingRepositoryCustomImpl implements OngoingRepositoryCustom {
             List<Anime> result = entityManager
                     .createNativeQuery(query)
                     .setParameter("id", userid)
-                    .unwrap(org.hibernate.Query.class)
+                    .unwrap(org.hibernate.query.Query.class)
                     .setResultTransformer(Transformers.aliasToBean(Anime.class))
                     .getResultList();
-            result.forEach(e -> {
-                e.day(AnimeUtil.makeDaySupport(e.datestart().toInstant().getEpochSecond(), ZoneId.of(timezone)));
-                e.day().date(AnimeUtil.ZonesManipulations(e.datestart().toInstant().getEpochSecond(), ZoneId.of(timezone), 1, locale));
-                e.time(AnimeUtil.ZonesManipulations(e.datestart().toInstant().getEpochSecond(), ZoneId.of(timezone), 2, locale));
-            });
+            result.forEach(e -> fillResultFields(e, timezone, locale));
             return result;
         } catch (HibernateException e) {
             log.error(e.getMessage(), e);
@@ -597,5 +582,21 @@ public class OngoingRepositoryCustomImpl implements OngoingRepositoryCustom {
         } finally {
             entityManager.close();
         }
+    }
+
+    private void fillResultFields(Anime anime, String timezone, Locale locale) {
+        anime.day(AnimeUtil.makeDaySupport(anime.datestart().toInstant().getEpochSecond(), ZoneId.of(timezone)));
+        anime.day().date(AnimeUtil.ZonesManipulations(anime.datestart().toInstant().getEpochSecond(), ZoneId.of(timezone), 1, locale));
+        anime.time(AnimeUtil.ZonesManipulations(anime.datestart().toInstant().getEpochSecond(), ZoneId.of(timezone), 2, locale));
+        JsonNode jsonNode = null;
+        try {
+            if (anime.vibrant() != null) jsonNode = new ObjectMapper().readTree(anime.vibrant());
+        } catch (JsonProcessingException e1) {
+            log.error(e1.getMessage(), e1);
+        }
+        anime.image(new Image(
+                AnimeUtil.createHEX(jsonNode),
+                AnimeUtil.createImagePaths(anime.imagedownloaded(), Long.parseLong(String.valueOf(anime.aid())))
+        ));
     }
 }

@@ -8,7 +8,6 @@ import org.myongoingscalendar.model.*;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
-import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -79,7 +78,7 @@ public class AnimeUtil {
                 .map(arg -> new Links()
                         .name((String) arg[0])
                         .link((arg[1] != null) ? (String) arg[1] + arg[2] : (String) arg[2])
-                        .icon((String) arg[3])
+                        .image((Image) arg[3])
                 )
                 .collect(Collectors.toList());
     }
@@ -94,15 +93,18 @@ public class AnimeUtil {
         return hex;
     }
 
-    public static String createImagePath(Boolean downloaded, ImageType imageType, Long id) {
-        String path = "/images/noimage.svg";
-        if (downloaded) {
-            if (imageType.equals(ImageType.full))
-                path = "/images/anime/" + id.toString() + ".jpg";
-            else if (imageType.equals(ImageType.thumbnail))
-                path = "/images/anime/thumbnails/" + id.toString() + ".jpg";
-        }
-        return path;
+    public static List<ImagePath> createImagePaths(Boolean downloaded, Long id) {
+        String basePath = "/images/anime";
+        String noImagePath = "/images/noimage.svg";
+        return downloaded && id != null && id > 0
+                ? Arrays.asList(
+                new ImagePath(MIMEType.JPG, ImageType.FULL, basePath + "/" + MIMEType.JPG.toString() + "/" + id.toString() + MIMEType.getFormat(MIMEType.JPG)),
+                new ImagePath(MIMEType.JPG, ImageType.THUMBNAIL, basePath + "/" + MIMEType.JPG.toString() + "/thumbnails/" + id.toString() + MIMEType.getFormat(MIMEType.JPG)),
+                new ImagePath(MIMEType.WEBP, ImageType.FULL, basePath + "/" + MIMEType.WEBP.toString() + "/" + id.toString() + MIMEType.getFormat(MIMEType.WEBP)),
+                new ImagePath(MIMEType.WEBP, ImageType.THUMBNAIL, basePath + "/" + MIMEType.WEBP.toString() + "/thumbnails/" + id.toString() + MIMEType.getFormat(MIMEType.WEBP)))
+                : Arrays.asList(
+                new ImagePath(MIMEType.SVG, ImageType.FULL, noImagePath),
+                new ImagePath(MIMEType.SVG, ImageType.THUMBNAIL, noImagePath));
     }
 
     public static String createDateStart(Integer firstYear, Integer firstMonth) {
@@ -147,7 +149,7 @@ public class AnimeUtil {
     }
 
     public static List<ElasticAnime> createWatchingStatus(List<ElasticAnime> elasticAnimes, List<Long> added, List<Long> dropped) {
-        DateTimeFormatter formatter =  new DateTimeFormatterBuilder()
+        DateTimeFormatter formatter = new DateTimeFormatterBuilder()
                 .appendPattern("yyyy-MM")
                 .parseDefaulting(DAY_OF_MONTH, 1)
                 .toFormatter();
@@ -158,7 +160,7 @@ public class AnimeUtil {
             if (days <= 14) e.watchingStatus(WatchingStatus.NEW);
         });
 
-        if (added.size() > 0){
+        if (added.size() > 0) {
             elasticAnimes.stream()
                     .filter(e -> added.stream().anyMatch(a -> e.tid().equals(a)))
                     .forEach(e -> e.watchingStatus(WatchingStatus.WATCHING));

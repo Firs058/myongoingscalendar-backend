@@ -2,6 +2,7 @@ package org.myongoingscalendar.model;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.databind.JsonNode;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -37,5 +38,11 @@ public class Anime {
     private String channel;
     @JsonIgnore
     private String subtitles;
-    private String image;
+    @JsonIgnore
+    private BigInteger aid;
+    @JsonIgnore
+    private Boolean imagedownloaded;
+    @JsonIgnore
+    private String vibrant;
+    private Image image;
 }
