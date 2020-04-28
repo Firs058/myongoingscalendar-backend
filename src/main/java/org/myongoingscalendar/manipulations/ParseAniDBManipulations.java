@@ -18,19 +18,12 @@ import org.myongoingscalendar.utils.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
-import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import javax.imageio.ImageIO;
-import java.awt.image.BufferedImage;
 import java.io.*;
 import java.net.*;
-import java.nio.charset.Charset;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
@@ -53,6 +46,10 @@ public class ParseAniDBManipulations {
     private String vibrantPath;
     @Value("${links.vibrant.port}")
     private String vibrantPort;
+    @Value("${links.webp.address}")
+    private String webpPath;
+    @Value("${links.webp.port}")
+    private String webpPort;
     private final OngoingService ongoingService;
 
     @Autowired
@@ -200,9 +197,8 @@ public class ParseAniDBManipulations {
         if (original.size() != converted.size()) {
             File[] diff = original
                     .stream()
-                    .filter(elem -> !converted.contains(elem))
+                    .filter(elem -> converted.stream().noneMatch(c -> StringUtils.getBaseName(c.getName()).equals(StringUtils.getBaseName(elem.getName()))))
                     .toArray(File[]::new);
-
             Arrays.stream(diff)
                     .forEach(e -> convertImageToWebp(e, pathConverted, false));
         }
@@ -239,7 +235,7 @@ public class ParseAniDBManipulations {
                         .crop(Positions.CENTER)
                         .outputFormat(mimeType.toString())
                         .outputQuality(1.0)
-                        .toFiles(new File(getImagesLocationPath() + "thumbnails"), Rename.NO_CHANGE);
+                        .toFiles(new File(getImagesLocationPath() + "jpg/thumbnails"), Rename.NO_CHANGE);
             } else if (mimeType == MIMEType.WEBP) {
                 Arrays.stream(diff)
                         .forEach(e -> convertImageToWebp(e, null, true));
@@ -275,7 +271,7 @@ public class ParseAniDBManipulations {
 
     private void convertImageToWebp(File file, Path to, Boolean thumbnail) {
         try {
-            URL url = new URL(UriComponentsBuilder.fromUriString("http://localhost:8085").build().toString());
+            URL url = new URL(UriComponentsBuilder.fromUriString(webpPath + ":" + webpPort).build().toString());
             HttpURLConnection con = (HttpURLConnection) url.openConnection();
             con.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
             con.setRequestMethod("POST");
