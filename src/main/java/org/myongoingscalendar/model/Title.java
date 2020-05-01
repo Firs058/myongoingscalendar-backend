@@ -22,7 +22,7 @@ public class Title {
     private String en;
     private String description;
     private String trailer;
-    private List<Ratings> ratings = new ArrayList<>();
+    private List<Rating> ratings = new ArrayList<>();
     private Double avgRating;
     private ChartData chartData;
     private int episodes;

@@ -5,6 +5,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.myongoingscalendar.elastic.model.ElasticAnime;
 import org.myongoingscalendar.model.*;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
@@ -63,13 +65,25 @@ public class AnimeUtil {
                 .weekend(zonedDateTime.getDayOfWeek().equals(DayOfWeek.SATURDAY) || zonedDateTime.getDayOfWeek().equals(DayOfWeek.SUNDAY));
     }
 
-    public static List<Ratings> createRatings(Object[]... args) {
+    public static List<Rating> createRatings(Object[]... args) {
         return Arrays.stream(args)
                 .filter(arg -> (Double) arg[1] > 0)
-                .map(arg -> new Ratings()
-                        .dbname((String) arg[0])
+                .map(arg -> new Rating()
+                        .dbname((RatingDB) arg[0])
                         .score((Double) arg[1]))
                 .collect(Collectors.toList());
+    }
+
+    public static Double calculateWeightedAverage(Map<Double, Double> map) throws ArithmeticException {
+        double num = 0;
+        double denom = 0;
+        for (Map.Entry<Double, Double> entry : map.entrySet()) {
+            num += entry.getKey() * entry.getValue();
+            denom += entry.getValue();
+        }
+        return Optional.of(BigDecimal.valueOf(num / denom).setScale(2, RoundingMode.HALF_UP).doubleValue())
+                .filter(e -> !Double.isNaN(e))
+                .orElse(null);
     }
 
     public static List<Links> createLinks(Object[]... args) {
@@ -113,11 +127,9 @@ public class AnimeUtil {
         else return null;
     }
 
-    public static Boolean createRecommended(Double... ratings) {
-        OptionalDouble average = Arrays.stream(ratings)
-                .mapToDouble(a -> a)
-                .average();
-        return average.isPresent() && (average.getAsDouble() >= 7.3);
+    public static Boolean createRecommended(Map<Double, Double> map) {
+        Double rating = calculateWeightedAverage(map);
+        return rating != null && rating >= 7.3;
     }
 
     public static int daysBetween(Date date1, Date date2) {

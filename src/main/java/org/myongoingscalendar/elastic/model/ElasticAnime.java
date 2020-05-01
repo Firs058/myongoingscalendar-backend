@@ -6,7 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
 import org.myongoingscalendar.model.Image;
-import org.myongoingscalendar.model.Ratings;
+import org.myongoingscalendar.model.Rating;
 import org.myongoingscalendar.entity.ChannelEntity;
 import org.myongoingscalendar.entity.GenreEntity;
 import org.myongoingscalendar.model.WatchingStatus;
@@ -34,7 +34,7 @@ public class ElasticAnime {
     private Integer episodes;
     private Boolean recommended;
     private List<GenreEntity> genres;
-    private List<Ratings> ratings;
+    private List<Rating> ratings;
     private List<ChannelEntity> channels;
     private WatchingStatus watchingStatus;
     private Boolean outdated;

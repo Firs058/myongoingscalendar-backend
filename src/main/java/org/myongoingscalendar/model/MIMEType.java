@@ -11,7 +11,7 @@ public enum MIMEType {
 
     private final String text;
 
-    MIMEType(final String text) {
+    private MIMEType(String text) {
         this.text = text;
     }
 
