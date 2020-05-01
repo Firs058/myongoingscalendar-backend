@@ -183,7 +183,7 @@ public class OngoingRepositoryCustomImpl implements OngoingRepositoryCustom {
                         title.avgRating(AnimeUtil.calculateWeightedAverage(
                                 title.ratings().stream()
                                         .filter(r -> r.score() != 0)
-                                        .collect(Collectors.toMap(Rating::score, e -> e.dbname().getWeight()))));
+                                        .collect(Collectors.toMap(e -> e.dbname().getWeight(), Rating::score))));
                     }
 
                     return title;
@@ -231,7 +231,7 @@ public class OngoingRepositoryCustomImpl implements OngoingRepositoryCustom {
                                 .recommended(AnimeUtil.createRecommended(
                                         elasticAnime.ratings().stream()
                                                 .filter(r -> r.score() != 0)
-                                                .collect(Collectors.toMap(Rating::score, e -> e.dbname().getWeight()))));
+                                                .collect(Collectors.toMap(e -> e.dbname().getWeight(), Rating::score))));
 
                     if (ongoing.syoboiTimetableEntities() != null)
                         elasticAnime

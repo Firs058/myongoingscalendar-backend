@@ -78,12 +78,11 @@ public class AnimeUtil {
         double num = 0;
         double denom = 0;
         for (Map.Entry<Double, Double> entry : map.entrySet()) {
-            num += entry.getKey() * entry.getValue();
-            denom += entry.getValue();
+            num += entry.getValue() * entry.getKey();
+            denom += entry.getKey();
         }
-        return Optional.of(BigDecimal.valueOf(num / denom).setScale(2, RoundingMode.HALF_UP).doubleValue())
-                .filter(e -> !Double.isNaN(e))
-                .orElse(null);
+        double weightedAverage = num / denom;
+        return !Double.isNaN(weightedAverage) ? BigDecimal.valueOf(weightedAverage).setScale(2, RoundingMode.HALF_UP).doubleValue() : null;
     }
 
     public static List<Links> createLinks(Object[]... args) {
@@ -166,11 +165,13 @@ public class AnimeUtil {
                 .parseDefaulting(DAY_OF_MONTH, 1)
                 .toFormatter();
 
-        elasticAnimes.forEach(e -> {
-            LocalDate start = LocalDate.parse(e.dateStart(), formatter);
-            long days = DAYS.between(start, LocalDate.now());
-            if (days <= 14) e.watchingStatus(WatchingStatus.NEW);
-        });
+        elasticAnimes.stream()
+                .filter(e -> e.dateStart() != null)
+                .forEach(e -> {
+                    LocalDate start = LocalDate.parse(e.dateStart(), formatter);
+                    long days = DAYS.between(start, LocalDate.now());
+                    if (days <= 14) e.watchingStatus(WatchingStatus.NEW);
+                });
 
         if (added.size() > 0) {
             elasticAnimes.stream()
