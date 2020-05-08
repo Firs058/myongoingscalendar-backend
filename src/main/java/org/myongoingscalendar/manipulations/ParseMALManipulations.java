@@ -16,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.math.BigDecimal;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.Comparator;
@@ -84,13 +85,14 @@ public class ParseMALManipulations {
                     if (jikanAnime.score() != null) {
                         Optional<RatingEntity> ratingsEntity = ongoing.ratingEntities().stream()
                                 .max(Comparator.comparing(RatingEntity::added));
+                        BigDecimal score = jikanAnime.score().setScale(2, BigDecimal.ROUND_HALF_UP);
 
                         if (ratingsEntity.isPresent() && AnimeUtil.daysBetween(ratingsEntity.get().added(), new Date()) == 0)
-                            ratingsEntity.get().mal(jikanAnime.score());
+                            ratingsEntity.get().mal(score);
                         else ongoing.ratingEntities().add(
                                 new RatingEntity()
                                         .ongoingEntity(ongoing)
-                                        .mal(jikanAnime.score()));
+                                        .mal(score));
                     }
 
                     if (ongoing.malEntity() == null)

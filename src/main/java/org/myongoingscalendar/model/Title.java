@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
 import org.myongoingscalendar.entity.GenreEntity;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -23,7 +24,7 @@ public class Title {
     private String description;
     private String trailer;
     private List<Rating> ratings = new ArrayList<>();
-    private Double avgRating;
+    private BigDecimal avgRating;
     private ChartData chartData;
     private int episodes;
     private List<Links> links = new ArrayList<>();

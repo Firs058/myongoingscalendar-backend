@@ -62,7 +62,7 @@ public class ParseAnnManipulations {
                     }
 
                     if (ann.getRatings() != null) {
-                        double weightedScore = ann.getRatings().getWeightedScore().setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue();
+                        BigDecimal weightedScore = ann.getRatings().getWeightedScore().setScale(2, BigDecimal.ROUND_HALF_UP);
 
                         Optional<RatingEntity> ratingsEntity = ongoing.ratingEntities().stream()
                                 .max(Comparator.comparing(RatingEntity::added));

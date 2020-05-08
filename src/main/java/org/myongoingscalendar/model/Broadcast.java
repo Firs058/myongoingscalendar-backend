@@ -14,5 +14,5 @@ import java.util.List;
 @Accessors(fluent = true)
 @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY)
 public class Broadcast {
-    private List<Tabs> tabs;
+    private List<Tab> tabs;
 }

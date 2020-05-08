@@ -25,6 +25,7 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.PersistenceUnit;
+import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.time.ZoneId;
 import java.util.*;
@@ -145,7 +146,7 @@ public class OngoingRepositoryCustomImpl implements OngoingRepositoryCustom {
                     if (ongoing.ratingEntities() != null) {
                         List<Datasets> datasets = new ArrayList<>();
 
-                        List<Double> anidbData = ongoing.ratingEntities().stream().sorted(Comparator.comparing(RatingEntity::added)).map(RatingEntity::anidbTemporary).collect(Collectors.toList());
+                        List<BigDecimal> anidbData = ongoing.ratingEntities().stream().sorted(Comparator.comparing(RatingEntity::added)).map(RatingEntity::anidbTemporary).collect(Collectors.toList());
                         if (anidbData.stream().filter(Objects::nonNull).count() > 2)
                             datasets.add(new Datasets()
                                     .label("AniDB")
@@ -153,7 +154,7 @@ public class OngoingRepositoryCustomImpl implements OngoingRepositoryCustom {
                                     .backgroundColor("rgba(121, 27, 38, 0.5)")
                                     .data(anidbData.toArray()));
 
-                        List<Double> malData = ongoing.ratingEntities().stream().sorted(Comparator.comparing(RatingEntity::added)).map(RatingEntity::mal).collect(Collectors.toList());
+                        List<BigDecimal> malData = ongoing.ratingEntities().stream().sorted(Comparator.comparing(RatingEntity::added)).map(RatingEntity::mal).collect(Collectors.toList());
                         if (malData.stream().filter(Objects::nonNull).count() > 2)
                             datasets.add(new Datasets()
                                     .label("MAL")
@@ -161,7 +162,7 @@ public class OngoingRepositoryCustomImpl implements OngoingRepositoryCustom {
                                     .backgroundColor("rgba(46, 81, 163, 0.5)")
                                     .data(malData.toArray()));
 
-                        List<Double> annData = ongoing.ratingEntities().stream().sorted(Comparator.comparing(RatingEntity::added)).map(RatingEntity::ann).collect(Collectors.toList());
+                        List<BigDecimal> annData = ongoing.ratingEntities().stream().sorted(Comparator.comparing(RatingEntity::added)).map(RatingEntity::ann).collect(Collectors.toList());
                         if (annData.stream().filter(Objects::nonNull).count() > 2)
                             datasets.add(new Datasets()
                                     .label("ANN")
@@ -171,9 +172,9 @@ public class OngoingRepositoryCustomImpl implements OngoingRepositoryCustom {
 
                         title
                                 .ratings(AnimeUtil.createRatings(
-                                        new Object[]{RatingDB.ANIDB, ongoing.ratingEntities().stream().sorted(Comparator.comparing(RatingEntity::added)).filter(e -> Objects.nonNull(e.anidbTemporary())).reduce((first, second) -> second).map(RatingEntity::anidbTemporary).orElse((double) 0)},
-                                        new Object[]{RatingDB.MAL, ongoing.ratingEntities().stream().sorted(Comparator.comparing(RatingEntity::added)).filter(e -> Objects.nonNull(e.mal())).reduce((first, second) -> second).map(RatingEntity::mal).orElse((double) 0)},
-                                        new Object[]{RatingDB.ANN, ongoing.ratingEntities().stream().sorted(Comparator.comparing(RatingEntity::added)).filter(e -> Objects.nonNull(e.ann())).reduce((first, second) -> second).map(RatingEntity::ann).orElse((double) 0)}
+                                        new Object[]{RatingDB.ANIDB, ongoing.ratingEntities().stream().sorted(Comparator.comparing(RatingEntity::added)).filter(e -> Objects.nonNull(e.anidbTemporary())).reduce((first, second) -> second).map(RatingEntity::anidbTemporary).orElse(new BigDecimal(0))},
+                                        new Object[]{RatingDB.MAL, ongoing.ratingEntities().stream().sorted(Comparator.comparing(RatingEntity::added)).filter(e -> Objects.nonNull(e.mal())).reduce((first, second) -> second).map(RatingEntity::mal).orElse(new BigDecimal(0))},
+                                        new Object[]{RatingDB.ANN, ongoing.ratingEntities().stream().sorted(Comparator.comparing(RatingEntity::added)).filter(e -> Objects.nonNull(e.ann())).reduce((first, second) -> second).map(RatingEntity::ann).orElse(new BigDecimal(0))}
                                 ))
                                 .chartData(
                                         new ChartData()
@@ -182,8 +183,8 @@ public class OngoingRepositoryCustomImpl implements OngoingRepositoryCustom {
 
                         title.avgRating(AnimeUtil.calculateWeightedAverage(
                                 title.ratings().stream()
-                                        .filter(r -> r.score() != 0)
-                                        .collect(Collectors.toMap(e -> e.dbname().getWeight(), Rating::score))));
+                                        .filter(r -> r.score().compareTo(BigDecimal.ZERO) != 0)
+                                        .collect(Collectors.toMap(Rating::dbname, Rating::score))));
                     }
 
                     return title;
@@ -224,14 +225,14 @@ public class OngoingRepositoryCustomImpl implements OngoingRepositoryCustom {
                     if (ongoing.ratingEntities() != null)
                         elasticAnime
                                 .ratings(AnimeUtil.createRatings(
-                                        new Object[]{RatingDB.ANIDB, ongoing.ratingEntities().stream().sorted(Comparator.comparing(RatingEntity::added)).filter(e -> Objects.nonNull(e.anidbTemporary())).reduce((first, second) -> second).map(RatingEntity::anidbTemporary).orElse((double) 0)},
-                                        new Object[]{RatingDB.MAL, ongoing.ratingEntities().stream().sorted(Comparator.comparing(RatingEntity::added)).filter(e -> Objects.nonNull(e.mal())).reduce((first, second) -> second).map(RatingEntity::mal).orElse((double) 0)},
-                                        new Object[]{RatingDB.ANN, ongoing.ratingEntities().stream().sorted(Comparator.comparing(RatingEntity::added)).filter(e -> Objects.nonNull(e.ann())).reduce((first, second) -> second).map(RatingEntity::ann).orElse((double) 0)}
+                                        new Object[]{RatingDB.ANIDB, ongoing.ratingEntities().stream().sorted(Comparator.comparing(RatingEntity::added)).filter(e -> Objects.nonNull(e.anidbTemporary())).reduce((first, second) -> second).map(RatingEntity::anidbTemporary).orElse(new BigDecimal(0))},
+                                        new Object[]{RatingDB.MAL, ongoing.ratingEntities().stream().sorted(Comparator.comparing(RatingEntity::added)).filter(e -> Objects.nonNull(e.mal())).reduce((first, second) -> second).map(RatingEntity::mal).orElse(new BigDecimal(0))},
+                                        new Object[]{RatingDB.ANN, ongoing.ratingEntities().stream().sorted(Comparator.comparing(RatingEntity::added)).filter(e -> Objects.nonNull(e.ann())).reduce((first, second) -> second).map(RatingEntity::ann).orElse(new BigDecimal(0))}
                                 ))
                                 .recommended(AnimeUtil.createRecommended(
                                         elasticAnime.ratings().stream()
-                                                .filter(r -> r.score() != 0)
-                                                .collect(Collectors.toMap(e -> e.dbname().getWeight(), Rating::score))));
+                                                .filter(r -> r.score().compareTo(BigDecimal.ZERO) != 0)
+                                                .collect(Collectors.toMap(Rating::dbname, Rating::score))));
 
                     if (ongoing.syoboiTimetableEntities() != null)
                         elasticAnime
@@ -243,27 +244,30 @@ public class OngoingRepositoryCustomImpl implements OngoingRepositoryCustom {
     }
 
     private Broadcast createTitleBroadcast(String timezone, Long tid, Locale locale) {
-        List<Tabs> tabs = new ArrayList<>();
-        tabs.add(new Tabs().name("next").items(new ArrayList<>()));
-        tabs.add(new Tabs().name("prev").items(new ArrayList<>()));
+        String next = "next";
+        String prev = "prev";
+
+        Map<String, Tab> tabs = new HashMap<>();
+        tabs.put(next, new Tab().name(next));
+        tabs.put(prev, new Tab().name(prev));
 
         List<TitleBroadcast> titleBroadcasts = getTitleBroadcastForTimezone(timezone, tid, locale);
 
         if (titleBroadcasts != null) {
-            tabs.get(0).items(
+            tabs.get(next).items(
                     titleBroadcasts
                             .stream()
                             .filter(el -> !el.elapsed())
                             .collect(Collectors.toList())
             );
-            tabs.get(1).items(
+            tabs.get(prev).items(
                     titleBroadcasts
                             .stream()
                             .filter(TitleBroadcast::elapsed)
                             .collect(Collectors.toList())
             );
         }
-        return new Broadcast(tabs);
+        return new Broadcast(new ArrayList<>(tabs.values()));
     }
 
     @SuppressWarnings("unchecked")

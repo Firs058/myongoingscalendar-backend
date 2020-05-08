@@ -2,6 +2,7 @@
 package org.myongoingscalendar.model.Jikan;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -28,7 +29,7 @@ public class JikanAnime implements Serializable {
     @JsonProperty("image_url")
     private String imageUrl;
     @JsonProperty("score")
-    private Double score;
+    private BigDecimal score;
     @JsonProperty("synopsis")
     private String synopsis;
     @JsonProperty("trailer_url")

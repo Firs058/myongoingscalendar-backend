@@ -25,8 +25,6 @@ public class AnimeUtil {
                 .filter(anime -> !anime.day().elapsed())
                 .map(Anime::day)
                 .distinct()
-                .collect(Collectors.toList())
-                .stream()
                 .map(day ->
                         new ReturnTitleGrids(
                                 day,
@@ -67,22 +65,24 @@ public class AnimeUtil {
 
     public static List<Rating> createRatings(Object[]... args) {
         return Arrays.stream(args)
-                .filter(arg -> (Double) arg[1] > 0)
+                .filter(arg -> ((BigDecimal) arg[1]).compareTo(BigDecimal.ZERO) > 0)
                 .map(arg -> new Rating()
                         .dbname((RatingDB) arg[0])
-                        .score((Double) arg[1]))
+                        .score((BigDecimal) arg[1]))
                 .collect(Collectors.toList());
     }
 
-    public static Double calculateWeightedAverage(Map<Double, Double> map) throws ArithmeticException {
-        double num = 0;
-        double denom = 0;
-        for (Map.Entry<Double, Double> entry : map.entrySet()) {
-            num += entry.getValue() * entry.getKey();
-            denom += entry.getKey();
-        }
-        double weightedAverage = num / denom;
-        return !Double.isNaN(weightedAverage) ? BigDecimal.valueOf(weightedAverage).setScale(2, RoundingMode.HALF_UP).doubleValue() : null;
+    public static BigDecimal calculateWeightedAverage(Map<RatingDB, BigDecimal> map) {
+        if (map.size() > 0) {
+            BigDecimal num = new BigDecimal(0);
+            BigDecimal denom = new BigDecimal(0);
+            for (Map.Entry<RatingDB, BigDecimal> entry : map.entrySet()) {
+                num = num.add(entry.getValue().multiply(entry.getKey().getWeight()));
+                denom = denom.add(entry.getKey().getWeight());
+            }
+            return num.divide(denom, 2, RoundingMode.HALF_UP);
+        } else
+            return null;
     }
 
     public static List<Links> createLinks(Object[]... args) {
@@ -126,9 +126,9 @@ public class AnimeUtil {
         else return null;
     }
 
-    public static Boolean createRecommended(Map<Double, Double> map) {
-        Double rating = calculateWeightedAverage(map);
-        return rating != null && rating >= 7.3;
+    public static Boolean createRecommended(Map<RatingDB, BigDecimal> map) {
+        BigDecimal rating = calculateWeightedAverage(map);
+        return rating != null && rating.compareTo(new BigDecimal(7.3)) > -1;
     }
 
     public static int daysBetween(Date date1, Date date2) {

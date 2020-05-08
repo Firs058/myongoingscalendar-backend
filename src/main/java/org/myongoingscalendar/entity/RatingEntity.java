@@ -8,6 +8,7 @@ import lombok.experimental.Accessors;
 
 import javax.persistence.*;
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.util.Date;
 
 /**
@@ -30,13 +31,13 @@ public class RatingEntity implements Serializable {
     @ManyToOne(fetch = FetchType.LAZY)
     private OngoingEntity ongoingEntity;
     @Column(name = "anidb_temporary")
-    private Double anidbTemporary;
+    private BigDecimal anidbTemporary;
     @Column(name = "anidb_permanent")
-    private Double anidbPermanent;
+    private BigDecimal anidbPermanent;
     @Column(name = "mal")
-    private Double mal;
+    private BigDecimal mal;
     @Column(name = "ann")
-    private Double ann;
+    private BigDecimal ann;
     @Temporal(TemporalType.TIMESTAMP)
     @Column(columnDefinition = "timestamp with time zone", nullable = false)
     private Date added = new Date();

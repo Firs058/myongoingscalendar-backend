@@ -2,23 +2,25 @@ package org.myongoingscalendar.model;
 
 import com.fasterxml.jackson.annotation.JsonValue;
 
+import java.math.BigDecimal;
+
 /**
  * @author firs
  */
 public enum RatingDB {
-    ANIDB("AniDB", 1.0),
-    MAL("MAL", 0.7),
-    ANN("ANN", 0.4);
+    ANIDB("AniDB", new BigDecimal(1.0)),
+    MAL("MAL", new BigDecimal(0.7)),
+    ANN("ANN", new BigDecimal(0.4));
 
     private final String dbname;
-    private final Double weight;
+    private final BigDecimal weight;
 
-    private RatingDB(String dbname, Double weight) {
+    private RatingDB(String dbname, BigDecimal weight) {
         this.dbname = dbname;
         this.weight = weight;
     }
 
-    public Double getWeight() {
+    public BigDecimal getWeight() {
         return weight;
     }
 
