@@ -1,7 +1,5 @@
 package org.myongoingscalendar.manipulations;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ArrayUtils;
@@ -18,8 +16,6 @@ import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.*;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.ProtocolException;
 import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -68,14 +64,17 @@ public class ImageManipulations {
         if (!new File(originalAvatarFolderPath.toUri()).exists()) new File(originalAvatarFolderPath.toUri()).mkdir();
         if (!new File(convertedAvatarFolderPath.toUri()).exists()) new File(convertedAvatarFolderPath.toUri()).mkdir();
         File file = null;
+        Path to = null;
         try {
             String avatarName = UUID.randomUUID().toString() + "." + FilenameUtils.getExtension(avatar.getOriginalFilename());
             file = new File(Paths.get(originalAvatarFolderPath.toString(), avatarName).toUri());
+            to = Paths.get(convertedAvatarFolderPath.toString(), FilenameUtils.getBaseName(file.getName()) + MIMEType.WEBP.getFormat());
             avatar.transferTo(file);
-            convertAvatarToWebp(file, convertedAvatarFolderPath);
+            convertAvatarToWebp(file.toPath(), to);
             return avatarName;
         } catch (IOException e) {
             file.delete();
+            new File(to.toUri()).delete();
             log.error("Can't save avatar: ", e);
             return null;
         }
@@ -99,7 +98,7 @@ public class ImageManipulations {
         }
     }
 
-    private void convertAvatarToWebp(File file, Path to) throws IOException {
+    private void convertAvatarToWebp(Path file, Path to) throws IOException {
         URL url = new URL(UriComponentsBuilder.fromUriString(webpPath + ":" + webpPort).build().toString());
         HttpURLConnection con = (HttpURLConnection) url.openConnection();
         con.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
@@ -110,8 +109,8 @@ public class ImageManipulations {
         Map<String, String> inputMap = new HashMap<>();
         inputMap.put("quality", "90");
 
-        inputMap.put("file", file.getAbsolutePath());
-        inputMap.put("to", Paths.get(to.toString(), FilenameUtils.getBaseName(file.getName()) + MIMEType.WEBP.getFormat()).toString());
+        inputMap.put("file", file.toString());
+        inputMap.put("to", to.toString());
 
         try (OutputStream os = con.getOutputStream()) {
             byte[] input = mapperObj.writeValueAsString(inputMap).getBytes("utf-8");
