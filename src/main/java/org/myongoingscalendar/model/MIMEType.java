@@ -5,6 +5,7 @@ package org.myongoingscalendar.model;
  */
 public enum MIMEType {
     JPG("jpg"),
+    JPEG("jpeg"),
     WEBP("webp"),
     PNG("png"),
     SVG("svg");
@@ -20,7 +21,7 @@ public enum MIMEType {
         return text;
     }
 
-    public static String getFormat(MIMEType mimeType) {
-        return "." + mimeType.toString();
+    public String getFormat() {
+        return "." + text;
     }
 }

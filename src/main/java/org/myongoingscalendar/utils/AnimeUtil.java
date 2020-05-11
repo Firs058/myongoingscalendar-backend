@@ -111,13 +111,21 @@ public class AnimeUtil {
         String noImagePath = "/images/noimage.svg";
         return downloaded && id != null && id > 0
                 ? Arrays.asList(
-                new ImagePath(MIMEType.JPG, ImageType.FULL, basePath + "/" + MIMEType.JPG.toString() + "/" + id.toString() + MIMEType.getFormat(MIMEType.JPG)),
-                new ImagePath(MIMEType.JPG, ImageType.THUMBNAIL, basePath + "/" + MIMEType.JPG.toString() + "/thumbnails/" + id.toString() + MIMEType.getFormat(MIMEType.JPG)),
-                new ImagePath(MIMEType.WEBP, ImageType.FULL, basePath + "/" + MIMEType.WEBP.toString() + "/" + id.toString() + MIMEType.getFormat(MIMEType.WEBP)),
-                new ImagePath(MIMEType.WEBP, ImageType.THUMBNAIL, basePath + "/" + MIMEType.WEBP.toString() + "/thumbnails/" + id.toString() + MIMEType.getFormat(MIMEType.WEBP)))
+                new ImagePath(MIMEType.JPG, ImageType.FULL, basePath + "/" + MIMEType.JPG.toString() + "/" + id.toString() + MIMEType.JPG.getFormat()),
+                new ImagePath(MIMEType.JPG, ImageType.THUMBNAIL, basePath + "/" + MIMEType.JPG.toString() + "/thumbnails/" + id.toString() + MIMEType.JPG.getFormat()),
+                new ImagePath(MIMEType.WEBP, ImageType.FULL, basePath + "/" + MIMEType.WEBP.toString() + "/" + id.toString() + MIMEType.WEBP.getFormat()),
+                new ImagePath(MIMEType.WEBP, ImageType.THUMBNAIL, basePath + "/" + MIMEType.WEBP.toString() + "/thumbnails/" + id.toString() + MIMEType.WEBP.getFormat()))
                 : Arrays.asList(
                 new ImagePath(MIMEType.SVG, ImageType.FULL, noImagePath),
                 new ImagePath(MIMEType.SVG, ImageType.THUMBNAIL, noImagePath));
+    }
+
+    public static List<ImagePath> createAvatarPaths(String filename) {
+        String basePath = "/images/avatar";
+        String extension = FilenameUtils.getExtension(filename).toUpperCase();
+        return Arrays.asList(
+                new ImagePath(MIMEType.valueOf(extension), ImageType.FULL, basePath + "/original/" + filename),
+                new ImagePath(MIMEType.WEBP, ImageType.FULL, basePath + "/" + MIMEType.WEBP.toString() + "/" + FilenameUtils.getBaseName(filename) + MIMEType.WEBP.getFormat()));
     }
 
     public static String createDateStart(Integer firstYear, Integer firstMonth) {

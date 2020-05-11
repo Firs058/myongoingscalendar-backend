@@ -3,16 +3,25 @@ package org.myongoingscalendar.entity;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.vladmihalcea.hibernate.type.json.JsonBinaryType;
+import com.vladmihalcea.hibernate.type.json.JsonNodeBinaryType;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
+import org.hibernate.annotations.Type;
+import org.hibernate.annotations.TypeDef;
 import org.hibernate.annotations.UpdateTimestamp;
+import org.myongoingscalendar.model.Image;
+import org.myongoingscalendar.model.ImagePath;
 
 import javax.persistence.*;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 
 /**
@@ -25,6 +34,7 @@ import java.util.Locale;
 @Accessors(fluent = true)
 @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY)
 @JsonIgnoreProperties(ignoreUnknown = true, value = {"id", "userEntity", "modifyDate"})
+@TypeDef(name = "jsonb", typeClass = JsonBinaryType.class)
 @Entity
 @Table(name = "users_settings")
 public class UserSettingsEntity implements Serializable {
@@ -48,8 +58,9 @@ public class UserSettingsEntity implements Serializable {
     private Boolean fullTimeFormat = true;
     @Column(nullable = false)
     private Boolean dark = true;
-    @Column(columnDefinition = "text")
-    private String avatar;
+    @Type(type = "jsonb")
+    @Column(columnDefinition = "jsonb")
+    private Image avatar;
     @Column(columnDefinition = "text", nullable = false)
     private String nickname = "Anonymous";
     @Column(columnDefinition = "text", nullable = false)

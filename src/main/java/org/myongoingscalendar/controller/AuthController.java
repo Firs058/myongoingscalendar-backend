@@ -4,7 +4,6 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.myongoingscalendar.entity.UserAuthorityEntity;
 import org.myongoingscalendar.entity.UserEntity;
-import org.myongoingscalendar.manipulations.GravatarManipulations;
 import org.myongoingscalendar.model.*;
 import org.myongoingscalendar.service.UserService;
 import org.myongoingscalendar.utils.JwtTokenUtil;
@@ -26,13 +25,11 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping(value = "/api/auth", method = RequestMethod.POST, produces = "application/json; charset=utf-8")
 public class AuthController {
-    private final GravatarManipulations gravatarManipulations;
     private final UserService userService;
     private final JwtTokenUtil jwtTokenUtil;
 
     @Autowired
-    public AuthController(GravatarManipulations gravatarManipulations, UserService userService, JwtTokenUtil jwtTokenUtil) {
-        this.gravatarManipulations = gravatarManipulations;
+    public AuthController(UserService userService, JwtTokenUtil jwtTokenUtil) {
         this.userService = userService;
         this.jwtTokenUtil = jwtTokenUtil;
     }
@@ -67,7 +64,7 @@ public class AuthController {
                                         .social(userEntity.social() != SNS.local)
                                         .tokens(tokens)
                                         .roles(userEntity.authorityEntities().stream().map(UserAuthorityEntity::authorityName).collect(Collectors.toList()))
-                                        .settings(userEntity.userSettingsEntity().avatar(gravatarManipulations.getGravatarImageUrl(user.email()))));
+                                        .settings(userEntity.userSettingsEntity()));
                     } else
                         return new AjaxResponse<>(new Status(10024, "Sorry, wrong email or password"));
                 })

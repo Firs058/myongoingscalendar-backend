@@ -5,7 +5,6 @@ import org.myongoingscalendar.entity.UserEntity;
 import org.myongoingscalendar.model.*;
 import org.myongoingscalendar.manipulations.DBManipulations;
 import org.myongoingscalendar.manipulations.EmailManipulations;
-import org.myongoingscalendar.manipulations.GravatarManipulations;
 import org.myongoingscalendar.manipulations.ReCaptchaManipulations;
 import org.myongoingscalendar.service.UserService;
 import org.myongoingscalendar.utils.JwtTokenUtil;
@@ -28,17 +27,15 @@ public class RegistrationController {
     private final EmailManipulations emailManipulations;
     private final UrlDataDAO urlDataDAO;
     private final DBManipulations dbManipulations;
-    private final GravatarManipulations gravatarManipulations;
     private final UserService userService;
     private final JwtTokenUtil jwtTokenUtil;
 
     @Autowired
-    public RegistrationController(ReCaptchaManipulations reCaptchaManipulations, EmailManipulations emailManipulations, UrlDataDAO urlDataDAO, DBManipulations dbManipulations, GravatarManipulations gravatarManipulations, UserService userService, JwtTokenUtil jwtTokenUtil) {
+    public RegistrationController(ReCaptchaManipulations reCaptchaManipulations, EmailManipulations emailManipulations, UrlDataDAO urlDataDAO, DBManipulations dbManipulations, UserService userService, JwtTokenUtil jwtTokenUtil) {
         this.reCaptchaManipulations = reCaptchaManipulations;
         this.emailManipulations = emailManipulations;
         this.urlDataDAO = urlDataDAO;
         this.dbManipulations = dbManipulations;
-        this.gravatarManipulations = gravatarManipulations;
         this.userService = userService;
         this.jwtTokenUtil = jwtTokenUtil;
     }
@@ -68,7 +65,7 @@ public class RegistrationController {
                                     .password(BCrypt.hashpw(user.password(), BCrypt.gensalt()))
                                     .confirmToken(UUID.randomUUID().toString());
 
-                            userToSave.userSettingsEntity(user.userSettingsEntity().userEntity(userToSave).avatar(gravatarManipulations.getGravatarImageUrl(user.email())));
+                            userToSave.userSettingsEntity(user.userSettingsEntity().userEntity(userToSave));
                             userToSave.authorityEntities(Collections.singletonList(new UserAuthorityEntity().authorityName(AuthorityName.ROLE_USER).userEntity(userToSave)));
 
                             userService.save(userToSave);
@@ -127,7 +124,7 @@ public class RegistrationController {
                                     .social(false)
                                     .tokens(tokens)
                                     .roles(userEntity.authorityEntities().stream().map(UserAuthorityEntity::authorityName).collect(Collectors.toList()))
-                                    .settings(userEntity.userSettingsEntity().avatar(gravatarManipulations.getGravatarImageUrl(userEntity.email()))));
+                                    .settings(userEntity.userSettingsEntity()));
                 })
                 .orElse(new AjaxResponse<>(new Status(10014, "Token not exists. Repeat recover")));
     }

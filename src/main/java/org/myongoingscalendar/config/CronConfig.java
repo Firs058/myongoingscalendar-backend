@@ -26,7 +26,7 @@ public class CronConfig {
     @PostConstruct
     @CacheEvict(value = "getImagesLocationPath", allEntries = true)
     public void getImagesLocationPath() {
-        parseAniDBManipulations.getImagesLocationPath();
+        parseAniDBManipulations.getAnimeImagesLocationPath();
         parseAniDBManipulations.checkWebpImages();
         parseAniDBManipulations.checkThumbnails();
     }

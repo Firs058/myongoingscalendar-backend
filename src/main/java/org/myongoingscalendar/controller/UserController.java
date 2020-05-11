@@ -1,24 +1,27 @@
 package org.myongoingscalendar.controller;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.vladmihalcea.hibernate.type.json.internal.JacksonUtil;
 import org.myongoingscalendar.elastic.service.ElasticAnimeService;
 import org.myongoingscalendar.entity.FeedbackEntity;
 import org.myongoingscalendar.entity.UserAuthorityEntity;
 import org.myongoingscalendar.entity.UserEntity;
 import org.myongoingscalendar.manipulations.DBManipulations;
+import org.myongoingscalendar.manipulations.ImageManipulations;
 import org.myongoingscalendar.manipulations.ReCaptchaManipulations;
 import org.myongoingscalendar.model.*;
 import org.myongoingscalendar.entity.UserSettingsEntity;
 import org.myongoingscalendar.security.JwtUser;
-import org.myongoingscalendar.service.FeedbackService;
-import org.myongoingscalendar.service.OngoingServiceCustom;
-import org.myongoingscalendar.service.UserService;
-import org.myongoingscalendar.service.UserServiceCustom;
+import org.myongoingscalendar.service.*;
+import org.myongoingscalendar.utils.AnimeUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.util.List;
 import java.util.Locale;
 import java.util.stream.Collectors;
 
@@ -33,9 +36,10 @@ public class UserController {
     private final ElasticAnimeService elasticAnimeService;
     private final FeedbackService feedbackService;
     private final ReCaptchaManipulations reCaptchaManipulations;
+    private final ImageManipulations imageManipulations;
 
     @Autowired
-    public UserController(UserService userService, UserServiceCustom userServiceCustom, DBManipulations dbManipulations, OngoingServiceCustom ongoingServiceCustom, ElasticAnimeService elasticAnimeService, FeedbackService feedbackService, ReCaptchaManipulations reCaptchaManipulations) {
+    public UserController(UserService userService, UserServiceCustom userServiceCustom, DBManipulations dbManipulations, OngoingServiceCustom ongoingServiceCustom, ElasticAnimeService elasticAnimeService, FeedbackService feedbackService, ReCaptchaManipulations reCaptchaManipulations, ImageManipulations imageManipulations) {
         this.userService = userService;
         this.userServiceCustom = userServiceCustom;
         this.dbManipulations = dbManipulations;
@@ -43,6 +47,7 @@ public class UserController {
         this.elasticAnimeService = elasticAnimeService;
         this.feedbackService = feedbackService;
         this.reCaptchaManipulations = reCaptchaManipulations;
+        this.imageManipulations = imageManipulations;
     }
 
     @RequestMapping(value = "/calendar")
@@ -140,6 +145,44 @@ public class UserController {
                     u.password(BCrypt.hashpw(user.password(), BCrypt.gensalt()));
                     userService.save(u);
                     return new AjaxResponse<>(new Status(11005, "Password changed"));
+                })
+                .orElse(new AjaxResponse<>(new Status(10012, "You must be logged")));
+    }
+
+    @Transactional
+    @RequestMapping(value = "/avatar/change")
+    public AjaxResponse changeAvatar(@RequestParam MultipartFile avatar, @AuthenticationPrincipal JwtUser jwtUser) {
+        return userService.get(jwtUser.getId())
+                .map(u -> {
+                    if (imageManipulations.validateAvatar(avatar)) {
+                        Image oldAvatar = u.userSettingsEntity().avatar();
+                        String name = imageManipulations.saveAvatar(avatar);
+                        if (name != null) {
+                            Image image = new Image().paths(AnimeUtil.createAvatarPaths(name));
+                            if (oldAvatar != null) {
+                                imageManipulations.deleteAvatar(oldAvatar);
+                            }
+                            u.userSettingsEntity().avatar(image);
+                            return new AjaxResponse<>(new Status(11019, "Avatar saved"), image);
+                        }
+                        return new AjaxResponse<>(new Status(10015, "One of our services does not work. Do not worry, we'll fix it soon"));
+                    }
+                    return new AjaxResponse<>(new Status(11034, "Wrong file"));
+                })
+                .orElse(new AjaxResponse<>(new Status(10012, "You must be logged")));
+    }
+
+    @Transactional
+    @RequestMapping(value = "/avatar/remove")
+    public AjaxResponse removeAvatar(@AuthenticationPrincipal JwtUser jwtUser) {
+        return userService.get(jwtUser.getId())
+                .map(u -> {
+                    Image avatar = u.userSettingsEntity().avatar();
+                    if (avatar != null) {
+                        imageManipulations.deleteAvatar(avatar);
+                        u.userSettingsEntity().avatar(null);
+                    }
+                    return new AjaxResponse<>(new Status(11020, "Avatar removed"));
                 })
                 .orElse(new AjaxResponse<>(new Status(10012, "You must be logged")));
     }

@@ -22,7 +22,7 @@ public class DataConfig {
                 "getOngoingsMin",
                 "getAllTimezones",
                 "getCurrentOngoingsList",
-                "getImagesLocationPath",
+                "getAnimeImagesLocationPath",
                 "getAllOngoingsList",
                 "getAllGenres",
                 "getAllStopWords",

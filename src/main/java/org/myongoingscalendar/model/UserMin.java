@@ -12,6 +12,6 @@ import lombok.experimental.Accessors;
 @Accessors(fluent = true)
 @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY)
 public class UserMin {
-    private String avatar;
+    private Image avatar;
     private String nickname;
 }

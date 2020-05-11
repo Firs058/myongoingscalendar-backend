@@ -94,7 +94,7 @@ public class OngoingRepositoryCustomImpl implements OngoingRepositoryCustom {
     public UserTitle getUserOngoingData(Long tid, String timezone, Long userid, Locale locale) {
         return userService.get(userid)
                 .map(u -> new UserTitle()
-                        .marked(userTitleService.existsByOngoingEntity_Tid(tid))
+                        .marked(userTitleService.existsByOngoingEntity_TidAndUserEntity_Id(tid, userid))
                         .broadcast(createTitleBroadcast(u.userSettingsEntity().timezone(), tid, locale))
                         .title(getTitleData(tid))
                         .comments(commentServiceCustom.getUserComments(tid, "root", 0, userid)))

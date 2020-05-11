@@ -72,22 +72,6 @@ public class AdminController {
                 .orElse(new AjaxResponse<>(new Status(10016, "Server error. What you expect?")));
     }
 
-    @PostMapping("/avatars")
-    public AjaxResponse updateAllUsersAvatars() {
-        userService.findByUserSettingsEntity_AvatarIsNull().stream()
-                .map(userEntity -> new AbstractMap.SimpleImmutableEntry<>(userEntity.email(), new Gravatar()
-                        .setSize(200)
-                        .setHttps(true)
-                        .setRating(Rating.PARENTAL_GUIDANCE_SUGGESTED)
-                        .setStandardDefaultImage(DefaultImage.MONSTER)
-                        .getUrl(userEntity.email())))
-                .forEach(e -> userService.findByEmailContainingIgnoreCase(e.getValue()).ifPresent(u -> {
-                    u.userSettingsEntity().avatar(e.getKey());
-                    userService.save(u);
-                }));
-        return new AjaxResponse<>(new Status(11000, "OK"));
-    }
-
     @PostMapping("/mal")
     public AjaxResponse forceParseMALForCurrentOngoings() {
         parseMALManipulations.parseMALForCurrentOngoings();

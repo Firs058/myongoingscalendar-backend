@@ -15,7 +15,7 @@ public interface UserTitleService {
 
     Optional<UserTitleEntity> get(Long id);
 
-    Boolean existsByOngoingEntity_Tid(Long tid);
+    Boolean existsByOngoingEntity_TidAndUserEntity_Id(Long tid, Long userid);
 
     List<UserTitleEntity> getAll();
 

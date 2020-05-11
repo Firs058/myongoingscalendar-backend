@@ -12,7 +12,6 @@ import com.github.scribejava.core.oauth.OAuth20Service;
 import org.myongoingscalendar.entity.UserAuthorityEntity;
 import org.myongoingscalendar.model.*;
 import org.myongoingscalendar.entity.UserEntity;
-import org.myongoingscalendar.manipulations.GravatarManipulations;
 import org.myongoingscalendar.manipulations.URLManipulations;
 import org.myongoingscalendar.model.Token;
 import org.myongoingscalendar.service.UserService;
@@ -63,14 +62,12 @@ public class SocialAuthController {
     private OAuth10aService twitterService;
     private OAuth20Service githubService;
     private String SECRET_STATE = String.valueOf(new Random().nextInt(999_999));
-    private GravatarManipulations gravatarManipulations;
     private final URLManipulations urlManipulations;
     private final UserService userService;
     private final JwtTokenUtil jwtTokenUtil;
 
     @Autowired
-    public SocialAuthController(GravatarManipulations gravatarManipulations, URLManipulations urlManipulations, UserService userService, JwtTokenUtil jwtTokenUtil) {
-        this.gravatarManipulations = gravatarManipulations;
+    public SocialAuthController(URLManipulations urlManipulations, UserService userService, JwtTokenUtil jwtTokenUtil) {
         this.urlManipulations = urlManipulations;
         this.userService = userService;
         this.jwtTokenUtil = jwtTokenUtil;
@@ -213,7 +210,7 @@ public class SocialAuthController {
                                     .social(true)
                                     .tokens(tokens)
                                     .roles(userEntity.authorityEntities().stream().map(UserAuthorityEntity::authorityName).collect(Collectors.toList()))
-                                    .settings(userEntity.userSettingsEntity().avatar(gravatarManipulations.getGravatarImageUrl(user.email()))));
+                                    .settings(userEntity.userSettingsEntity()));
                 })
                 .orElseGet(() -> new AjaxResponse<>(new Status(10001, "Empty fields are not allowed")));
     }

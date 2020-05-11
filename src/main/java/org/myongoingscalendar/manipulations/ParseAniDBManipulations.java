@@ -14,7 +14,7 @@ import org.myongoingscalendar.entity.RatingEntity;
 import org.myongoingscalendar.model.MIMEType;
 import org.myongoingscalendar.service.OngoingService;
 import org.myongoingscalendar.utils.AnimeUtil;
-import org.myongoingscalendar.utils.StringUtils;
+import org.myongoingscalendar.utils.FilenameUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.Cacheable;
@@ -140,7 +140,7 @@ public class ParseAniDBManipulations {
         List<OngoingEntity> ongoings = ongoingService.getCurrentOngoingsWithoutImage();
         for (OngoingEntity ongoing : ongoings) {
             try {
-                Boolean downloaded = downloadImage(anidbImagesPath, getImagesLocationPath(), ongoing.anidbEntity().picture(), ongoing.aid());
+                Boolean downloaded = downloadImage(anidbImagesPath, getAnimeImagesLocationPath(), ongoing.anidbEntity().picture(), ongoing.aid());
                 if (downloaded) {
                     ongoing.anidbEntity().image(true);
                     ongoingService.save(ongoing);
@@ -162,7 +162,7 @@ public class ParseAniDBManipulations {
                 URL url = new URL(
                         UriComponentsBuilder
                                 .fromUriString(vibrantPath + ":" + vibrantPort)
-                                .queryParam("path", getImagesLocationPath() + ongoing.aid() + ".jpg")
+                                .queryParam("path", getAnimeImagesLocationPath() + ongoing.aid() + ".jpg")
                                 .build()
                                 .toString()
                 );
@@ -187,18 +187,18 @@ public class ParseAniDBManipulations {
     }
 
     public void checkWebpImages() {
-        Path imagesLocationPath = Paths.get(getImagesLocationPath());
+        Path imagesLocationPath = Paths.get(getAnimeImagesLocationPath());
         MIMEType jpg = MIMEType.JPG;
         MIMEType webp = MIMEType.WEBP;
         Path pathOriginal = Paths.get(imagesLocationPath.toString(), jpg.toString());
         Path pathConverted = Paths.get(imagesLocationPath.toString(), webp.toString());
 
-        List<File> original = Arrays.asList(Objects.requireNonNull(new File(pathOriginal.toUri()).listFiles((d, name) -> name.endsWith(MIMEType.getFormat(jpg)))));
-        List<File> converted = Arrays.asList(Objects.requireNonNull(new File(pathConverted.toUri()).listFiles((d, name) -> name.endsWith(MIMEType.getFormat(webp)))));
+        List<File> original = Arrays.asList(Objects.requireNonNull(new File(pathOriginal.toUri()).listFiles((d, name) -> name.endsWith(jpg.getFormat()))));
+        List<File> converted = Arrays.asList(Objects.requireNonNull(new File(pathConverted.toUri()).listFiles((d, name) -> name.endsWith(webp.getFormat()))));
         if (original.size() != converted.size()) {
             File[] diff = original
                     .stream()
-                    .filter(elem -> converted.stream().noneMatch(c -> StringUtils.getBaseName(c.getName()).equals(StringUtils.getBaseName(elem.getName()))))
+                    .filter(elem -> converted.stream().noneMatch(c -> FilenameUtils.getBaseName(c.getName()).equals(FilenameUtils.getBaseName(elem.getName()))))
                     .toArray(File[]::new);
             Arrays.stream(diff)
                     .forEach(e -> convertImageToWebp(e, pathConverted, false));
@@ -206,7 +206,7 @@ public class ParseAniDBManipulations {
     }
 
     public void checkThumbnails() {
-        Path imagesLocationPath = Paths.get(getImagesLocationPath());
+        Path imagesLocationPath = Paths.get(getAnimeImagesLocationPath());
         for (MIMEType mimeType : Arrays.asList(MIMEType.JPG, MIMEType.WEBP)) {
             try {
                 URI uri = Paths.get(imagesLocationPath.toString(), mimeType.toString(), "thumbnails").toUri();
@@ -222,8 +222,8 @@ public class ParseAniDBManipulations {
     }
 
     private void makeThumbnails(File file, MIMEType mimeType) throws IOException {
-        List<File> parent = Arrays.asList(Objects.requireNonNull(new File(file.getParent()).listFiles((d, name) -> name.endsWith(MIMEType.getFormat(mimeType)))));
-        List<File> child = Arrays.asList(Objects.requireNonNull(file.listFiles((d, name) -> name.endsWith(MIMEType.getFormat(mimeType)))));
+        List<File> parent = Arrays.asList(Objects.requireNonNull(new File(file.getParent()).listFiles((d, name) -> name.endsWith(mimeType.getFormat()))));
+        List<File> child = Arrays.asList(Objects.requireNonNull(file.listFiles((d, name) -> name.endsWith(mimeType.getFormat()))));
         if (parent.size() != child.size()) {
             File[] diff = parent
                     .stream()
@@ -236,7 +236,7 @@ public class ParseAniDBManipulations {
                         .crop(Positions.CENTER)
                         .outputFormat(mimeType.toString())
                         .outputQuality(1.0)
-                        .toFiles(new File(getImagesLocationPath() + "jpg/thumbnails"), Rename.NO_CHANGE);
+                        .toFiles(new File(getAnimeImagesLocationPath() + "jpg/thumbnails"), Rename.NO_CHANGE);
             } else if (mimeType == MIMEType.WEBP) {
                 Arrays.stream(diff)
                         .forEach(e -> convertImageToWebp(e, null, true));
@@ -244,13 +244,11 @@ public class ParseAniDBManipulations {
         }
     }
 
-    @Cacheable("getImagesLocationPath")
-    public String getImagesLocationPath() {
+    @Cacheable("getAnimeImagesLocationPath")
+    public String getAnimeImagesLocationPath() {
         return SystemUtils.IS_OS_WINDOWS
-                ? windowsImagesPath
-                : SystemUtils.IS_OS_LINUX
-                ? linuxImagesPath
-                : null;
+                ? windowsImagesPath + "anime/"
+                : linuxImagesPath + "anime/";
     }
 
     private Boolean downloadImage(String url, String saveTo, String picture, Long aid) {
@@ -282,11 +280,11 @@ public class ParseAniDBManipulations {
             Map<String, String> inputMap = new HashMap<>();
             inputMap.put("quality", "90");
             if (thumbnail) {
-                inputMap.put("file", Paths.get(getImagesLocationPath(), MIMEType.JPG.toString(), "thumbnails", StringUtils.getBaseName(file.getName()) + MIMEType.getFormat(MIMEType.JPG)).toString());
-                inputMap.put("to", Paths.get(getImagesLocationPath(), MIMEType.WEBP.toString(), "thumbnails", StringUtils.getBaseName(file.getName()) + MIMEType.getFormat(MIMEType.WEBP)).toString());
+                inputMap.put("file", Paths.get(getAnimeImagesLocationPath(), MIMEType.JPG.toString(), "thumbnails", FilenameUtils.getBaseName(file.getName()) + MIMEType.JPG.getFormat()).toString());
+                inputMap.put("to", Paths.get(getAnimeImagesLocationPath(), MIMEType.WEBP.toString(), "thumbnails", FilenameUtils.getBaseName(file.getName()) + MIMEType.WEBP.getFormat()).toString());
             } else {
                 inputMap.put("file", file.getAbsolutePath());
-                inputMap.put("to", Paths.get(to.toString(), StringUtils.getBaseName(file.getName()) + MIMEType.getFormat(MIMEType.WEBP)).toString());
+                inputMap.put("to", Paths.get(to.toString(), FilenameUtils.getBaseName(file.getName()) + MIMEType.WEBP.getFormat()).toString());
             }
 
             try (OutputStream os = con.getOutputStream()) {

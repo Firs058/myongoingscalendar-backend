@@ -38,8 +38,8 @@ public class UserTitleServiceImpl implements UserTitleService {
     }
 
     @Override
-    public Boolean existsByOngoingEntity_Tid(Long tid) {
-        return userTitleRepository.existsByOngoingEntity_Tid(tid);
+    public Boolean existsByOngoingEntity_TidAndUserEntity_Id(Long tid, Long userid) {
+        return userTitleRepository.existsByOngoingEntity_TidAndUserEntity_Id(tid, userid);
     }
 
     @Override

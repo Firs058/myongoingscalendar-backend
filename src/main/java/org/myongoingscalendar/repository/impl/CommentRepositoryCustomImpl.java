@@ -1,5 +1,7 @@
 package org.myongoingscalendar.repository.impl;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.myongoingscalendar.model.*;
 import org.myongoingscalendar.repository.CommentRepositoryCustom;
@@ -74,7 +76,7 @@ public class CommentRepositoryCustomImpl implements CommentRepositoryCustom {
                         .dislikes(rs.getInt("dislikes"))
                         .user(
                                 new UserMin()
-                                        .avatar(rs.getString("avatar"))
+                                        .avatar(mapAvatar(rs.getString("avatar")))
                                         .nickname(rs.getString("nickname")))
         ));
     }
@@ -152,8 +154,19 @@ public class CommentRepositoryCustomImpl implements CommentRepositoryCustom {
                         .dislikes(rs.getInt("dislikes"))
                         .user(
                                 new UserMin()
-                                        .avatar(rs.getString("avatar"))
+                                        .avatar(mapAvatar(rs.getString("avatar")))
                                         .nickname(rs.getString("nickname")))
         ));
+    }
+
+    private Image mapAvatar(String avatar) {
+        if (avatar != null) {
+            try {
+                return new ObjectMapper().treeToValue(new ObjectMapper().readTree(avatar), Image.class);
+            } catch (JsonProcessingException e) {
+                return null;
+            }
+        }
+        return null;
     }
 }
