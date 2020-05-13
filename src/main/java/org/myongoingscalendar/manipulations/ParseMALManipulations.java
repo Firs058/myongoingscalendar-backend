@@ -85,7 +85,7 @@ public class ParseMALManipulations {
                     if (jikanAnime.score() != null) {
                         Optional<RatingEntity> ratingsEntity = ongoing.ratingEntities().stream()
                                 .max(Comparator.comparing(RatingEntity::added));
-                        BigDecimal score = jikanAnime.score().setScale(2, BigDecimal.ROUND_HALF_UP);
+                        BigDecimal score = jikanAnime.score().setScale(2, BigDecimal.ROUND_DOWN);
 
                         if (ratingsEntity.isPresent() && AnimeUtil.daysBetween(ratingsEntity.get().added(), new Date()) == 0)
                             ratingsEntity.get().mal(score);

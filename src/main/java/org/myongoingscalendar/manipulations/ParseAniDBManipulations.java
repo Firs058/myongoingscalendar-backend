@@ -82,8 +82,8 @@ public class ParseAniDBManipulations {
                 org.jsoup.nodes.Element ratings = anime.select("ratings").first();
 
                 if (ratings != null) {
-                    BigDecimal permanentRating = (ratings.select("permanent").first() != null) ? new BigDecimal(ratings.select("permanent").get(0).text()).setScale(2, BigDecimal.ROUND_HALF_UP) : new BigDecimal(0);
-                    BigDecimal temporaryRating = (ratings.select("temporary").first() != null) ? new BigDecimal(ratings.select("temporary").get(0).text()).setScale(2, BigDecimal.ROUND_HALF_UP) : new BigDecimal(0);
+                    BigDecimal permanentRating = (ratings.select("permanent").first() != null) ? new BigDecimal(ratings.select("permanent").get(0).text()).setScale(2, BigDecimal.ROUND_DOWN) : new BigDecimal(0);
+                    BigDecimal temporaryRating = (ratings.select("temporary").first() != null) ? new BigDecimal(ratings.select("temporary").get(0).text()).setScale(2, BigDecimal.ROUND_DOWN) : new BigDecimal(0);
 
                     Optional<RatingEntity> ratingsEntity = ongoing.ratingEntities().stream()
                             .max(Comparator.comparing(RatingEntity::added));
