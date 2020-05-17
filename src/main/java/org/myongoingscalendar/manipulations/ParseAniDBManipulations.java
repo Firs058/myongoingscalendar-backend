@@ -140,7 +140,7 @@ public class ParseAniDBManipulations {
         List<OngoingEntity> ongoings = ongoingService.getCurrentOngoingsWithoutImage();
         for (OngoingEntity ongoing : ongoings) {
             try {
-                Boolean downloaded = downloadImage(anidbImagesPath, getAnimeImagesLocationPath(), ongoing.anidbEntity().picture(), ongoing.aid());
+                Boolean downloaded = downloadImage(anidbImagesPath, getAnimeImagesLocationPath() + "/jpg/", ongoing.anidbEntity().picture(), ongoing.aid());
                 if (downloaded) {
                     ongoing.anidbEntity().image(true);
                     ongoingService.save(ongoing);

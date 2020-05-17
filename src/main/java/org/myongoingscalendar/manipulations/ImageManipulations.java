@@ -125,7 +125,7 @@ public class ImageManipulations {
                 response.append(responseLine.trim());
             }
             if (con.getResponseCode() == 200) log.info(response.toString());
-            else log.error(response.toString());
+            else throw new IOException(response.toString());
         }
     }
 
