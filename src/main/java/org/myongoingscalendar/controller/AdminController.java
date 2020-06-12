@@ -1,8 +1,5 @@
 package org.myongoingscalendar.controller;
 
-import de.bripkens.gravatar.DefaultImage;
-import de.bripkens.gravatar.Gravatar;
-import de.bripkens.gravatar.Rating;
 import org.myongoingscalendar.elastic.FillElastic;
 import org.myongoingscalendar.manipulations.ParseAniDBManipulations;
 import org.myongoingscalendar.manipulations.ParseAnnManipulations;
@@ -13,8 +10,6 @@ import org.myongoingscalendar.service.OngoingService;
 import org.myongoingscalendar.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.AbstractMap;
 
 @RestController
 @RequestMapping(value = "/api/admin", method = RequestMethod.POST, produces = "application/json; charset=utf-8")

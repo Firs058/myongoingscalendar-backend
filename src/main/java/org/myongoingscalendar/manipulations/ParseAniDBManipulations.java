@@ -162,7 +162,7 @@ public class ParseAniDBManipulations {
                 URL url = new URL(
                         UriComponentsBuilder
                                 .fromUriString(vibrantPath + ":" + vibrantPort)
-                                .queryParam("path", getAnimeImagesLocationPath() + ongoing.aid() + ".jpg")
+                                .queryParam("path", getAnimeImagesLocationPath() + "/jpg/" + ongoing.aid() + ".jpg")
                                 .build()
                                 .toString()
                 );
