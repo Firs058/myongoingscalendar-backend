@@ -20,38 +20,33 @@ public class AdminController {
     private final ParseSyoboiManipulations parseSyoboiManipulations;
     private final FillElastic fillElastic;
     private final OngoingService ongoingService;
-    private final UserService userService;
 
     @Autowired
-    public AdminController(ParseAniDBManipulations parseAniDBManipulations, ParseMALManipulations parseMALManipulations, ParseAnnManipulations parseAnnManipulations, ParseSyoboiManipulations parseSyoboiManipulations, FillElastic fillElastic, OngoingService ongoingService, UserService userService) {
+    public AdminController(ParseAniDBManipulations parseAniDBManipulations, ParseMALManipulations parseMALManipulations, ParseAnnManipulations parseAnnManipulations, ParseSyoboiManipulations parseSyoboiManipulations, FillElastic fillElastic, OngoingService ongoingService) {
         this.parseAniDBManipulations = parseAniDBManipulations;
         this.parseMALManipulations = parseMALManipulations;
         this.parseAnnManipulations = parseAnnManipulations;
         this.parseSyoboiManipulations = parseSyoboiManipulations;
         this.fillElastic = fillElastic;
         this.ongoingService = ongoingService;
-        this.userService = userService;
     }
 
     @PostMapping("/hex")
     public AjaxResponse findHEX() {
         parseAniDBManipulations.findHEXAndFillTable();
-        return new AjaxResponse<>(new Status(11000, "OK"));
+        return new AjaxResponse<>();
     }
 
     @PostMapping("/elastic")
     public AjaxResponse fillElastic() {
         fillElastic.loadAnimeIntoElastic();
         ongoingService.clearOngoingsCache();
-        return new AjaxResponse<>(new Status(11000, "OK"));
+        return new AjaxResponse<>();
     }
 
     @PostMapping("/data")
     public AjaxResponse getAdminData() {
-        return new AjaxResponse<>(
-                new Status(11000, "OK"),
-                ongoingService.getAdminData()
-        );
+        return new AjaxResponse<>(ongoingService.getAdminData());
     }
 
     @PostMapping("/update")
@@ -62,7 +57,7 @@ public class AdminController {
                     if (adminData.malid() != null) o.malid(adminData.malid());
                     if (adminData.annid() != null) o.annid(adminData.annid());
                     ongoingService.save(o);
-                    return new AjaxResponse<>(new Status(11000, "OK"));
+                    return new AjaxResponse<>();
                 })
                 .orElse(new AjaxResponse<>(new Status(10016, "Server error. What you expect?")));
     }
@@ -71,41 +66,41 @@ public class AdminController {
     public AjaxResponse forceParseMALForCurrentOngoings() {
         parseMALManipulations.parseMALForCurrentOngoings();
         ongoingService.clearOngoingsCache();
-        return new AjaxResponse<>(new Status(11000, "OK"));
+        return new AjaxResponse<>();
     }
 
     @PostMapping("/ann")
     public AjaxResponse forceParseAnnForCurrentOngoings() {
         parseAnnManipulations.parseAnnForCurrentOngoings();
         ongoingService.clearOngoingsCache();
-        return new AjaxResponse<>(new Status(11000, "OK"));
+        return new AjaxResponse<>();
     }
 
     @PostMapping("/mal/all")
     public AjaxResponse forceParseMALForAll() {
         parseMALManipulations.parseMALForAll();
         ongoingService.clearOngoingsCache();
-        return new AjaxResponse<>(new Status(11000, "OK"));
+        return new AjaxResponse<>();
     }
 
     @PostMapping("/anidb")
     public AjaxResponse forceParseAniDBForCurrentOngoings() {
         parseAniDBManipulations.parseAniDBForCurrentOngoings();
         ongoingService.clearOngoingsCache();
-        return new AjaxResponse<>(new Status(11000, "OK"));
+        return new AjaxResponse<>();
     }
 
     @PostMapping("/anidb/all")
     public AjaxResponse forceParseAniDBForAll() {
         parseAniDBManipulations.parseAniDBForAll();
         ongoingService.clearOngoingsCache();
-        return new AjaxResponse<>(new Status(11000, "OK"));
+        return new AjaxResponse<>();
     }
 
     @PostMapping("/syoboi")
     public AjaxResponse forceParseSyoboiForCurrentOngoings() {
         parseSyoboiManipulations.parseSyoboiAnimeOngoingsList();
         ongoingService.clearOngoingsCache();
-        return new AjaxResponse<>(new Status(11000, "OK"));
+        return new AjaxResponse<>();
     }
 }

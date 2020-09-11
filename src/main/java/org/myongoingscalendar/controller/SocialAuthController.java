@@ -122,7 +122,7 @@ public class SocialAuthController {
 
     @RequestMapping(value = "/google/url")
     public AjaxResponse getGoogleAuthorizationUrl() {
-        return new AjaxResponse<>(new Status(11000, "OK"), googleService.getAuthorizationUrl());
+        return new AjaxResponse<>(googleService.getAuthorizationUrl());
     }
 
     @RequestMapping(value = "/twitter")
@@ -145,7 +145,7 @@ public class SocialAuthController {
 
     @RequestMapping(value = "/twitter/url")
     public AjaxResponse getTwitterAuthorizationUrl() throws InterruptedException, ExecutionException, IOException {
-        return new AjaxResponse<>(new Status(11000, "OK"), twitterService.getAuthorizationUrl(twitterService.getRequestToken()));
+        return new AjaxResponse<>(twitterService.getAuthorizationUrl(twitterService.getRequestToken()));
     }
 
     @RequestMapping(value = "/github")
@@ -170,7 +170,7 @@ public class SocialAuthController {
 
     @RequestMapping(value = "/github/url")
     public AjaxResponse getGithubAuthorizationUrl() {
-        return new AjaxResponse<>(new Status(11000, "OK"), githubService.getAuthorizationUrl());
+        return new AjaxResponse<>(githubService.getAuthorizationUrl());
     }
 
     private String genCallbackAddress(String provider) {

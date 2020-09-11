@@ -28,10 +28,7 @@ public class CommentsController {
 
     @RequestMapping(value = "/{tid}/comments/{path}/{offset}")
     public AjaxResponse getUserComments(@PathVariable("tid") Long tid, @PathVariable("path") String path, @PathVariable("offset") Integer offset, @AuthenticationPrincipal JwtUser user) {
-        return new AjaxResponse<>(
-                new Status(11000, "OK"),
-                commentServiceCustom.getUserComments(tid, path, offset, user.getId())
-        );
+        return new AjaxResponse<>(commentServiceCustom.getUserComments(tid, path, offset, user.getId()));
     }
 
     @RequestMapping(value = "/{tid}/comments/{comment_id}/{emotion}/add")
@@ -41,7 +38,7 @@ public class CommentsController {
         );
     }
 
-    @RequestMapping(value = "/{tid}/comments/{comment_id}/report")
+    @RequestMapping(value = "/{tid}/comments/{comment_id}/report/add")
     public AjaxResponse addReport(@PathVariable("tid") Long tid, @PathVariable("comment_id") Long comment_id, @AuthenticationPrincipal JwtUser user) {
         return new AjaxResponse<>(
                 commentServiceCustom.addReport(tid, comment_id, user.getId())
