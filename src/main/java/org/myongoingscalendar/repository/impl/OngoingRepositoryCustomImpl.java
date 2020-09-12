@@ -107,7 +107,7 @@ public class OngoingRepositoryCustomImpl implements OngoingRepositoryCustom {
                     Title title = new Title()
                             .tid(tid)
                             .finished(ongoing.syoboiInfoEntity() == null || (ongoing.syoboiInfoEntity().finished() && ongoing.syoboiOngoingEntity() == null))
-                            .started(ongoing.syoboiInfoEntity().finished() || ongoing.syoboiTimetableEntities().stream().anyMatch(SyoboiTimetableEntity::started));
+                            .started(ongoing.syoboiTimetableEntities().stream().anyMatch(SyoboiTimetableEntity::startedOnAir) || (ongoing.syoboiInfoEntity() != null && ongoing.syoboiInfoEntity().started()));
 
                     if (ongoing.syoboiInfoEntity() != null)
                         title
@@ -204,7 +204,7 @@ public class OngoingRepositoryCustomImpl implements OngoingRepositoryCustom {
                             .ja(ongoing.syoboiInfoEntity().title())
                             .dateStart(AnimeUtil.createDateStart(ongoing.syoboiInfoEntity().firstYear(), ongoing.syoboiInfoEntity().firstMonth()))
                             .finished(ongoing.syoboiInfoEntity().finished() && ongoing.syoboiOngoingEntity() == null)
-                            .started(ongoing.syoboiInfoEntity().finished() || ongoing.syoboiTimetableEntities().stream().anyMatch(SyoboiTimetableEntity::started));
+                            .started(ongoing.syoboiTimetableEntities().stream().anyMatch(SyoboiTimetableEntity::startedOnAir) || (ongoing.syoboiInfoEntity() != null && ongoing.syoboiInfoEntity().started()));
 
                     if (ongoing.anidbEntity() != null)
                         elasticAnime

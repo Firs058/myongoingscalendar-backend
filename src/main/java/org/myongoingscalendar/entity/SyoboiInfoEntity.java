@@ -89,13 +89,23 @@ public class SyoboiInfoEntity implements Serializable {
     private String subtitles;
     @Transient
     private Boolean finished;
+    @Transient
+    private Boolean started;
 
     @PostLoad
     private void onLoad() {
+        SimpleDateFormat dateFormat = new SimpleDateFormat("MM-yyyy");
+        Date currentDate = new Date();
+
         try {
-            this.finished = new SimpleDateFormat("MM-yyyy").parse(this.firstEndMonth + "-" + this.firstEndYear).before(new Date());
+            this.finished = dateFormat.parse(this.firstEndMonth + "-" + this.firstEndYear).before(currentDate);
         } catch (ParseException e) {
             this.finished = false;
+        }
+        try {
+            this.started = dateFormat.parse(this.firstMonth + "-" + this.firstYear).before(currentDate);
+        } catch (ParseException e) {
+            this.started = false;
         }
     }
 }
