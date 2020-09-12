@@ -106,7 +106,8 @@ public class OngoingRepositoryCustomImpl implements OngoingRepositoryCustom {
                 .map(ongoing -> {
                     Title title = new Title()
                             .tid(tid)
-                            .outdated(ongoing.syoboiInfoEntity() == null || (ongoing.syoboiInfoEntity().outdated() && ongoing.syoboiOngoingEntity() == null));
+                            .finished(ongoing.syoboiInfoEntity() == null || (ongoing.syoboiInfoEntity().finished() && ongoing.syoboiOngoingEntity() == null))
+                            .started(ongoing.syoboiInfoEntity().finished() || ongoing.syoboiTimetableEntities().stream().anyMatch(SyoboiTimetableEntity::started));
 
                     if (ongoing.syoboiInfoEntity() != null)
                         title
@@ -202,7 +203,8 @@ public class OngoingRepositoryCustomImpl implements OngoingRepositoryCustom {
                             .tid(ongoing.tid())
                             .ja(ongoing.syoboiInfoEntity().title())
                             .dateStart(AnimeUtil.createDateStart(ongoing.syoboiInfoEntity().firstYear(), ongoing.syoboiInfoEntity().firstMonth()))
-                            .outdated(ongoing.syoboiInfoEntity().outdated() && ongoing.syoboiOngoingEntity() == null);
+                            .finished(ongoing.syoboiInfoEntity().finished() && ongoing.syoboiOngoingEntity() == null)
+                            .started(ongoing.syoboiInfoEntity().finished() || ongoing.syoboiTimetableEntities().stream().anyMatch(SyoboiTimetableEntity::started));
 
                     if (ongoing.anidbEntity() != null)
                         elasticAnime

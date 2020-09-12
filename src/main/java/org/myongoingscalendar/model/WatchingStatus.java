@@ -4,5 +4,6 @@ public enum WatchingStatus {
     NEW,
     WATCHING,
     WATCHED,
-    DROPPED
+    DROPPED,
+    PLANNED
 }

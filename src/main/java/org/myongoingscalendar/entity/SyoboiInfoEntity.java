@@ -88,14 +88,14 @@ public class SyoboiInfoEntity implements Serializable {
     @Column(columnDefinition = "text")
     private String subtitles;
     @Transient
-    private Boolean outdated;
+    private Boolean finished;
 
     @PostLoad
     private void onLoad() {
         try {
-            this.outdated = new SimpleDateFormat("MM-yyyy").parse(this.firstEndMonth + "-" + this.firstEndYear).before(new Date());
+            this.finished = new SimpleDateFormat("MM-yyyy").parse(this.firstEndMonth + "-" + this.firstEndYear).before(new Date());
         } catch (ParseException e) {
-            this.outdated = false;
+            this.finished = false;
         }
     }
 }

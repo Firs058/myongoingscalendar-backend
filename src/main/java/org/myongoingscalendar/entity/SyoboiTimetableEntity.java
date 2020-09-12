@@ -43,4 +43,11 @@ public class SyoboiTimetableEntity implements Serializable {
     private Integer episode;
     @Column(name = "episode_name", columnDefinition = "text", nullable = false)
     private String episodeName;
+    @Transient
+    private Boolean started;
+
+    @PostLoad
+    private void onLoad() {
+        this.started = (this.episode != null && this.episode >= 1) && (this.dateStart != null && this.dateStart.after(new Date()));
+    }
 }

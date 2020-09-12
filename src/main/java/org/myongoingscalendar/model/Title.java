@@ -31,5 +31,6 @@ public class Title {
     private List<GenreEntity> genres = new ArrayList<>();
     private Integer firstYear;
     private Integer firstMonth;
-    private boolean outdated;
+    private Boolean finished;
+    private Boolean started;
 }

@@ -186,8 +186,11 @@ public class AnimeUtil {
                     .filter(e -> added.stream().anyMatch(a -> e.tid().equals(a)))
                     .forEach(e -> e.watchingStatus(WatchingStatus.WATCHING));
             elasticAnimes.stream()
-                    .filter(e -> added.stream().anyMatch(a -> e.tid().equals(a) && e.outdated()))
+                    .filter(e -> added.stream().anyMatch(a -> e.tid().equals(a) && e.finished()))
                     .forEach(e -> e.watchingStatus(WatchingStatus.WATCHED));
+            elasticAnimes.stream()
+                    .filter(e -> added.stream().anyMatch(a -> e.tid().equals(a) && !e.started() && !e.finished()))
+                    .forEach(e -> e.watchingStatus(WatchingStatus.PLANNED));
         }
         if (dropped.size() > 0)
             elasticAnimes.stream()

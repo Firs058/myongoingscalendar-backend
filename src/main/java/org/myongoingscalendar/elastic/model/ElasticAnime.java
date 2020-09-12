@@ -37,5 +37,6 @@ public class ElasticAnime {
     private List<Rating> ratings;
     private List<ChannelEntity> channels;
     private WatchingStatus watchingStatus;
-    private Boolean outdated;
+    private Boolean finished;
+    private Boolean started;
 }
