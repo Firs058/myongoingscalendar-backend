@@ -48,6 +48,6 @@ public class SyoboiTimetableEntity implements Serializable {
 
     @PostLoad
     private void onLoad() {
-        this.startedOnAir = (this.episode != null && this.episode >= 1) && (this.dateStart != null && this.dateStart.after(new Date()));
+        this.startedOnAir = (this.episode != null && this.episode >= 1) && (this.dateStart != null && this.dateStart.before(new Date()));
     }
 }
