@@ -14,10 +14,11 @@ import org.myongoingscalendar.service.UserTitleService;
 import org.myongoingscalendar.utils.AnimeUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.elasticsearch.core.ElasticsearchTemplate;
+import org.springframework.data.elasticsearch.core.ElasticsearchRestTemplate;
+import org.springframework.data.elasticsearch.core.query.NativeSearchQuery;
 import org.springframework.data.elasticsearch.core.query.NativeSearchQueryBuilder;
-import org.springframework.data.elasticsearch.core.query.SearchQuery;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -31,15 +32,15 @@ public class ElasticAnimeServiceImpl implements ElasticAnimeService {
 
     private final AnimeRepository animeRepository;
     private final OngoingService ongoingService;
-    private final ElasticsearchTemplate elasticsearchTemplate;
+    private final ElasticsearchRestTemplate elasticsearchRestTemplate;
     private final UserTitleDropService userTitleDropService;
     private final UserTitleService userTitleService;
 
     @Autowired
-    public ElasticAnimeServiceImpl(AnimeRepository animeRepository, OngoingService ongoingService, ElasticsearchTemplate elasticsearchTemplate, UserTitleDropService userTitleDropService, UserTitleService userTitleService) {
+    public ElasticAnimeServiceImpl(AnimeRepository animeRepository, OngoingService ongoingService, ElasticsearchRestTemplate elasticsearchRestTemplate, UserTitleDropService userTitleDropService, UserTitleService userTitleService) {
         this.animeRepository = animeRepository;
         this.ongoingService = ongoingService;
-        this.elasticsearchTemplate = elasticsearchTemplate;
+        this.elasticsearchRestTemplate = elasticsearchRestTemplate;
         this.userTitleDropService = userTitleDropService;
         this.userTitleService = userTitleService;
     }
@@ -83,7 +84,7 @@ public class ElasticAnimeServiceImpl implements ElasticAnimeService {
                     .gte(elasticQuery.years()[0])
                     .lte(elasticQuery.years()[1]));
 
-        SearchQuery withQuery = new NativeSearchQueryBuilder()
+        NativeSearchQuery withQuery = new NativeSearchQueryBuilder()
                 .withQuery(
                         QueryBuilders.boolQuery()
                                 .must(multiMatchQuery(elasticQuery.query() != null ? elasticQuery.query() : "")
@@ -96,18 +97,13 @@ public class ElasticAnimeServiceImpl implements ElasticAnimeService {
                 .withPageable(PageRequest.of((elasticQuery.page() >= 1 ? elasticQuery.page() : 1) - 1, size))
                 .build();
 
-        SearchQuery withoutQuery = new NativeSearchQueryBuilder()
+        NativeSearchQuery withoutQuery = new NativeSearchQueryBuilder()
                 .withFilter(filters)
                 .withSort(SortBuilders.fieldSort("en.raw"))
                 .withPageable(PageRequest.of((elasticQuery.page() >= 1 ? elasticQuery.page() : 1) - 1, size))
                 .build();
-
-        return elasticsearchTemplate.query(elasticQuery.query().length() != 0 ? withQuery : withoutQuery, response -> {
-            long totalHits = response.getHits().getTotalHits();
-            List<ElasticAnime> animes = new ArrayList<>();
-            response.getHits().forEach(hit -> animes.add(new ObjectMapper().convertValue(hit.getSourceAsMap(), ElasticAnime.class)));
-            return new SearchResult(animes, totalHits);
-        });
+        Page<ElasticAnime> elasticAnimePage = animeRepository.search(elasticQuery.query().length() != 0 ? withQuery : withoutQuery);
+        return new SearchResult(elasticAnimePage.getContent(), elasticAnimePage.getTotalElements());
     }
 
     public SearchResult autocomplete(ElasticQuery elasticQuery, int size) {
