@@ -11,13 +11,11 @@ stages:
   - restart
 
 maven-build:
-  image: maven:3-jdk-11
+  image: maven:3-jdk-8
   stage: build
   only:
     - master
-  script:
-    - 'mvn install'
-    - 'mvn package'
+  script: mvn verify
   artifacts:
     paths:
       - target/*.jar
