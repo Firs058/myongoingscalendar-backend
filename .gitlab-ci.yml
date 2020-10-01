@@ -15,7 +15,7 @@ maven-build:
   stage: build
   only:
     - master
-  script: mvn verify
+  script: mvn package spring-boot:repackage
   artifacts:
     paths:
       - target/*.jar
