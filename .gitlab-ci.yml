@@ -46,7 +46,7 @@ restart:
   only:
   - master
   script:
-  - systemctl restart nginx
-  - systemctl restart myongoingscalendar
+  - sudo systemctl restart nginx
+  - sudo systemctl restart myongoingscalendar
   tags:
   - shell
