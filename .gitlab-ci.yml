@@ -10,7 +10,7 @@ maven-build:
   stage: build
   only:
     - master
-  script: "mvn package -B"
+  script: mvn verify
   artifacts:
     paths:
       - target/*.jar
