@@ -38,6 +38,7 @@ deploy-nginx:
   - cp -R ./nginx/maps /etc/nginx
   - cp -R ./nginx/security /etc/nginx
   - cp -f ./nginx/nginx.linux.conf /etc/nginx/conf.d/default.conf
+  - cp -f ./nginx/nginx.conf /etc/nginx/nginx.conf
   tags:
   - shell
 
