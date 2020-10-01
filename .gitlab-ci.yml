@@ -8,7 +8,7 @@ stages:
 maven-build:
   image: maven:3-jdk-11
   stage: build
-    only:
+  only:
     - master
   script: "mvn package -B"
   artifacts:
@@ -17,7 +17,7 @@ maven-build:
 
 deploy-jar:
   stage: deploy
-    only:
+  only:
     - master
   script:
   - mkdir -p /opt/app/myongoingscalendar-backend
@@ -27,7 +27,7 @@ deploy-jar:
 
 deploy-nginx:
   stage: deploy
-    only:
+  only:
     - master
   script:
   - cp -R ./nginx/maps /etc/nginx
