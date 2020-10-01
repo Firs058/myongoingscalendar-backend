@@ -30,11 +30,23 @@ deploy-jar:
   tags:
   - shell
 
+deploy-nginx:
+  stage: deploy
+  only:
+    - master
+  script:
+  - cp -R ./nginx/maps /etc/nginx
+  - cp -R ./nginx/security /etc/nginx
+  - cp -f ./nginx/nginx.linux.conf /etc/nginx/conf.d/default.conf
+  tags:
+  - shell
+
 restart:
   stage: restart
   only:
   - master
   script:
+  - systemctl restart nginx
   - systemctl restart myongoingscalendar
   tags:
   - shell
