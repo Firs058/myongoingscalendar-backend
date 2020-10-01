@@ -1,0 +1,47 @@
+image: maven:latest
+
+stages:
+  - build
+  - deploy
+  - restart
+
+maven-build:
+  image: maven:3-jdk-11
+  stage: build
+    only:
+    - master
+  script: "mvn package -B"
+  artifacts:
+    paths:
+      - target/*.jar
+
+deploy-jar:
+  stage: deploy
+    only:
+    - master
+  script:
+  - mkdir -p /opt/app/myongoingscalendar-backend
+  - cp -R ./target/* /opt/app/myongoingscalendar-backend/
+  tags:
+  - shell
+
+deploy-nginx:
+  stage: deploy
+    only:
+    - master
+  script:
+  - cp -R ./nginx/maps /etc/nginx
+  - cp -R ./nginx/security /etc/nginx
+  - cp -f ./nginx/nginx.linux.conf /etc/nginx/conf.d/default.conf
+  tags:
+  - shell
+
+restart:
+  stage: restart
+  only:
+  - master
+  script:
+  - systemctl restart nginx
+  - systemctl restart myongoingscalendar
+  tags:
+  - shell
