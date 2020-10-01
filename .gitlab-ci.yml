@@ -1,5 +1,10 @@
 image: maven:latest
 
+cache:
+  key: mavenrepo
+  paths:
+    - ./.m2/repository/
+
 stages:
   - build
   - deploy
@@ -10,7 +15,9 @@ maven-build:
   stage: build
   only:
     - master
-  script: mvn verify
+  script:
+    - 'mvn install'
+    - 'mvn package'
   artifacts:
     paths:
       - target/*.jar
