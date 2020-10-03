@@ -14,13 +14,15 @@ import org.myongoingscalendar.service.UserTitleService;
 import org.myongoingscalendar.utils.AnimeUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.elasticsearch.core.ElasticsearchRestTemplate;
+import org.springframework.data.elasticsearch.core.SearchHit;
+import org.springframework.data.elasticsearch.core.mapping.IndexCoordinates;
 import org.springframework.data.elasticsearch.core.query.NativeSearchQuery;
 import org.springframework.data.elasticsearch.core.query.NativeSearchQueryBuilder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.data.elasticsearch.core.SearchHits;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -90,8 +92,7 @@ public class ElasticAnimeServiceImpl implements ElasticAnimeService {
                                 .must(multiMatchQuery(elasticQuery.query() != null ? elasticQuery.query() : "")
                                         .field("en")
                                         .field("ja")
-                                        .type(MultiMatchQueryBuilder.Type.PHRASE_PREFIX)
-                                        .fuzziness("AUTO"))
+                                        .type(MultiMatchQueryBuilder.Type.PHRASE_PREFIX))
                                 .filter(filters))
                 .withSort(SortBuilders.fieldSort("en.raw"))
                 .withPageable(PageRequest.of((elasticQuery.page() >= 1 ? elasticQuery.page() : 1) - 1, size))
@@ -102,8 +103,10 @@ public class ElasticAnimeServiceImpl implements ElasticAnimeService {
                 .withSort(SortBuilders.fieldSort("en.raw"))
                 .withPageable(PageRequest.of((elasticQuery.page() >= 1 ? elasticQuery.page() : 1) - 1, size))
                 .build();
-        Page<ElasticAnime> elasticAnimePage = animeRepository.search(elasticQuery.query().length() != 0 ? withQuery : withoutQuery);
-        return new SearchResult(elasticAnimePage.getContent(), elasticAnimePage.getTotalElements());
+
+        SearchHits<ElasticAnime> elasticAnimePage = elasticsearchRestTemplate.search(elasticQuery.query().length() != 0 ? withQuery : withoutQuery, ElasticAnime.class, IndexCoordinates.of("animes"));
+        List<ElasticAnime> animes = elasticAnimePage.get().map(SearchHit::getContent).collect(Collectors.toList());
+        return new SearchResult(animes, elasticAnimePage.getTotalHits());
     }
 
     public SearchResult autocomplete(ElasticQuery elasticQuery, int size) {

@@ -5,13 +5,18 @@ cache:
   paths:
     - ./.m2/repository/
 
+variables:
+  APP_PATH: /opt/app
+  BACKEND_PATH: ${APP_PATH}/myongoingscalendar-backend
+  NGINX_PATH: /etc/nginx
+
 stages:
   - build
   - deploy
   - restart
 
 maven-build:
-  image: maven:3-jdk-8
+  image: maven:3-jdk-11
   stage: build
   only:
     - master
@@ -25,8 +30,8 @@ deploy-jar:
   only:
     - master
   script:
-  - mkdir -p /opt/app/myongoingscalendar-backend
-  - cp -R ./target/* /opt/app/myongoingscalendar-backend/
+  - mkdir -p ${BACKEND_PATH}
+  - cp -R ./target/* ${BACKEND_PATH}
   tags:
   - shell
 
@@ -35,10 +40,10 @@ deploy-nginx:
   only:
     - master
   script:
-  - cp -R ./nginx/maps /etc/nginx
-  - cp -R ./nginx/security /etc/nginx
-  - cp -f ./nginx/nginx.linux.conf /etc/nginx/conf.d/default.conf
-  - cp -f ./nginx/nginx.conf /etc/nginx/nginx.conf
+  - cp -R ./nginx/maps ${NGINX_PATH}
+  - cp -R ./nginx/security ${NGINX_PATH}
+  - cp -f ./nginx/nginx.linux.conf ${NGINX_PATH}/conf.d/default.conf
+  - cp -f ./nginx/nginx.conf ${NGINX_PATH}/nginx.conf
   tags:
   - shell
 
