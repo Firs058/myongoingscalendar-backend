@@ -67,7 +67,7 @@ public class UserController {
     @RequestMapping(value = "/feedback/add")
     public AjaxResponse addFeedback(@RequestBody Feedback feedback, @AuthenticationPrincipal JwtUser user) {
         ReCaptchaGoogleResponse reCaptchaResponse = reCaptchaManipulations.verify(feedback.recaptchaToken());
-        if (reCaptchaResponse.isSuccess()) {
+        if (reCaptchaResponse.success()) {
             return userService.get(user.getId())
                     .map(u -> {
                         feedbackService.save(new FeedbackEntity().userEntity(u).text(feedback.text()));

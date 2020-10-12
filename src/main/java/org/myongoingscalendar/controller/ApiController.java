@@ -79,7 +79,7 @@ public class ApiController {
     @RequestMapping(value = "/feedback/add")
     public AjaxResponse addFeedback(@RequestBody Feedback feedback) {
         ReCaptchaGoogleResponse reCaptchaResponse = reCaptchaManipulations.verify(feedback.recaptchaToken());
-        if (reCaptchaResponse.isSuccess()) {
+        if (reCaptchaResponse.success()) {
             feedbackService.save(new FeedbackEntity().userEntity(null).text(feedback.text()));
             return new AjaxResponse<>(new Status(11018, "Thanks for feedback!"));
         }

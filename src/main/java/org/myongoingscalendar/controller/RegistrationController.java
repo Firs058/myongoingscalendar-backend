@@ -56,7 +56,7 @@ public class RegistrationController {
             return new AjaxResponse<>(new Status(10006, "Hey, what's up with you nickname? Does not fit"));
         } else {
             ReCaptchaGoogleResponse reCaptchaResponse = reCaptchaManipulations.verify(user.recaptchaToken());
-            if (reCaptchaResponse.isSuccess()) {
+            if (reCaptchaResponse.success()) {
                 return userService.findByEmailContainingIgnoreCase(user.email())
                         .map(u -> new AjaxResponse<>(new Status(10007, "Sorry, account with that email is already existed")))
                         .orElseGet(() -> {
@@ -94,7 +94,7 @@ public class RegistrationController {
         return userService.findByEmailContainingIgnoreCase(user.email())
                 .map(u -> {
                     ReCaptchaGoogleResponse reCaptchaResponse = reCaptchaManipulations.verify(user.recaptchaToken());
-                    if (!reCaptchaResponse.isSuccess())
+                    if (!reCaptchaResponse.success())
                         return new AjaxResponse<>(new Status(10008, "Invalid captcha"));
                     if (u.password() == null)
                         return new AjaxResponse<>(new Status(10032, "Password recovery is not available for accounts created through a social network"));
