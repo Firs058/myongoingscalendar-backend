@@ -69,7 +69,7 @@ public class UserSettingsController {
                     else if (settings.nickname() == null || settings.nickname().length() <= 3 || settings.nickname().length() >= 21)
                         return new AjaxResponse<>(new Status(10011, "The length of the nickname does not match the requirements"));
                     else if (dbManipulations.getAllStopWords().stream().anyMatch(s -> settings.nickname().matches("(?i:.*" + s + ".*)")))
-                        return new AjaxResponse<>(new Status(10006, "Hey, what's up with you nickname? Does not fit"));
+                        return new AjaxResponse<>(new Status(10006, "This nickname is prohibited"));
                     else {
                         u.userSettingsEntity().nickname(settings.nickname());
                         userService.save(u);

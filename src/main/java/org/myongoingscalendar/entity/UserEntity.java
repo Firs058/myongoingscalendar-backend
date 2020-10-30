@@ -1,5 +1,7 @@
 package org.myongoingscalendar.entity;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.vladmihalcea.hibernate.type.json.JsonNodeBinaryType;
@@ -35,6 +37,13 @@ import java.util.List;
 @TypeDef(
         name = "jsonb-node", typeClass = JsonNodeBinaryType.class
 )
+@JsonAutoDetect(
+        fieldVisibility = JsonAutoDetect.Visibility.ANY,
+        getterVisibility = JsonAutoDetect.Visibility.PUBLIC_ONLY,
+        setterVisibility = JsonAutoDetect.Visibility.ANY,
+        isGetterVisibility = JsonAutoDetect.Visibility.PUBLIC_ONLY
+)
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class UserEntity implements Serializable {
     @Id
     @Column(unique = true, nullable = false)

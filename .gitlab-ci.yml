@@ -39,6 +39,9 @@ deploy-nginx:
   stage: deploy
   only:
     - master
+  except:
+    variables:
+    - $SKIP_NGINX
   script:
   - cp -R ./nginx/maps ${NGINX_PATH}
   - cp -R ./nginx/security ${NGINX_PATH}
