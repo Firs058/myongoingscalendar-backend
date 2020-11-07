@@ -1,0 +1,27 @@
+location /api {
+    try_files $uri @backend_proxy;
+    limit_except POST {
+        deny all;
+    }
+}
+
+location /sitemap.xml {
+    try_files $uri @backend_proxy;
+}
+
+location /robots.txt {
+    try_files $uri @backend_proxy;
+}
+
+location @backend_proxy {
+    proxy_buffers 16 16k;
+    proxy_buffer_size 16k;
+
+    proxy_set_header x-scheme $scheme;
+    proxy_set_header x-forwarded-proto $scheme;
+    proxy_set_header x-forwarded-port $server_port;
+    proxy_set_header x-forwarded-host $host;
+    proxy_set_header x-forwarded-server $host:$server_port;
+    proxy_set_header x-forwarded-for $proxy_add_x_forwarded_for;
+    proxy_pass http://127.0.0.1:8080;
+}

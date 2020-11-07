@@ -45,6 +45,7 @@ deploy-nginx:
   script:
   - cp -R ./nginx/maps ${NGINX_PATH}
   - cp -R ./nginx/security ${NGINX_PATH}
+  - cp -R ./nginx/proxy ${NGINX_PATH}
   - cp -f ./nginx/nginx.linux.conf ${NGINX_PATH}/conf.d/default.conf
   - cp -f ./nginx/nginx.conf ${NGINX_PATH}/nginx.conf
   tags:

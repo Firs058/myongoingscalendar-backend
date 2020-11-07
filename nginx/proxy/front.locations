@@ -1,0 +1,7 @@
+location / {
+    try_files $uri @front_proxy;
+}
+
+location @front_proxy {
+     proxy_pass http://127.0.0.1:3000;
+}
