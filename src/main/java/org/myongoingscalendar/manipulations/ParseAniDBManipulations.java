@@ -17,7 +17,9 @@ import org.myongoingscalendar.utils.AnimeUtil;
 import org.myongoingscalendar.utils.FilenameUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -186,6 +188,7 @@ public class ParseAniDBManipulations {
         }
     }
 
+    @EventListener(ApplicationReadyEvent.class)
     public void checkWebpImages() {
         Path imagesLocationPath = Paths.get(getAnimeImagesLocationPath());
         MIMEType jpg = MIMEType.JPG;
@@ -205,6 +208,7 @@ public class ParseAniDBManipulations {
         }
     }
 
+    @EventListener(ApplicationReadyEvent.class)
     public void checkThumbnails() {
         Path imagesLocationPath = Paths.get(getAnimeImagesLocationPath());
         for (MIMEType mimeType : Arrays.asList(MIMEType.JPG, MIMEType.WEBP)) {
@@ -264,6 +268,7 @@ public class ParseAniDBManipulations {
             out.close();
             return true;
         } catch (IOException e) {
+            log.error("Can't save image to disk for aid: " + aid, e);
             return false;
         }
     }

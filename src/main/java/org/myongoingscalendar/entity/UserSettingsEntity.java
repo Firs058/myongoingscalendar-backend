@@ -56,8 +56,8 @@ public class UserSettingsEntity implements Serializable {
     private Boolean hideRepeats = true;
     @Column(name = "full_time_format", nullable = false)
     private Boolean fullTimeFormat = true;
-    @Column(nullable = false)
-    private Boolean dark = true;
+    @Column(nullable = false, columnDefinition = "BOOLEAN DEFAULT TRUE")
+    private Boolean dark;
     @Type(type = "jsonb")
     @Column(columnDefinition = "jsonb")
     private Image avatar;
@@ -65,4 +65,6 @@ public class UserSettingsEntity implements Serializable {
     private String nickname = "Anonymous";
     @Column(columnDefinition = "text", nullable = false)
     private Locale lang = Locale.ENGLISH;
+    @Column(nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE")
+    private Boolean agreeWithAnalysis;
 }
