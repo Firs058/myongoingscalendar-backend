@@ -17,9 +17,7 @@ import org.myongoingscalendar.utils.AnimeUtil;
 import org.myongoingscalendar.utils.FilenameUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -188,7 +186,6 @@ public class ParseAniDBManipulations {
         }
     }
 
-    @EventListener(ApplicationReadyEvent.class)
     public void checkWebpImages() {
         Path imagesLocationPath = Paths.get(getAnimeImagesLocationPath());
         MIMEType jpg = MIMEType.JPG;
@@ -208,7 +205,6 @@ public class ParseAniDBManipulations {
         }
     }
 
-    @EventListener(ApplicationReadyEvent.class)
     public void checkThumbnails() {
         Path imagesLocationPath = Paths.get(getAnimeImagesLocationPath());
         for (MIMEType mimeType : Arrays.asList(MIMEType.JPG, MIMEType.WEBP)) {
@@ -231,7 +227,7 @@ public class ParseAniDBManipulations {
         if (parent.size() != child.size()) {
             File[] diff = parent
                     .stream()
-                    .filter(elem -> !child.contains(elem))
+                    .filter(elem -> child.stream().noneMatch(c -> FilenameUtils.getBaseName(c.getName()).equals(FilenameUtils.getBaseName(elem.getName()))))
                     .toArray(File[]::new);
 
             if (mimeType == MIMEType.JPG) {
