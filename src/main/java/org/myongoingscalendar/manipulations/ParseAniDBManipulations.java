@@ -188,13 +188,13 @@ public class ParseAniDBManipulations {
 
     public void checkWebpImages() {
         Path imagesLocationPath = Paths.get(getAnimeImagesLocationPath());
-        MIMEType jpg = MIMEType.JPG;
-        MIMEType webp = MIMEType.WEBP;
-        Path pathOriginal = Paths.get(imagesLocationPath.toString(), jpg.toString());
-        Path pathConverted = Paths.get(imagesLocationPath.toString(), webp.toString());
+        MIMEType mimeTypeJPG = MIMEType.JPG;
+        MIMEType mimeTypeWEBP = MIMEType.WEBP;
+        Path pathOriginal = Paths.get(imagesLocationPath.toString(), mimeTypeJPG.toString());
+        Path pathConverted = Paths.get(imagesLocationPath.toString(), mimeTypeWEBP.toString());
 
-        List<File> original = Arrays.asList(Objects.requireNonNull(new File(pathOriginal.toUri()).listFiles((d, name) -> name.endsWith(jpg.getFormat()))));
-        List<File> converted = Arrays.asList(Objects.requireNonNull(new File(pathConverted.toUri()).listFiles((d, name) -> name.endsWith(webp.getFormat()))));
+        List<File> original = Arrays.asList(Objects.requireNonNull(new File(pathOriginal.toUri()).listFiles((d, name) -> name.endsWith(mimeTypeJPG.getFormat()))));
+        List<File> converted = Arrays.asList(Objects.requireNonNull(new File(pathConverted.toUri()).listFiles((d, name) -> name.endsWith(mimeTypeWEBP.getFormat()))));
         if (original.size() != converted.size()) {
             File[] diff = original
                     .stream()
@@ -246,9 +246,8 @@ public class ParseAniDBManipulations {
 
     @Cacheable("getAnimeImagesLocationPath")
     public String getAnimeImagesLocationPath() {
-        return SystemUtils.IS_OS_WINDOWS
-                ? windowsImagesPath + "anime/"
-                : linuxImagesPath + "anime/";
+        String osPath = SystemUtils.IS_OS_WINDOWS ? windowsImagesPath : linuxImagesPath;
+        return osPath + "anime/";
     }
 
     private Boolean downloadImage(String url, String saveTo, String picture, Long aid) {

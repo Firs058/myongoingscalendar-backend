@@ -142,7 +142,8 @@ public class ElasticAnimeServiceImpl implements ElasticAnimeService {
         List<Long> addedTids = userTitleService.getCurrentOngoingsTidsAddedByUser(currentOngoingsTids, userid);
         List<Long> droppedTids = userTitleDropService.getCurrentOngoingsTidsDroppedByUser(currentOngoingsTids, userid);
 
-        return sortCurrentOngoingsList(AnimeUtil.createWatchingStatus(elasticAnimes, addedTids, droppedTids));
+        List<ElasticAnime> elasticAnimesWithWatchingStatus = AnimeUtil.createWatchingStatus(elasticAnimes, addedTids, droppedTids);
+        return sortCurrentOngoingsList(elasticAnimesWithWatchingStatus);
     }
 
     private List<SortedOngoings> sortCurrentOngoingsList(List<ElasticAnime> elasticAnimes) {
@@ -154,6 +155,7 @@ public class ElasticAnimeServiceImpl implements ElasticAnimeService {
                                 start,
                                 elasticAnimes.stream()
                                         .filter(e -> start.contains(e.dateStart()))
+                                        .sorted(Comparator.comparing(ElasticAnime::en, Comparator.nullsLast(Comparator.naturalOrder())))
                                         .collect(Collectors.toList())
                         ))
                 .sorted(Comparator.comparing(SortedOngoings::getDateStart).reversed())
