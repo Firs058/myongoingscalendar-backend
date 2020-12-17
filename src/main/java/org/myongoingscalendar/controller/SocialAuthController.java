@@ -186,9 +186,13 @@ public class SocialAuthController {
                     return userService.save(u);
                 })
                 .orElseGet(() -> {
+                    user.active(true);
                     user.authorityEntities(Collections.singletonList(new UserAuthorityEntity().authorityName(AuthorityName.ROLE_USER).userEntity(user)));
                     user.userSettingsEntity().nickname(user.email().replaceAll("@.*?$", "").trim());
                     user.userSettingsEntity().userEntity(user);
+                    user.commentEntities(new ArrayList<>());
+                    user.usersTitleEntities(new ArrayList<>());
+                    user.userTitleDropEntities(new ArrayList<>());
                     return userService.save(user);
                 })
                 .map(userEntity -> {
