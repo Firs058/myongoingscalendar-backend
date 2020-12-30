@@ -17,6 +17,10 @@ public interface OngoingRepository extends JpaRepository<OngoingEntity, Long> {
 
     Optional<OngoingEntity> findByAnnid(Long tid);
 
+    Optional<OngoingEntity> findByAid(Long aid);
+
+    Optional<OngoingEntity> findByMalid(Long malid);
+
     List<OngoingEntity> findByTidIn(List<Long> tids);
 
     List<OngoingEntity> findByMalidIsNotNull();

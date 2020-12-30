@@ -9,6 +9,7 @@ import com.github.scribejava.core.builder.ServiceBuilder;
 import com.github.scribejava.core.model.*;
 import com.github.scribejava.core.oauth.OAuth10aService;
 import com.github.scribejava.core.oauth.OAuth20Service;
+import lombok.extern.slf4j.Slf4j;
 import org.myongoingscalendar.entity.UserAuthorityEntity;
 import org.myongoingscalendar.model.*;
 import org.myongoingscalendar.entity.UserEntity;
@@ -31,11 +32,12 @@ import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
+@Slf4j
 @RestController
 @RequestMapping(value = "/api/auth", method = RequestMethod.POST, produces = "application/json; charset=utf-8")
 public class SocialAuthController {
 
-    private static final String GOOGLE_PROTECTED_RESOURCE_URL = "https://www.googleapis.com/plus/v1/people/me";
+    private static final String GOOGLE_PROTECTED_RESOURCE_URL = "https://www.googleapis.com/oauth2/v3/userinfo";
     private static final String FACEBOOK_PROTECTED_RESOURCE_URL = "https://graph.facebook.com/v2.11/me";
     private static final String TWITTER_PROTECTED_RESOURCE_URL = "https://api.twitter.com/1.1/account/verify_credentials.json?include_email=true";
     private static final String GITHUB_PROTECTED_RESOURCE_URL = "https://api.github.com/user/public_emails";
@@ -77,25 +79,21 @@ public class SocialAuthController {
     private void postInit() {
         googleService = new ServiceBuilder(GOOGLE_CLIENT_ID)
                 .apiSecret(GOOGLE_CLIENT_SECRET)
-                .scope(SCOPE)
-                .state(SECRET_STATE)
+                .defaultScope(SCOPE)
                 .callback(genCallbackAddress("google"))
                 .build(GoogleApi20.instance());
         facebookService = new ServiceBuilder(FACEBOOK_CLIENT_ID)
                 .apiSecret(FACEBOOK_CLIENT_SECRET)
-                .scope(SCOPE)
-                .state(SECRET_STATE)
+                .defaultScope(SCOPE)
                 .callback(genCallbackAddress("facebook"))
                 .build(FacebookApi.instance());
         twitterService = new ServiceBuilder(TWITTER_CLIENT_ID)
                 .apiSecret(TWITTER_CLIENT_SECRET)
-                .state(SECRET_STATE)
                 .callback(genCallbackAddress("twitter"))
                 .build(TwitterApi.instance());
         githubService = new ServiceBuilder(GITHUB_CLIENT_ID)
                 .apiSecret(GITHUB_CLIENT_SECRET)
-                .scope(GITHUB_SCOPE)
-                .state(SECRET_STATE)
+                .defaultScope(GITHUB_SCOPE)
                 .callback(genCallbackAddress("github"))
                 .build(GitHubApi.instance());
     }
@@ -111,18 +109,28 @@ public class SocialAuthController {
         final OAuthRequest request = new OAuthRequest(Verb.GET, GOOGLE_PROTECTED_RESOURCE_URL);
         googleService.signRequest(accessToken, request);
         final Response response = googleService.execute(request);
-        final GoogleUser googleUser = new ObjectMapper().readValue(response.getBody(), GoogleUser.class);
-        return authUserViaEmail(
-                new UserEntity()
-                        .email(googleUser.getEmails().get(0).getValue())
-                        .social(SNS.google)
-                        .userSettingsEntity(vueSocialAuth20.userSettingsEntity())
-        );
+        if (response.isSuccessful()) {
+            final GoogleUser googleUser = new ObjectMapper().readValue(response.getBody(), GoogleUser.class);
+            if (googleUser.email_verified()) {
+                return authUserViaEmail(
+                        new UserEntity()
+                                .email(googleUser.email())
+                                .social(SNS.google)
+                                .userSettingsEntity(vueSocialAuth20.userSettingsEntity())
+                );
+            } else {
+                log.error(googleUser.email() + " not verified");
+                return new AjaxResponse(new Status(10037, "Email not verified"));
+            }
+        } else {
+            log.error(response.getMessage());
+            return new AjaxResponse(new Status(10036, "Error while logging in via social network"));
+        }
     }
 
     @RequestMapping(value = "/google/url")
     public AjaxResponse getGoogleAuthorizationUrl() {
-        return new AjaxResponse<>(googleService.getAuthorizationUrl());
+        return new AjaxResponse<>(googleService.createAuthorizationUrlBuilder().state(SECRET_STATE).build());
     }
 
     @RequestMapping(value = "/twitter")
@@ -134,13 +142,18 @@ public class SocialAuthController {
         final OAuthRequest request = new OAuthRequest(Verb.GET, TWITTER_PROTECTED_RESOURCE_URL);
         twitterService.signRequest(accessToken, request);
         final Response response = twitterService.execute(request);
-        final TwitterUser twitterUser = new ObjectMapper().readValue(response.getBody(), TwitterUser.class);
-        return authUserViaEmail(
-                new UserEntity()
-                        .email(twitterUser.getEmail())
-                        .social(SNS.twitter)
-                        .userSettingsEntity(vueTwitterSocialAuth.userSettingsEntity())
-        );
+        if (response.isSuccessful()) {
+            final TwitterUser twitterUser = new ObjectMapper().readValue(response.getBody(), TwitterUser.class);
+            return authUserViaEmail(
+                    new UserEntity()
+                            .email(twitterUser.getEmail())
+                            .social(SNS.twitter)
+                            .userSettingsEntity(vueTwitterSocialAuth.userSettingsEntity())
+            );
+        } else {
+            log.error(response.getMessage());
+            return new AjaxResponse(new Status(10036, "Error while logging in via social network"));
+        }
     }
 
     @RequestMapping(value = "/twitter/url")
@@ -158,19 +171,24 @@ public class SocialAuthController {
         final OAuthRequest request = new OAuthRequest(Verb.GET, GITHUB_PROTECTED_RESOURCE_URL);
         githubService.signRequest(accessToken, request);
         final Response response = githubService.execute(request);
-        final GithubUser[] githubUser = new ObjectMapper().readValue(response.getBody(), GithubUser[].class);
-        List<GithubUser> emailsList = Arrays.asList(githubUser);
-        return authUserViaEmail(
-                new UserEntity()
-                        .email(emailsList.get(0).getEmail())
-                        .social(SNS.github)
-                        .userSettingsEntity(vueSocialAuth20.userSettingsEntity())
-        );
+        if (response.isSuccessful()) {
+            final GithubUser[] githubUser = new ObjectMapper().readValue(response.getBody(), GithubUser[].class);
+            List<GithubUser> emailsList = Arrays.asList(githubUser);
+            return authUserViaEmail(
+                    new UserEntity()
+                            .email(emailsList.get(0).getEmail())
+                            .social(SNS.github)
+                            .userSettingsEntity(vueSocialAuth20.userSettingsEntity())
+            );
+        } else {
+            log.error(response.getMessage());
+            return new AjaxResponse(new Status(10036, "Error while logging in via social network"));
+        }
     }
 
     @RequestMapping(value = "/github/url")
     public AjaxResponse getGithubAuthorizationUrl() {
-        return new AjaxResponse<>(githubService.getAuthorizationUrl());
+        return new AjaxResponse<>(githubService.getAuthorizationUrl(SECRET_STATE));
     }
 
     private String genCallbackAddress(String provider) {

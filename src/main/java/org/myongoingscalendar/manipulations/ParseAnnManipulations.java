@@ -16,6 +16,7 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.*;
@@ -62,7 +63,7 @@ public class ParseAnnManipulations {
                     }
 
                     if (ann.getRatings() != null) {
-                        BigDecimal weightedScore = ann.getRatings().getWeightedScore().setScale(2, BigDecimal.ROUND_DOWN);
+                        BigDecimal weightedScore = ann.getRatings().getWeightedScore().setScale(2, RoundingMode.DOWN);
 
                         Optional<RatingEntity> ratingsEntity = ongoing.ratingEntities().stream()
                                 .max(Comparator.comparing(RatingEntity::added));

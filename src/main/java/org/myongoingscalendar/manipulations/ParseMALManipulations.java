@@ -17,6 +17,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.Comparator;
@@ -85,7 +86,7 @@ public class ParseMALManipulations {
                     if (jikanAnime.score() != null) {
                         Optional<RatingEntity> ratingsEntity = ongoing.ratingEntities().stream()
                                 .max(Comparator.comparing(RatingEntity::added));
-                        BigDecimal score = jikanAnime.score().setScale(2, BigDecimal.ROUND_DOWN);
+                        BigDecimal score = jikanAnime.score().setScale(2, RoundingMode.DOWN);
 
                         if (ratingsEntity.isPresent() && AnimeUtil.daysBetween(ratingsEntity.get().added(), new Date()) == 0)
                             ratingsEntity.get().mal(score);

@@ -52,6 +52,16 @@ public class OngoingServiceImpl implements OngoingService {
     }
 
     @Override
+    public Optional<OngoingEntity> findByAid(Long aid) {
+        return ongoingRepository.findByAid(aid);
+    }
+
+    @Override
+    public Optional<OngoingEntity> findByMalid(Long malid) {
+        return ongoingRepository.findByMalid(malid);
+    }
+
+    @Override
     public List<OngoingEntity> findByTidIn(List<Long> tids) {
         return ongoingRepository.findByTidIn(tids);
     }

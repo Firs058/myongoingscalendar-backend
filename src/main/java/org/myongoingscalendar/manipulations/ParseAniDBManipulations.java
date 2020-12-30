@@ -8,6 +8,7 @@ import net.coobird.thumbnailator.geometry.Positions;
 import net.coobird.thumbnailator.name.Rename;
 import org.apache.commons.lang3.SystemUtils;
 import org.jsoup.Jsoup;
+import org.jsoup.select.Elements;
 import org.myongoingscalendar.entity.AnidbEntity;
 import org.myongoingscalendar.entity.OngoingEntity;
 import org.myongoingscalendar.entity.RatingEntity;
@@ -24,6 +25,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.*;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.net.*;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -82,8 +84,11 @@ public class ParseAniDBManipulations {
                 org.jsoup.nodes.Element ratings = anime.select("ratings").first();
 
                 if (ratings != null) {
-                    BigDecimal permanentRating = (ratings.select("permanent").first() != null) ? new BigDecimal(ratings.select("permanent").get(0).text()).setScale(2, BigDecimal.ROUND_DOWN) : new BigDecimal(0);
-                    BigDecimal temporaryRating = (ratings.select("temporary").first() != null) ? new BigDecimal(ratings.select("temporary").get(0).text()).setScale(2, BigDecimal.ROUND_DOWN) : new BigDecimal(0);
+                    Elements elementsPermanent = ratings.select("permanent");
+                    Elements elementsTemporary = ratings.select("permanent");
+
+                    BigDecimal permanentRating = (elementsPermanent.first() != null) ? new BigDecimal(elementsPermanent.get(0).text()).setScale(2, RoundingMode.DOWN) : new BigDecimal(0);
+                    BigDecimal temporaryRating = (elementsTemporary.first() != null) ? new BigDecimal(elementsTemporary.get(0).text()).setScale(2, RoundingMode.DOWN) : new BigDecimal(0);
 
                     Optional<RatingEntity> ratingsEntity = ongoing.ratingEntities().stream()
                             .max(Comparator.comparing(RatingEntity::added));

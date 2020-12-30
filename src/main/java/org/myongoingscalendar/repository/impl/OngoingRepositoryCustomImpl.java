@@ -446,6 +446,8 @@ public class OngoingRepositoryCustomImpl implements OngoingRepositoryCustom {
                     "                     FROM syoboi_timetable q\n" +
                     "                     WHERE s.tid = q.tid AND s.episode = q.episode AND q.date_start < date_trunc('day', now()))\n" +
                     "           THEN NULL\n" +
+                    "         WHEN s.episode - f.series > 12\n" +
+                    "           THEN NULL\n" +
                     "         ELSE s.episode\n" +
                     "         END              AS episode\n" +
                     "       FROM weeks w\n" +
@@ -531,6 +533,8 @@ public class OngoingRepositoryCustomImpl implements OngoingRepositoryCustom {
                     "         WHEN EXISTS(SELECT 1\n" +
                     "                     FROM syoboi_timetable q\n" +
                     "                     WHERE s.tid = q.tid AND s.episode = q.episode AND q.date_start < date_trunc('day', now()))\n" +
+                    "           THEN NULL\n" +
+                    "         WHEN s.episode - f.series > 12\n" +
                     "           THEN NULL\n" +
                     "         ELSE s.episode\n" +
                     "         END              AS episode\n" +
