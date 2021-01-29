@@ -57,6 +57,7 @@ public class ParseMALManipulations {
             try {
                 HttpURLConnection con = (HttpURLConnection) new URL(jikanPath + ongoing.malid()).openConnection();
                 con.setRequestMethod("GET");
+                con.setConnectTimeout(60000);
                 if (con.getResponseCode() == 200) {
                     BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream(), "UTF8"));
                     String inputLine;

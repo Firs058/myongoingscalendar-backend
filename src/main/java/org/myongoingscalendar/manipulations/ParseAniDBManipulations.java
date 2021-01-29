@@ -73,7 +73,7 @@ public class ParseAniDBManipulations {
     private void parse(List<OngoingEntity> ongoings) {
         for (OngoingEntity ongoing : ongoings) {
             try {
-                org.jsoup.nodes.Document doc = Jsoup.connect(anidbPath + ongoing.aid()).userAgent("Mozilla").get();
+                org.jsoup.nodes.Document doc = Jsoup.connect(anidbPath + ongoing.aid()).userAgent("Mozilla").timeout(60000).get();
                 org.jsoup.nodes.Element anime = doc.select("anime").attr("id", String.valueOf(ongoing.aid())).get(0);
                 String picture = anime.select("picture").get(0).text();
                 int episodeCount = Integer.parseInt(anime.select("episodecount").get(0).text());
@@ -259,6 +259,7 @@ public class ParseAniDBManipulations {
         try {
             HttpURLConnection httpConn = (HttpURLConnection) new URL(url + picture).openConnection();
             httpConn.addRequestProperty("User-Agent", "Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:56.0) Gecko/20100101 Firefox/56.0");
+            httpConn.setConnectTimeout(60000);
             InputStream in = new BufferedInputStream(httpConn.getInputStream());
             OutputStream out = new BufferedOutputStream(new FileOutputStream(saveTo + aid + ".jpg"));
             for (int i; (i = in.read()) != -1; ) {

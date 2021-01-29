@@ -20,7 +20,11 @@ import java.util.Date;
 @Accessors(fluent = true)
 @Entity
 @Table(name = "syoboi_timetable",
-        indexes = {@Index(columnList = "date_start", name = "syoboi_timetable_date_start_index")}
+        indexes = {
+                @Index(columnList = "date_start", name = "syoboi_timetable_date_start_index"),
+                @Index(columnList = "tid ASC, episode ASC, date_start ASC", name = "syoboi_timetable_tid_episode_date_start_index"),
+                @Index(columnList = "tid ASC, episode ASC", name = "syoboi_timetable_tid_episode_index")
+        }
 )
 public class SyoboiTimetableEntity implements Serializable {
     @Id
