@@ -19,6 +19,7 @@ import org.myongoingscalendar.utils.FilenameUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -60,6 +61,7 @@ public class ParseAniDBManipulations {
         this.ongoingService = ongoingService;
     }
 
+    @Async
     @Transactional
     public void parseAniDBForCurrentOngoings() {
         parse(ongoingService.getCurrentOngoings().stream().filter(e -> e.aid() != null).collect(Collectors.toList()));

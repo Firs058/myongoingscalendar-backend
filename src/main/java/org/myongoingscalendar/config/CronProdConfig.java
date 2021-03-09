@@ -9,7 +9,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
 
 @Configuration
@@ -46,7 +45,6 @@ public class CronProdConfig {
         parseSyoboiManipulations.parseSyoboiUidTimetableForAllOngoings();
     }
 
-    @Async
     @Scheduled(cron = "0 0 12 * * ?")
     public void updateDBData() {
         parseAniDBManipulations.parseAniDBForCurrentOngoings();

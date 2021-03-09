@@ -10,6 +10,7 @@ import org.myongoingscalendar.service.OngoingService;
 import org.myongoingscalendar.utils.AnimeUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -42,6 +43,7 @@ public class ParseMALManipulations {
         this.genreService = genreService;
     }
 
+    @Async
     @Transactional
     public void parseMALForCurrentOngoings() {
         parse(ongoingService.getCurrentOngoings().stream().filter(e -> e.malid() != null).collect(Collectors.toList()));
