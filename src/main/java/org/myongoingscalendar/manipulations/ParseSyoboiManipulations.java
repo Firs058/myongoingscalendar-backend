@@ -23,7 +23,6 @@ import org.myongoingscalendar.entity.*;
 import org.myongoingscalendar.service.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -258,7 +257,6 @@ public class ParseSyoboiManipulations {
         parse(ongoingService.getCurrentOngoingsWithoutInfo().stream().map(OngoingEntity::tid).distinct().collect(Collectors.toList()));
     }
 
-    @Async
     public void insertFromSyoboiToInfoForCurrentOngoings() {
         parse(syoboiOngoingService.getAll().stream().map(e -> e.ongoingEntity().tid()).distinct().collect(Collectors.toList()));
     }
