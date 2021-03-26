@@ -82,7 +82,7 @@ public class ElasticAnimeServiceImpl implements ElasticAnimeService {
                     .gte(elasticQuery.scores()[0])
                     .lte(elasticQuery.scores()[1]));
         if (elasticQuery.years() != null && elasticQuery.years().length != 0)
-            filters.filter(rangeQuery("dateStart").format("YYYY")
+            filters.filter(rangeQuery("dateStart")
                     .gte(elasticQuery.years()[0])
                     .lte(elasticQuery.years()[1]));
 

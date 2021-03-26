@@ -30,10 +30,10 @@ deploy-jar:
   only:
     - master
   script:
-  - mkdir -p ${BACKEND_PATH}
-  - cp -R ./target/* ${BACKEND_PATH}
+    - mkdir -p ${BACKEND_PATH}
+    - cp -R ./target/* ${BACKEND_PATH}
   tags:
-  - shell
+    - shell
 
 deploy-nginx:
   stage: deploy
@@ -41,22 +41,22 @@ deploy-nginx:
     - master
   except:
     variables:
-    - $SKIP_NGINX
+      - $SKIP_NGINX
   script:
-  - cp -R ./nginx/maps ${NGINX_PATH}
-  - cp -R ./nginx/security ${NGINX_PATH}
-  - cp -R ./nginx/proxy ${NGINX_PATH}
-  - cp -f ./nginx/nginx.linux.conf ${NGINX_PATH}/conf.d/default.conf
-  - cp -f ./nginx/nginx.conf ${NGINX_PATH}/nginx.conf
+    - cp -R ./nginx/maps ${NGINX_PATH}
+    - cp -R ./nginx/security ${NGINX_PATH}
+    - cp -R ./nginx/proxy ${NGINX_PATH}
+    - cp -f ./nginx/nginx.linux.conf ${NGINX_PATH}/conf.d/default.conf
+    - cp -f ./nginx/nginx.conf ${NGINX_PATH}/nginx.conf
   tags:
-  - shell
+    - shell
 
 restart:
   stage: restart
   only:
-  - master
+    - master
   script:
-  - sudo systemctl restart nginx
-  - sudo systemctl restart myongoingscalendar
+    - sudo systemctl restart nginx
+    - sudo systemctl restart myongoingscalendar
   tags:
-  - shell
+    - shell
