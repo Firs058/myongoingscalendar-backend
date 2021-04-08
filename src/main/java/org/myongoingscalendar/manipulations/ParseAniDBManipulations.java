@@ -226,6 +226,23 @@ public class ParseAniDBManipulations {
         }
     }
 
+    public void deleteImagesForTitle(OngoingEntity ongoing) {
+        Path imagesLocationPath = Paths.get(getAnimeImagesLocationPath());
+        for (MIMEType mimeType : Arrays.asList(MIMEType.JPG, MIMEType.WEBP)) {
+            File fileOriginal = new File(Paths.get(imagesLocationPath.toString(), mimeType.toString(), ongoing.aid() + mimeType.getFormat()).toUri());
+            File fileThumbnail = new File(Paths.get(imagesLocationPath.toString(), mimeType.toString(), "thumbnails", ongoing.aid() + mimeType.getFormat()).toUri());
+
+            Arrays.asList(fileOriginal, fileThumbnail)
+                    .forEach(file -> {
+                        if (file.delete()) {
+                            log.info("Image deleted: " + file.getPath());
+                        } else {
+                            log.error("Can't delete image: " + file.getPath());
+                        }
+                    });
+        }
+    }
+
     private void makeThumbnails(File file, MIMEType mimeType) throws IOException {
         List<File> parent = Arrays.asList(Objects.requireNonNull(new File(file.getParent()).listFiles((d, name) -> name.endsWith(mimeType.getFormat()))));
         List<File> child = Arrays.asList(Objects.requireNonNull(file.listFiles((d, name) -> name.endsWith(mimeType.getFormat()))));

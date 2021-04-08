@@ -1,13 +1,13 @@
 package org.myongoingscalendar.controller;
 
 import org.myongoingscalendar.elastic.FillElastic;
+import org.myongoingscalendar.elastic.service.ElasticAnimeService;
 import org.myongoingscalendar.manipulations.ParseAniDBManipulations;
 import org.myongoingscalendar.manipulations.ParseAnnManipulations;
 import org.myongoingscalendar.manipulations.ParseMALManipulations;
 import org.myongoingscalendar.manipulations.ParseSyoboiManipulations;
 import org.myongoingscalendar.model.*;
 import org.myongoingscalendar.service.OngoingService;
-import org.myongoingscalendar.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -19,15 +19,17 @@ public class AdminController {
     private final ParseAnnManipulations parseAnnManipulations;
     private final ParseSyoboiManipulations parseSyoboiManipulations;
     private final FillElastic fillElastic;
+    private final ElasticAnimeService elasticAnimeService;
     private final OngoingService ongoingService;
 
     @Autowired
-    public AdminController(ParseAniDBManipulations parseAniDBManipulations, ParseMALManipulations parseMALManipulations, ParseAnnManipulations parseAnnManipulations, ParseSyoboiManipulations parseSyoboiManipulations, FillElastic fillElastic, OngoingService ongoingService) {
+    public AdminController(ParseAniDBManipulations parseAniDBManipulations, ParseMALManipulations parseMALManipulations, ParseAnnManipulations parseAnnManipulations, ParseSyoboiManipulations parseSyoboiManipulations, FillElastic fillElastic, ElasticAnimeService elasticAnimeService, OngoingService ongoingService) {
         this.parseAniDBManipulations = parseAniDBManipulations;
         this.parseMALManipulations = parseMALManipulations;
         this.parseAnnManipulations = parseAnnManipulations;
         this.parseSyoboiManipulations = parseSyoboiManipulations;
         this.fillElastic = fillElastic;
+        this.elasticAnimeService = elasticAnimeService;
         this.ongoingService = ongoingService;
     }
 
@@ -47,6 +49,18 @@ public class AdminController {
     @PostMapping("/data")
     public AjaxResponse getAdminData() {
         return new AjaxResponse<>(ongoingService.getAdminData());
+    }
+
+    @RequestMapping(value = "/data/delete/{tid}")
+    public AjaxResponse deleteTitleData(@PathVariable("tid") Long tid) {
+        return ongoingService.findByTid(tid)
+                .map(o -> {
+                    elasticAnimeService.findByTid(tid).ifPresent(elasticAnimeService::delete);
+                    parseAniDBManipulations.deleteImagesForTitle(o);
+                    ongoingService.delete(o);
+                    return new AjaxResponse<>();
+                })
+                .orElse(new AjaxResponse<>(new Status(10016, "Server error. What you expect?")));
     }
 
     @PostMapping("/update")
