@@ -59,6 +59,7 @@ public class ParseSyoboiManipulations {
         List<OngoingEntity> tempOngoingEntityList = new ArrayList<>();
         try {
             HttpURLConnection httpURLConnection = (HttpURLConnection) new URL(syoboiRss).openConnection();
+            httpURLConnection.setConnectTimeout(60000);
             SyndFeedInput input = new SyndFeedInput();
             SyndFeed feed;
             feed = input.build(new XmlReader(httpURLConnection));

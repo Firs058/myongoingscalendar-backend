@@ -104,6 +104,7 @@ public class ImageManipulations {
         con.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
         con.setRequestMethod("POST");
         con.setDoOutput(true);
+        con.setConnectTimeout(60000);
 
         ObjectMapper mapperObj = new ObjectMapper();
         Map<String, String> inputMap = new HashMap<>();

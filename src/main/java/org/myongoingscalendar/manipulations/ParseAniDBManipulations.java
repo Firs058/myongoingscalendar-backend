@@ -173,6 +173,7 @@ public class ParseAniDBManipulations {
                 );
                 HttpURLConnection con = (HttpURLConnection) url.openConnection();
                 con.setRequestMethod("GET");
+                con.setConnectTimeout(60000);
                 if (con.getResponseCode() == 200) {
                     BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
                     String inputLine;
@@ -298,6 +299,7 @@ public class ParseAniDBManipulations {
             con.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
             con.setRequestMethod("POST");
             con.setDoOutput(true);
+            con.setConnectTimeout(60000);
 
             ObjectMapper mapperObj = new ObjectMapper();
             Map<String, String> inputMap = new HashMap<>();
