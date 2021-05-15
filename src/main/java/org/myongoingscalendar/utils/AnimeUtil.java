@@ -11,7 +11,6 @@ import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
 import java.util.*;
-import java.util.stream.Collectors;
 
 import static java.time.temporal.ChronoField.DAY_OF_MONTH;
 import static java.time.temporal.ChronoUnit.DAYS;
@@ -30,8 +29,8 @@ public class AnimeUtil {
                                 day,
                                 animeDay.stream()
                                         .filter(e -> day.equals(e.day()))
-                                        .collect(Collectors.toList())))
-                .collect(Collectors.toList());
+                                        .toList()))
+                .toList();
     }
 
     public static String ZonesManipulations(Long unixtime, ZoneId zoneId, int switcher, Locale locale) {
@@ -40,16 +39,12 @@ public class AnimeUtil {
         DateTimeFormatter date_start_v2 = DateTimeFormatter.ofPattern("dd-MM-YY EEEE").withLocale(locale);
         DateTimeFormatter time_start = DateTimeFormatter.ofPattern("HH:mm");
         ZonedDateTime zonedDateTime = ZonedDateTime.ofInstant(instant, zoneId);
-        switch (switcher) {
-            case 1:
-                return date_start.format(zonedDateTime);
-            case 2:
-                return time_start.format(zonedDateTime);
-            case 3:
-                return date_start_v2.format(zonedDateTime);
-            default:
-                return null;
-        }
+        return switch (switcher) {
+            case 1 -> date_start.format(zonedDateTime);
+            case 2 -> time_start.format(zonedDateTime);
+            case 3 -> date_start_v2.format(zonedDateTime);
+            default -> null;
+        };
     }
 
     public static Day makeDaySupport(Long unixtime, ZoneId zoneId) {
@@ -69,7 +64,7 @@ public class AnimeUtil {
                 .map(arg -> new Rating()
                         .dbname((RatingDB) arg[0])
                         .score((BigDecimal) arg[1]))
-                .collect(Collectors.toList());
+                .toList();
     }
 
     public static BigDecimal calculateWeightedAverage(Map<RatingDB, BigDecimal> map) {
@@ -93,7 +88,7 @@ public class AnimeUtil {
                         .link((arg[1] != null) ? (String) arg[1] + arg[2] : (String) arg[2])
                         .image((Image) arg[3])
                 )
-                .collect(Collectors.toList());
+                .toList();
     }
 
     public static HashMap<String, String> createHEX(JsonNode jsonNode) {
@@ -136,7 +131,7 @@ public class AnimeUtil {
 
     public static Boolean createRecommended(Map<RatingDB, BigDecimal> map) {
         BigDecimal rating = calculateWeightedAverage(map);
-        return rating != null && rating.compareTo(new BigDecimal(7.3)) > -1;
+        return rating != null && rating.compareTo(new BigDecimal("7.2")) > -1;
     }
 
     public static int daysBetween(Date date1, Date date2) {
@@ -167,7 +162,7 @@ public class AnimeUtil {
         }
     }
 
-    public static List<ElasticAnime> createWatchingStatus(List<ElasticAnime> elasticAnimes, List<Long> added, List<Long> dropped) {
+    public static List<ElasticAnime> fillWatchingStatusAndFavorite(List<ElasticAnime> elasticAnimes, List<Long> added, List<Long> dropped, List<Long> favorites) {
         DateTimeFormatter formatter = new DateTimeFormatterBuilder()
                 .appendPattern("yyyy-MM")
                 .parseDefaulting(DAY_OF_MONTH, 1)
@@ -191,6 +186,23 @@ public class AnimeUtil {
                     .filter(e -> dropped.stream().anyMatch(a -> e.tid().equals(a)))
                     .forEach(e -> e.watchingStatus(WatchingStatus.DROPPED));
 
+        if (favorites.size() > 0)
+            elasticAnimes.stream()
+                    .filter(e -> favorites.contains(e.tid()))
+                    .forEach(e -> e.favorite(true));
+
         return elasticAnimes;
+    }
+
+    public static boolean isScoreInCorrectRange(BigDecimal score) {
+        return score.compareTo(new BigDecimal(1)) >= 0 && score.compareTo(new BigDecimal(10)) <= 0;
+    }
+
+    public static BigDecimal getAvgScore(List<BigDecimal> bigDecimals, RoundingMode roundingMode) {
+        if (bigDecimals.size() == 0) return null;
+        BigDecimal sum = bigDecimals.stream()
+                .map(Objects::requireNonNull)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        return sum.divide(new BigDecimal(bigDecimals.size()), roundingMode);
     }
 }

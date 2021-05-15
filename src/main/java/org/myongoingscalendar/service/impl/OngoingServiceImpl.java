@@ -121,7 +121,7 @@ public class OngoingServiceImpl implements OngoingService {
                         .annid(Objects.nonNull(o.annid()) ? o.annid() : null)
                         .titleen(Objects.nonNull(o.anidbEntity()) ? o.anidbEntity().titleEN() : "null")
                         .title(Objects.nonNull(o.syoboiInfoEntity()) ? o.syoboiInfoEntity().title() : "null"))
-                .collect(Collectors.toList());
+                .toList();
     }
 
     @Override

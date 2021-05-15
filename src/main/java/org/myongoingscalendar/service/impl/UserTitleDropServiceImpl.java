@@ -41,6 +41,11 @@ public class UserTitleDropServiceImpl implements UserTitleDropService {
     }
 
     @Override
+    public List<Long> getAllOngoingsTidsDroppedByUser(Long userid) {
+        return userTitleDropRepository.getAllOngoingsTidsDroppedByUser(userid);
+    }
+
+    @Override
     public List<Long> getCurrentOngoingsTidsDroppedByUser(List<Long> ongoingEntities, Long userid) {
         return userTitleDropRepository.getCurrentOngoingsTidsDroppedByUser(ongoingEntities, userid);
     }

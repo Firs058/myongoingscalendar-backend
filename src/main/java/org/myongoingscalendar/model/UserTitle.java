@@ -6,6 +6,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
 
+import java.math.BigDecimal;
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -13,7 +15,9 @@ import lombok.experimental.Accessors;
 @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY)
 public class UserTitle {
     private Title title;
-    private Boolean marked;
+    private Boolean added;
+    private BigDecimal score;
+    private Boolean favorite;
     private Broadcast broadcast;
     private Comments comments;
 }

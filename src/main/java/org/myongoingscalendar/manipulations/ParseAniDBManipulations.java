@@ -62,7 +62,7 @@ public class ParseAniDBManipulations {
 
     @Transactional
     public void parseAniDBForCurrentOngoings() {
-        parse(ongoingService.getCurrentOngoings().stream().filter(e -> e.aid() != null).collect(Collectors.toList()));
+        parse(ongoingService.getCurrentOngoings().stream().filter(e -> e.aid() != null).toList());
     }
 
     @Transactional

@@ -6,6 +6,7 @@ import org.myongoingscalendar.entity.UserSettingsEntity;
 import org.myongoingscalendar.manipulations.DBManipulations;
 import org.myongoingscalendar.manipulations.ImageManipulations;
 import org.myongoingscalendar.model.*;
+import org.myongoingscalendar.model.ResponseStatus;
 import org.myongoingscalendar.security.JwtUser;
 import org.myongoingscalendar.service.UserService;
 import org.myongoingscalendar.utils.AnimeUtil;
@@ -35,67 +36,67 @@ public class UserSettingsController {
 
     @Transactional
     @RequestMapping("/sync")
-    public AjaxResponse settings(@AuthenticationPrincipal JwtUser user) {
+    public AjaxResponse<?> settings(@AuthenticationPrincipal JwtUser user) {
         return userService.get(user.getId())
                 .map(u -> new AjaxResponse<>(
                         new LoginStatus()
                                 .email(u.email())
                                 .social(u.social() != SNS.local)
-                                .roles(u.authorityEntities().stream().map(UserAuthorityEntity::authorityName).collect(Collectors.toList()))
+                                .roles(u.authorityEntities().stream().map(UserAuthorityEntity::authorityName).toList())
                                 .settings(u.userSettingsEntity())
                 ))
-                .orElse(new AjaxResponse<>(new Status(10012, "You must be logged")));
+                .orElse(new AjaxResponse<>(ResponseStatus.S10012.getStatus()));
     }
 
     @Transactional
     @RequestMapping(value = "/save")
-    public AjaxResponse syncSettings(@RequestBody UserSettingsEntity userSettingsEntity, @AuthenticationPrincipal JwtUser user) {
+    public AjaxResponse<?> syncSettings(@RequestBody UserSettingsEntity userSettingsEntity, @AuthenticationPrincipal JwtUser user) {
         return userService.get(user.getId())
                 .map(u -> {
                     u.userSettingsEntity(userSettingsEntity.userEntity(u));
                     userService.save(u);
-                    return new AjaxResponse<>(new Status(11009, "Settings saved"));
+                    return new AjaxResponse<>(ResponseStatus.S11009.getStatus());
                 })
-                .orElse(new AjaxResponse<>(new Status(10012, "You must be logged")));
+                .orElse(new AjaxResponse<>(ResponseStatus.S10012.getStatus()));
     }
 
     @Transactional
     @RequestMapping(value = "/nickname/change")
-    public AjaxResponse nicknamePass(@RequestBody UserSettingsEntity settings, @AuthenticationPrincipal JwtUser jwtUser) {
+    public AjaxResponse<?> nicknamePass(@RequestBody UserSettingsEntity settings, @AuthenticationPrincipal JwtUser jwtUser) {
         return userService.get(jwtUser.getId())
                 .map(u -> {
                     if (!settings.nickname().matches("^[a-zA-Z0-9]+$"))
-                        return new AjaxResponse<>(new Status(10005, "Only latin text and numbers allowed"));
+                        return new AjaxResponse<>(ResponseStatus.S10005.getStatus());
                     else if (settings.nickname() == null || settings.nickname().length() <= 3 || settings.nickname().length() >= 21)
-                        return new AjaxResponse<>(new Status(10011, "The length of the nickname does not match the requirements"));
+                        return new AjaxResponse<>(ResponseStatus.S10011.getStatus());
                     else if (dbManipulations.getAllStopWords().stream().anyMatch(s -> settings.nickname().matches("(?i:.*" + s + ".*)")))
-                        return new AjaxResponse<>(new Status(10006, "This nickname is prohibited"));
+                        return new AjaxResponse<>(ResponseStatus.S10006.getStatus());
                     else {
                         u.userSettingsEntity().nickname(settings.nickname());
                         userService.save(u);
-                        return new AjaxResponse<>(new Status(11006, "Nickname changed"));
+                        return new AjaxResponse<>(ResponseStatus.S10006.getStatus());
                     }
                 })
-                .orElse(new AjaxResponse<>(new Status(10012, "You must be logged")));
+                .orElse(new AjaxResponse<>(ResponseStatus.S10012.getStatus()));
     }
 
     @Transactional
     @RequestMapping(value = "/pass/change")
-    public AjaxResponse changePass(@RequestBody UserEntity user, @AuthenticationPrincipal JwtUser jwtUser) {
+    public AjaxResponse<?> changePass(@RequestBody UserEntity user, @AuthenticationPrincipal JwtUser jwtUser) {
         return userService.get(jwtUser.getId())
                 .map(u -> {
                     if (user.password().length() < 8)
-                        return new AjaxResponse<>(new Status(10002, "Password cannot contain less than 8 character"));
+                        return new AjaxResponse<>(ResponseStatus.S10002.getStatus());
                     u.password(BCrypt.hashpw(user.password(), BCrypt.gensalt()));
                     userService.save(u);
-                    return new AjaxResponse<>(new Status(11005, "Password changed"));
+                    return new AjaxResponse<>(ResponseStatus.S11005.getStatus());
                 })
-                .orElse(new AjaxResponse<>(new Status(10012, "You must be logged")));
+                .orElse(new AjaxResponse<>(ResponseStatus.S10012.getStatus()));
     }
 
     @Transactional
     @RequestMapping(value = "/avatar/change")
-    public AjaxResponse changeAvatar(@RequestParam MultipartFile avatar, @AuthenticationPrincipal JwtUser jwtUser) {
+    public AjaxResponse<?> changeAvatar(@RequestParam MultipartFile avatar, @AuthenticationPrincipal JwtUser jwtUser) {
         return userService.get(jwtUser.getId())
                 .map(u -> {
                     if (imageManipulations.validateAvatar(avatar)) {
@@ -107,18 +108,18 @@ public class UserSettingsController {
                                 imageManipulations.deleteAvatar(oldAvatar);
                             }
                             u.userSettingsEntity().avatar(image);
-                            return new AjaxResponse<>(new Status(11019, "Avatar saved"), image);
+                            return new AjaxResponse<>(ResponseStatus.S11019.getStatus(), image);
                         }
-                        return new AjaxResponse<>(new Status(10015, "One of our services does not work. Do not worry, we'll fix it soon"));
+                        return new AjaxResponse<>(ResponseStatus.S10015.getStatus());
                     }
-                    return new AjaxResponse<>(new Status(11034, "Wrong file"));
+                    return new AjaxResponse<>(ResponseStatus.S10034.getStatus());
                 })
-                .orElse(new AjaxResponse<>(new Status(10012, "You must be logged")));
+                .orElse(new AjaxResponse<>(ResponseStatus.S10012.getStatus()));
     }
 
     @Transactional
     @RequestMapping(value = "/avatar/remove")
-    public AjaxResponse removeAvatar(@AuthenticationPrincipal JwtUser jwtUser) {
+    public AjaxResponse<?> removeAvatar(@AuthenticationPrincipal JwtUser jwtUser) {
         return userService.get(jwtUser.getId())
                 .map(u -> {
                     Image avatar = u.userSettingsEntity().avatar();
@@ -126,8 +127,8 @@ public class UserSettingsController {
                         imageManipulations.deleteAvatar(avatar);
                         u.userSettingsEntity().avatar(null);
                     }
-                    return new AjaxResponse<>(new Status(11020, "Avatar removed"));
+                    return new AjaxResponse<>(ResponseStatus.S11020.getStatus());
                 })
-                .orElse(new AjaxResponse<>(new Status(10012, "You must be logged")));
+                .orElse(new AjaxResponse<>(ResponseStatus.S10012.getStatus()));
     }
 }

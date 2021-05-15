@@ -33,8 +33,8 @@ import java.sql.Timestamp;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 @Slf4j
 @Service
@@ -46,12 +46,14 @@ public class ParseSyoboiManipulations {
     private String syoboiPath;
     private final OngoingService ongoingService;
     private final SyoboiOngoingService syoboiOngoingService;
+    private final SyoboiInfoService syoboiInfoService;
     private final ChannelService channelService;
 
     @Autowired
-    public ParseSyoboiManipulations(OngoingService ongoingService, SyoboiOngoingService syoboiOngoingService, ChannelService channelService) {
+    public ParseSyoboiManipulations(OngoingService ongoingService, SyoboiOngoingService syoboiOngoingService, SyoboiInfoService syoboiInfoService, ChannelService channelService) {
         this.ongoingService = ongoingService;
         this.syoboiOngoingService = syoboiOngoingService;
+        this.syoboiInfoService = syoboiInfoService;
         this.channelService = channelService;
     }
 
@@ -95,7 +97,7 @@ public class ParseSyoboiManipulations {
             log.error("Can't parse syoboi RSS", e);
         }
 
-        List<Long> tids = tempOngoingEntityList.stream().map(OngoingEntity::tid).distinct().collect(Collectors.toList());
+        List<Long> tids = tempOngoingEntityList.stream().map(OngoingEntity::tid).distinct().toList();
 
         List<OngoingEntity> existentList = ongoingService.findByTidIn(tids);
 
@@ -111,7 +113,7 @@ public class ParseSyoboiManipulations {
 
         List<OngoingEntity> notInDB = tempOngoingEntityList.stream()
                 .filter(os -> existentList.stream().noneMatch(ns -> os.tid().equals(ns.tid())))
-                .collect(Collectors.toList());
+                .toList();
 
         if (notInDB.size() > 0) ongoingService.saveAll(notInDB);
     }
@@ -149,7 +151,7 @@ public class ParseSyoboiManipulations {
             log.error("Can't parse syoboi ongoings", e);
         }
 
-        List<Long> tids = tempOngoingEntityList.stream().map(OngoingEntity::tid).distinct().collect(Collectors.toList());
+        List<Long> tids = tempOngoingEntityList.stream().map(OngoingEntity::tid).distinct().toList();
 
         List<OngoingEntity> existentList = ongoingService.findByTidIn(tids);
 
@@ -164,22 +166,22 @@ public class ParseSyoboiManipulations {
 
         List<OngoingEntity> notInDB = tempOngoingEntityList.stream()
                 .filter(os -> existentList.stream().noneMatch(ns -> os.tid().equals(ns.tid())))
-                .collect(Collectors.toList());
+                .toList();
 
         if (notInDB.size() > 0) ongoingService.saveAll(notInDB);
 
         List<OngoingEntity> toDelete = ongoingService.getCurrentOngoings().stream()
                 .filter(os -> tempOngoingEntityList.stream().noneMatch(ns -> os.tid().equals(ns.tid())))
-                .collect(Collectors.toList());
+                .toList();
 
-        toDelete.forEach(e-> e.syoboiOngoingEntity(null));
+        toDelete.forEach(e -> e.syoboiOngoingEntity(null));
 
         if (toDelete.size() > 0) ongoingService.saveAll(toDelete);
     }
 
     @Transactional
     public void parseSyoboiUidTimetableForAllOngoings() {
-        parseList(syoboiOngoingService.getAll().stream().map(e -> e.ongoingEntity().tid()).distinct().collect(Collectors.toList()));
+        parseList(syoboiOngoingService.getAll().stream().map(e -> e.ongoingEntity().tid()).distinct().toList());
     }
 
     private void parseSyoboiUidTimetable(Long tid) {
@@ -219,7 +221,7 @@ public class ParseSyoboiManipulations {
                         });
                 o.syoboiTimetableEntities().clear();
                 ongoingService.flush();
-                o.syoboiTimetableEntities().addAll(syoboiTimetableEntityList);
+                if (!syoboiTimetableEntityList.isEmpty()) o.syoboiTimetableEntities().addAll(syoboiTimetableEntityList);
                 o.syoboiRssEntities().forEach(s -> s.updated(true));
                 ongoingService.save(o);
             } catch (IOException e) {
@@ -235,7 +237,7 @@ public class ParseSyoboiManipulations {
                 .filter(a -> a.updated().equals(false))
                 .map(m -> m.ongoingEntity().tid())
                 .distinct()
-                .collect(Collectors.toList());
+                .toList();
         parseList(toParse);
     }
 
@@ -251,15 +253,23 @@ public class ParseSyoboiManipulations {
     }
 
     public void insertFromSyoboiToInfoForAll() {
-        parse(ongoingService.getAll().stream().map(OngoingEntity::tid).distinct().collect(Collectors.toList()));
+        parse(ongoingService.getAll().stream().map(OngoingEntity::tid).distinct().toList());
     }
 
     public void insertFromSyoboiToInfoForEmptyInfo() {
-        parse(ongoingService.getCurrentOngoingsWithoutInfo().stream().map(OngoingEntity::tid).distinct().collect(Collectors.toList()));
+        parse(ongoingService.getCurrentOngoingsWithoutInfo().stream().map(OngoingEntity::tid).distinct().toList());
     }
 
-    public void insertFromSyoboiToInfoForCurrentOngoings() {
-        parse(syoboiOngoingService.getAll().stream().map(e -> e.ongoingEntity().tid()).distinct().collect(Collectors.toList()));
+    public void insertFromSyoboiToInfoForOldOngoingsAndCurrentOngoings() {
+        List<Long> oldOngoings = syoboiInfoService.findAllByFirstEndMonthIsNullAndFirstEndYearIsNull().stream()
+                .map(e -> e.ongoingEntity().tid())
+                .distinct()
+                .toList();
+        List<Long> currentOngoings = syoboiOngoingService.getAll().stream()
+                .map(e -> e.ongoingEntity().tid())
+                .distinct()
+                .toList();
+        parse(Stream.concat(oldOngoings.stream(), currentOngoings.stream()).distinct().toList());
     }
 
     private void parse(List<Long> tids) {

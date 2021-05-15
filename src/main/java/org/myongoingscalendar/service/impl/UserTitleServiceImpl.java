@@ -1,6 +1,7 @@
 package org.myongoingscalendar.service.impl;
 
 import org.myongoingscalendar.entity.UserTitleEntity;
+import org.myongoingscalendar.entity.UserTitleFavoriteEntity;
 import org.myongoingscalendar.repository.UserTitleRepository;
 import org.myongoingscalendar.service.UserTitleService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,8 +49,18 @@ public class UserTitleServiceImpl implements UserTitleService {
     }
 
     @Override
+    public List<Long> getAllOngoingsTidsAddedByUser(Long userid) {
+        return userTitleRepository.getAllOngoingsTidsAddedByUser(userid);
+    }
+
+    @Override
     public List<Long> getCurrentOngoingsTidsAddedByUser(List<Long> ongoingEntities, Long userid) {
         return userTitleRepository.getCurrentOngoingsTidsAddedByUser(ongoingEntities, userid);
+    }
+
+    @Override
+    public Optional<UserTitleEntity> findByOngoingEntity_TidAndUserEntity_Id(Long tid, Long userid) {
+        return userTitleRepository.findByOngoingEntity_TidAndUserEntity_Id(tid, userid);
     }
 
     @Override

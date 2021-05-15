@@ -17,6 +17,8 @@ public interface UserTitleDropService {
 
     List<UserTitleDropEntity> getAll();
 
+    List<Long> getAllOngoingsTidsDroppedByUser(Long userid);
+
     List<Long> getCurrentOngoingsTidsDroppedByUser(List<Long> ongoingEntities, Long userid);
 
     Optional<UserTitleDropEntity> findByOngoingEntity_TidAndUserEntity_Id(Long tid, Long userid);

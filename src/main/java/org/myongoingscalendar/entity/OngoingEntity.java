@@ -41,6 +41,10 @@ public class OngoingEntity implements Serializable {
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "ongoingEntity", orphanRemoval = true)
     private List<UserTitleEntity> userTitleEntities;
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "ongoingEntity", orphanRemoval = true)
+    private List<UserTitleScoreEntity> userTitleScoreEntities;
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "ongoingEntity", orphanRemoval = true)
+    private List<UserTitleFavoriteEntity> userTitleFavoriteEntities;
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "ongoingEntity", orphanRemoval = true)
     private List<CommentEntity> commentEntities;
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "ongoingEntity", orphanRemoval = true)
     private List<NewsEntity> newsEntities;

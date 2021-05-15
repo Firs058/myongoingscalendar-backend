@@ -1,10 +1,7 @@
 package org.myongoingscalendar.service.impl;
 
 import org.myongoingscalendar.entity.*;
-import org.myongoingscalendar.model.Comment;
-import org.myongoingscalendar.model.Comments;
-import org.myongoingscalendar.model.Emotion;
-import org.myongoingscalendar.model.Status;
+import org.myongoingscalendar.model.*;
 import org.myongoingscalendar.repository.CommentRepository;
 import org.myongoingscalendar.repository.CommentRepositoryCustom;
 import org.myongoingscalendar.service.*;
@@ -41,7 +38,7 @@ public class CommentServiceCustomImpl implements CommentServiceCustom {
         return userService.get(userid)
                 .map(u -> {
                     if (u.muted())
-                        return new Status(10025, "Your account has muted, you can't add a comment");
+                        return ResponseStatus.S10025.getStatus();
                     if (comment.text() != null && !comment.text().equals("")) {
                         final String commentPath = (comment.id() != null)
                                 ? String.join(".", commentRepository.gePathtById(comment.id()), String.valueOf(comment.id()))
@@ -55,12 +52,12 @@ public class CommentServiceCustomImpl implements CommentServiceCustom {
                                                     .text(comment.text())
                                                     .path(commentPath));
                                     ongoingService.save(o);
-                                    return new Status(11011, "Comment added");
+                                    return ResponseStatus.S11011.getStatus();
                                 })
-                                .orElseGet(() -> new Status(10026, "Can't add comment"));
-                    } else return new Status(10027, "Why null comment?");
+                                .orElse(ResponseStatus.S10026.getStatus());
+                    } else return ResponseStatus.S10027.getStatus();
                 })
-                .orElseGet(() -> new Status(10012, "You must be logged"));
+                .orElse(ResponseStatus.S10012.getStatus());
     }
 
     @Override
@@ -87,31 +84,28 @@ public class CommentServiceCustomImpl implements CommentServiceCustom {
                         .map(commentEntity -> {
                             LikeEntity like = new LikeEntity().commentEntity(commentEntity).userEntity(u);
                             DislikeEntity dislike = new DislikeEntity().commentEntity(commentEntity).userEntity(u);
-                            switch (emotion) {
-                                case like:
-                                    return likeService.findByCommentEntity_OngoingEntity_TidAndCommentEntity_Id(tid, comment_id)
-                                            .map(likeEntity -> new Status(10028, "Already liked"))
-                                            .orElseGet(() -> {
-                                                likeService.save(like);
-                                                dislikeService.findByCommentEntity_OngoingEntity_TidAndCommentEntity_Id(tid, comment_id)
-                                                        .ifPresent(dislikeService::delete);
-                                                return new Status(11012, "Like added");
-                                            });
-                                case dislike:
-                                    return dislikeService.findByCommentEntity_OngoingEntity_TidAndCommentEntity_Id(tid, comment_id)
-                                            .map(dislikeEntity -> new Status(10029, "Already disliked"))
-                                            .orElseGet(() -> {
-                                                dislikeService.save(dislike);
-                                                likeService.findByCommentEntity_OngoingEntity_TidAndCommentEntity_Id(tid, comment_id)
-                                                        .ifPresent(likeService::delete);
-                                                return new Status(11013, "Dislike added");
-                                            });
-                                default:
-                                    return new Status(10016, "Server error. What you expect?");
-                            }
+                            return switch (emotion) {
+                                case like -> likeService.findByCommentEntity_OngoingEntity_TidAndCommentEntity_Id(tid, comment_id)
+                                        .map(likeEntity -> ResponseStatus.S10028.getStatus())
+                                        .orElseGet(() -> {
+                                            likeService.save(like);
+                                            dislikeService.findByCommentEntity_OngoingEntity_TidAndCommentEntity_Id(tid, comment_id)
+                                                    .ifPresent(dislikeService::delete);
+                                            return ResponseStatus.S11012.getStatus();
+                                        });
+                                case dislike -> dislikeService.findByCommentEntity_OngoingEntity_TidAndCommentEntity_Id(tid, comment_id)
+                                        .map(dislikeEntity -> ResponseStatus.S10029.getStatus())
+                                        .orElseGet(() -> {
+                                            dislikeService.save(dislike);
+                                            likeService.findByCommentEntity_OngoingEntity_TidAndCommentEntity_Id(tid, comment_id)
+                                                    .ifPresent(likeService::delete);
+                                            return ResponseStatus.S11013.getStatus();
+                                        });
+                                default -> ResponseStatus.S10016.getStatus();
+                            };
                         })
-                        .orElse(new Status(10018, "Not found")))
-                .orElseGet(() -> new Status(10012, "You must be logged"));
+                        .orElse(ResponseStatus.S10018.getStatus()))
+                .orElse(ResponseStatus.S10012.getStatus());
     }
 
     @Override
@@ -122,14 +116,14 @@ public class CommentServiceCustomImpl implements CommentServiceCustom {
                         .map(commentEntity -> {
                             ReportEntity report = new ReportEntity().commentEntity(commentEntity).userEntity(u);
                             return reportService.findByCommentEntity_OngoingEntity_TidAndCommentEntity_Id(tid, comment_id)
-                                    .map(reportEntity -> new Status(10030, "Already reported"))
+                                    .map(reportEntity -> ResponseStatus.S10030.getStatus())
                                     .orElseGet(() -> {
                                         reportService.save(report);
-                                        return new Status(11014, "Thanks for report");
+                                        return ResponseStatus.S11014.getStatus();
                                     });
                         })
-                        .orElse(new Status(10018, "Not found")))
-                .orElseGet(() -> new Status(10012, "You must be logged"));
+                        .orElse(ResponseStatus.S10018.getStatus()))
+                .orElse(ResponseStatus.S10012.getStatus());
     }
 
     @Override

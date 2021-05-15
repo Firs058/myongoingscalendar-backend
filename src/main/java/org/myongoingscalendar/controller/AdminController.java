@@ -7,6 +7,7 @@ import org.myongoingscalendar.manipulations.ParseAnnManipulations;
 import org.myongoingscalendar.manipulations.ParseMALManipulations;
 import org.myongoingscalendar.manipulations.ParseSyoboiManipulations;
 import org.myongoingscalendar.model.*;
+import org.myongoingscalendar.model.ResponseStatus;
 import org.myongoingscalendar.service.OngoingService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -34,25 +35,27 @@ public class AdminController {
     }
 
     @PostMapping("/hex")
-    public AjaxResponse findHEX() {
+    public AjaxResponse<?> findHEX() {
         parseAniDBManipulations.findHEXAndFillTable();
         return new AjaxResponse<>();
     }
 
     @PostMapping("/elastic")
-    public AjaxResponse fillElastic() {
-        fillElastic.loadAnimeIntoElastic();
-        ongoingService.clearOngoingsCache();
+    public AjaxResponse<?> fillElastic() {
+        new Thread(() -> {
+            fillElastic.loadAnimeIntoElastic();
+            ongoingService.clearOngoingsCache();
+        }).start();
         return new AjaxResponse<>();
     }
 
     @PostMapping("/data")
-    public AjaxResponse getAdminData() {
+    public AjaxResponse<?> getAdminData() {
         return new AjaxResponse<>(ongoingService.getAdminData());
     }
 
     @RequestMapping(value = "/data/delete/{tid}")
-    public AjaxResponse deleteTitleData(@PathVariable("tid") Long tid) {
+    public AjaxResponse<?> deleteTitleData(@PathVariable("tid") Long tid) {
         return ongoingService.findByTid(tid)
                 .map(o -> {
                     elasticAnimeService.findByTid(tid).ifPresent(elasticAnimeService::delete);
@@ -60,11 +63,11 @@ public class AdminController {
                     ongoingService.delete(o);
                     return new AjaxResponse<>();
                 })
-                .orElse(new AjaxResponse<>(new Status(10016, "Server error. What you expect?")));
+                .orElse(new AjaxResponse<>(ResponseStatus.S10016.getStatus()));
     }
 
     @PostMapping("/update")
-    public AjaxResponse updateOngoing(@RequestBody AdminData adminData) {
+    public AjaxResponse<?> updateOngoing(@RequestBody AdminData adminData) {
         return ongoingService.findByTid(adminData.tid())
                 .map(o -> {
                     if (adminData.aid() != null) o.aid(adminData.aid());
@@ -73,46 +76,46 @@ public class AdminController {
                     ongoingService.save(o);
                     return new AjaxResponse<>();
                 })
-                .orElse(new AjaxResponse<>(new Status(10016, "Server error. What you expect?")));
+                .orElse(new AjaxResponse<>(ResponseStatus.S10016.getStatus()));
     }
 
     @PostMapping("/mal")
-    public AjaxResponse forceParseMALForCurrentOngoings() {
+    public AjaxResponse<?> forceParseMALForCurrentOngoings() {
         parseMALManipulations.parseMALForCurrentOngoings();
         ongoingService.clearOngoingsCache();
         return new AjaxResponse<>();
     }
 
     @PostMapping("/ann")
-    public AjaxResponse forceParseAnnForCurrentOngoings() {
+    public AjaxResponse<?> forceParseAnnForCurrentOngoings() {
         parseAnnManipulations.parseAnnForCurrentOngoings();
         ongoingService.clearOngoingsCache();
         return new AjaxResponse<>();
     }
 
     @PostMapping("/mal/all")
-    public AjaxResponse forceParseMALForAll() {
+    public AjaxResponse<?> forceParseMALForAll() {
         parseMALManipulations.parseMALForAll();
         ongoingService.clearOngoingsCache();
         return new AjaxResponse<>();
     }
 
     @PostMapping("/anidb")
-    public AjaxResponse forceParseAniDBForCurrentOngoings() {
+    public AjaxResponse<?> forceParseAniDBForCurrentOngoings() {
         parseAniDBManipulations.parseAniDBForCurrentOngoings();
         ongoingService.clearOngoingsCache();
         return new AjaxResponse<>();
     }
 
     @PostMapping("/anidb/all")
-    public AjaxResponse forceParseAniDBForAll() {
+    public AjaxResponse<?> forceParseAniDBForAll() {
         parseAniDBManipulations.parseAniDBForAll();
         ongoingService.clearOngoingsCache();
         return new AjaxResponse<>();
     }
 
     @PostMapping("/syoboi")
-    public AjaxResponse forceParseSyoboiForCurrentOngoings() {
+    public AjaxResponse<?> forceParseSyoboiForCurrentOngoings() {
         parseSyoboiManipulations.parseSyoboiAnimeOngoingsList();
         ongoingService.clearOngoingsCache();
         return new AjaxResponse<>();

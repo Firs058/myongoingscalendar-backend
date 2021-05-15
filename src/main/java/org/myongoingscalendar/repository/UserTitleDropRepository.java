@@ -17,5 +17,8 @@ public interface UserTitleDropRepository extends JpaRepository<UserTitleDropEnti
     @Query("select u.ongoingEntity.tid from UserTitleDropEntity u where u.ongoingEntity.tid in ?1 and u.userEntity.id = ?2")
     List<Long> getCurrentOngoingsTidsDroppedByUser(List<Long> ongoingEntities, Long userid);
 
+    @Query("select u.ongoingEntity.tid from UserTitleDropEntity u where u.userEntity.id = ?1")
+    List<Long> getAllOngoingsTidsDroppedByUser(Long userid);
+
     Optional<UserTitleDropEntity> findByOngoingEntity_TidAndUserEntity_Id(Long tid, Long userid);
 }

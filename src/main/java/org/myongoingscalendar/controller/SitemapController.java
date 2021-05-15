@@ -63,6 +63,7 @@ public class SitemapController {
                 "Disallow: /search/\n" +
                 "Disallow: /search?\n" +
                 "Disallow: /my_calendar\n" +
+                "Disallow: /statistics\n" +
                 "Host: " + urlDataDAO.getUrlData(request).getHost() + "\n" +
                 "Sitemap: " + urlDataDAO.getUrlData(request).getDomainAddress() + "/sitemap.xml";
         InputStream stream = new ByteArrayInputStream(robots.getBytes(StandardCharsets.UTF_8));

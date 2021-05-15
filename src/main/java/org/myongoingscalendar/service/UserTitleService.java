@@ -1,6 +1,7 @@
 package org.myongoingscalendar.service;
 
 import org.myongoingscalendar.entity.UserTitleEntity;
+import org.myongoingscalendar.entity.UserTitleFavoriteEntity;
 
 import java.util.List;
 import java.util.Optional;
@@ -19,7 +20,11 @@ public interface UserTitleService {
 
     List<UserTitleEntity> getAll();
 
+    List<Long> getAllOngoingsTidsAddedByUser(Long userid);
+
     List<Long> getCurrentOngoingsTidsAddedByUser(List<Long> ongoingEntities, Long userid);
+
+    Optional<UserTitleEntity> findByOngoingEntity_TidAndUserEntity_Id(Long tid, Long userid);
 
     void delete(UserTitleEntity userTitleEntity);
 

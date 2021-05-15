@@ -31,6 +31,7 @@ public final class JwtUserUtil {
     private static List<GrantedAuthority> mapToGrantedAuthorities(List<UserAuthorityEntity> authorities) {
         return authorities.stream()
                 .map(authority -> new SimpleGrantedAuthority(authority.authorityName().name()))
-                .collect(Collectors.toList());
+                .map(GrantedAuthority.class::cast)
+                .toList();
     }
 }

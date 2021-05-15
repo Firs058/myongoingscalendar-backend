@@ -6,6 +6,7 @@ import org.myongoingscalendar.model.*;
 import org.myongoingscalendar.manipulations.DBManipulations;
 import org.myongoingscalendar.manipulations.EmailManipulations;
 import org.myongoingscalendar.manipulations.ReCaptchaManipulations;
+import org.myongoingscalendar.model.ResponseStatus;
 import org.myongoingscalendar.service.UserService;
 import org.myongoingscalendar.utils.JwtTokenUtil;
 import org.myongoingscalendar.utils.JwtUserUtil;
@@ -16,7 +17,6 @@ import org.springframework.web.bind.annotation.*;
 import javax.servlet.http.HttpServletRequest;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -41,24 +41,24 @@ public class RegistrationController {
     }
 
     @RequestMapping(value = "/registration")
-    public AjaxResponse newUser(@RequestBody UserEntity user, HttpServletRequest request) {
+    public AjaxResponse<?> newUser(@RequestBody UserEntity user, HttpServletRequest request) {
         if (user.email() == null || user.password() == null) {
-            return new AjaxResponse<>(new Status(10001, "Empty fields are not allowed"));
+            return new AjaxResponse<>(ResponseStatus.S10001.getStatus());
         } else if (user.password().length() <= 7) {
-            return new AjaxResponse<>(new Status(10002, "Password cannot contain less than 8 character"));
+            return new AjaxResponse<>(ResponseStatus.S10002.getStatus());
         } else if (user.recaptchaToken() == null) {
-            return new AjaxResponse<>(new Status(10003, "Did you forgot about captcha?"));
+            return new AjaxResponse<>(ResponseStatus.S10003.getStatus());
         } else if (user.userSettingsEntity().nickname() == null || user.userSettingsEntity().nickname().length() <= 3 || user.userSettingsEntity().nickname().length() >= 21) {
-            return new AjaxResponse<>(new Status(10004, "The length of the nickname does not match the requirements"));
+            return new AjaxResponse<>(ResponseStatus.S10004.getStatus());
         } else if (!user.userSettingsEntity().nickname().matches("^[a-zA-Z0-9]+$")) {
-            return new AjaxResponse<>(new Status(10005, "Only latin text and numbers allowed"));
+            return new AjaxResponse<>(ResponseStatus.S10005.getStatus());
         } else if (dbManipulations.getAllStopWords().stream().anyMatch(s -> user.userSettingsEntity().nickname().matches("(?i:.*" + s + ".*)"))) {
-            return new AjaxResponse<>(new Status(10006, "Hey, what's up with you nickname? Does not fit"));
+            return new AjaxResponse<>(ResponseStatus.S10006.getStatus());
         } else {
             ReCaptchaGoogleResponse reCaptchaResponse = reCaptchaManipulations.verify(user.recaptchaToken());
             if (reCaptchaResponse.success()) {
                 return userService.findByEmailContainingIgnoreCase(user.email())
-                        .map(u -> new AjaxResponse<>(new Status(10007, "Sorry, account with that email is already existed")))
+                        .map(u -> new AjaxResponse<>(ResponseStatus.S10007.getStatus()))
                         .orElseGet(() -> {
                             UserEntity userToSave = new UserEntity()
                                     .email(user.email())
@@ -70,44 +70,44 @@ public class RegistrationController {
 
                             userService.save(userToSave);
                             emailManipulations.sendRegistrationMail(urlDataDAO.getUrlData(request).getDomainAddress(), userToSave);
-                            return new AjaxResponse<>(new Status(11001, "OK, check you mail to activate account"));
+                            return new AjaxResponse<>(ResponseStatus.S11001.getStatus());
                         });
             }
-            return new AjaxResponse<>(new Status(10008, "Invalid captcha"));
+            return new AjaxResponse<>(ResponseStatus.S10008.getStatus());
         }
     }
 
     @RequestMapping(value = "/registration/confirm")
-    public AjaxResponse confirmRegistration(@RequestBody Token confirmToken) {
+    public AjaxResponse<?> confirmRegistration(@RequestBody Token confirmToken) {
         return userService.findByConfirmToken(confirmToken.token())
                 .map(u -> {
                     u.active(true);
                     u.confirmToken(null);
                     userService.save(u);
-                    return new AjaxResponse<>(new Status(11002, "Account successful activated"));
+                    return new AjaxResponse<>(ResponseStatus.S11002.getStatus());
                 })
-                .orElse(new AjaxResponse<>(new Status(10010, "Token not exists")));
+                .orElse(new AjaxResponse<>(ResponseStatus.S10010.getStatus()));
     }
 
     @RequestMapping(value = "/pass/recover")
-    public AjaxResponse recoverPass(@RequestBody UserEntity user, HttpServletRequest request) {
+    public AjaxResponse<?> recoverPass(@RequestBody UserEntity user, HttpServletRequest request) {
         return userService.findByEmailContainingIgnoreCase(user.email())
                 .map(u -> {
                     ReCaptchaGoogleResponse reCaptchaResponse = reCaptchaManipulations.verify(user.recaptchaToken());
                     if (!reCaptchaResponse.success())
-                        return new AjaxResponse<>(new Status(10008, "Invalid captcha"));
+                        return new AjaxResponse<>(ResponseStatus.S10008.getStatus());
                     if (u.password() == null)
-                        return new AjaxResponse<>(new Status(10032, "Password recovery is not available for accounts created through a social network"));
+                        return new AjaxResponse<>(ResponseStatus.S10032.getStatus());
                     u.recoverToken(UUID.randomUUID().toString());
                     userService.save(u);
                     emailManipulations.sendRecoverPassMail(urlDataDAO.getUrlData(request).getDomainAddress(), u);
-                    return new AjaxResponse<>(new Status(11003, "OK, check you mail for recover you password"));
+                    return new AjaxResponse<>(ResponseStatus.S11003.getStatus());
                 })
-                .orElse(new AjaxResponse<>(new Status(10013, "Sorry, account with that email not existed")));
+                .orElse(new AjaxResponse<>(ResponseStatus.S10013.getStatus()));
     }
 
     @RequestMapping(value = "/pass/recover/confirm")
-    public AjaxResponse recoverPass(@RequestBody Token recoverToken) {
+    public AjaxResponse<?> recoverPass(@RequestBody Token recoverToken) {
         return userService.findByRecoverToken(recoverToken.token())
                 .map(userEntity -> {
                     userEntity.recoverToken(null);
@@ -118,14 +118,14 @@ public class RegistrationController {
 
                     userService.save(userEntity);
                     return new AjaxResponse<>(
-                            new Status(11004, "Need change password!"),
+                            ResponseStatus.S11004.getStatus(),
                             new LoginStatus()
                                     .email(userEntity.email())
                                     .social(false)
                                     .tokens(tokens)
-                                    .roles(userEntity.authorityEntities().stream().map(UserAuthorityEntity::authorityName).collect(Collectors.toList()))
+                                    .roles(userEntity.authorityEntities().stream().map(UserAuthorityEntity::authorityName).toList())
                                     .settings(userEntity.userSettingsEntity()));
                 })
-                .orElse(new AjaxResponse<>(new Status(10014, "Token not exists. Repeat recover")));
+                .orElse(new AjaxResponse<>(ResponseStatus.S10014.getStatus()));
     }
 }

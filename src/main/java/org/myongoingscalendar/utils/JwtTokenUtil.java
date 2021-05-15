@@ -49,7 +49,7 @@ public class JwtTokenUtil implements Serializable {
                 null,
                 Arrays.stream(getAllClaimsFromToken(token).get("authorities").toString().split(","))
                         .map(SimpleGrantedAuthority::new)
-                        .collect(Collectors.toList()),
+                        .toList(),
                 true,
                 null);
     }

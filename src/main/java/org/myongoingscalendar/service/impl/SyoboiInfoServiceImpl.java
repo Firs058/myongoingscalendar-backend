@@ -45,6 +45,11 @@ public class SyoboiInfoServiceImpl implements SyoboiInfoService {
     }
 
     @Override
+    public List<SyoboiInfoEntity> findAllByFirstEndMonthIsNullAndFirstEndYearIsNull() {
+        return syoboiInfoRepository.findAllByFirstEndMonthIsNullAndFirstEndYearIsNull();
+    }
+
+    @Override
     public void delete(SyoboiInfoEntity syoboiInfoEntity) {
         syoboiInfoRepository.delete(syoboiInfoEntity);
     }

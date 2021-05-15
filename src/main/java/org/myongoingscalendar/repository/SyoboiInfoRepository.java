@@ -5,6 +5,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+
 /**
  * @author firs
  */
@@ -16,4 +18,6 @@ public interface SyoboiInfoRepository extends JpaRepository<SyoboiInfoEntity, Lo
 
     @Query("select max(s.firstYear) + 2 from SyoboiInfoEntity s where s.firstYear <> 0")
     Integer getMaxYear();
+
+    List<SyoboiInfoEntity> findAllByFirstEndMonthIsNullAndFirstEndYearIsNull();
 }

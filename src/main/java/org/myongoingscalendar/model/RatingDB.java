@@ -8,14 +8,14 @@ import java.math.BigDecimal;
  * @author firs
  */
 public enum RatingDB {
-    ANIDB("AniDB", new BigDecimal(1.0)),
-    MAL("MAL", new BigDecimal(0.7)),
-    ANN("ANN", new BigDecimal(0.4));
+    ANIDB("AniDB", new BigDecimal("1.0")),
+    MAL("MAL", new BigDecimal("0.7")),
+    ANN("ANN", new BigDecimal("0.2"));
 
     private final String dbname;
     private final BigDecimal weight;
 
-    private RatingDB(String dbname, BigDecimal weight) {
+    RatingDB(String dbname, BigDecimal weight) {
         this.dbname = dbname;
         this.weight = weight;
     }

@@ -9,33 +9,11 @@ public enum Season {
     SPRING, SUMMER, FALL, WINTER;
 
     static public Season of(Month month) {
-        switch (month) {
-            case MARCH:
-                return Season.SPRING;
-            case APRIL:
-                return Season.SPRING;
-            case MAY:
-                return Season.SUMMER;
-            case JUNE:
-                return Season.SUMMER;
-            case JULY:
-                return Season.SUMMER;
-            case AUGUST:
-                return Season.SUMMER;
-            case SEPTEMBER:
-                return Season.FALL;
-            case OCTOBER:
-                return Season.FALL;
-            case NOVEMBER:
-                return Season.WINTER;
-            case DECEMBER:
-                return Season.WINTER;
-            case JANUARY:
-                return Season.WINTER;
-            case FEBRUARY:
-                return Season.WINTER;
-            default:
-                throw new IllegalArgumentException();
-        }
+        return switch (month) {
+            case MARCH, APRIL -> Season.SPRING;
+            case MAY, JUNE, JULY, AUGUST -> Season.SUMMER;
+            case SEPTEMBER, OCTOBER -> Season.FALL;
+            case NOVEMBER, DECEMBER, JANUARY, FEBRUARY -> Season.WINTER;
+        };
     }
 }

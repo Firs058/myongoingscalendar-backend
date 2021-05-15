@@ -51,7 +51,7 @@ public class CronProdConfig {
         parseAniDBManipulations.getAniDBImages();
         parseMALManipulations.parseMALForCurrentOngoings();
         parseAnnManipulations.parseAnnForCurrentOngoings();
-        parseSyoboiManipulations.insertFromSyoboiToInfoForCurrentOngoings();
+        parseSyoboiManipulations.insertFromSyoboiToInfoForOldOngoingsAndCurrentOngoings();
         fillElastic.loadAnimeIntoElastic();
         clearOngoingsListCache();
     }

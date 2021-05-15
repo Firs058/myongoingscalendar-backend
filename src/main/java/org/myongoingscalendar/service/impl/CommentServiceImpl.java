@@ -43,6 +43,11 @@ public class CommentServiceImpl implements CommentService {
     }
 
     @Override
+    public List<CommentEntity> findByUserEntity_Id(Long userid) {
+        return commentRepository.findByUserEntity_Id(userid);
+    }
+
+    @Override
     public void delete(CommentEntity commentEntity) {
         commentRepository.delete(commentEntity);
     }

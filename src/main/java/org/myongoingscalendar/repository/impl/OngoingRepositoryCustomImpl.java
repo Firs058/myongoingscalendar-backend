@@ -6,16 +6,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.hibernate.HibernateException;
 import org.hibernate.transform.Transformers;
+import org.myongoingscalendar.entity.*;
 import org.myongoingscalendar.model.*;
 import org.myongoingscalendar.elastic.model.ElasticAnime;
-import org.myongoingscalendar.entity.MalTitleGenreEntity;
-import org.myongoingscalendar.entity.RatingEntity;
-import org.myongoingscalendar.entity.SyoboiTimetableEntity;
 import org.myongoingscalendar.repository.OngoingRepositoryCustom;
-import org.myongoingscalendar.service.CommentServiceCustom;
-import org.myongoingscalendar.service.OngoingService;
-import org.myongoingscalendar.service.UserService;
-import org.myongoingscalendar.service.UserTitleService;
+import org.myongoingscalendar.service.*;
 import org.myongoingscalendar.utils.AnimeUtil;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.Cacheable;
@@ -42,6 +37,8 @@ public class OngoingRepositoryCustomImpl implements OngoingRepositoryCustom {
     private final OngoingService ongoingService;
     private final UserService userService;
     private final UserTitleService userTitleService;
+    private final UserTitleScoreService userTitleScoreService;
+    private final UserTitleFavoriteService userTitleFavoriteService;
     private final CommentServiceCustom commentServiceCustom;
     @Value("${links.anime.anidb}")
     private String anidbAnimeUrlPath;
@@ -50,10 +47,12 @@ public class OngoingRepositoryCustomImpl implements OngoingRepositoryCustom {
     @Value("${links.anime.ann}")
     private String annAnimeUrlPath;
 
-    public OngoingRepositoryCustomImpl(OngoingService ongoingService, UserService userService, UserTitleService userTitleService, CommentServiceCustom commentServiceCustom) {
+    public OngoingRepositoryCustomImpl(OngoingService ongoingService, UserService userService, UserTitleService userTitleService, UserTitleScoreService userTitleScoreService, UserTitleFavoriteService userTitleFavoriteService, CommentServiceCustom commentServiceCustom) {
         this.ongoingService = ongoingService;
         this.userService = userService;
         this.userTitleService = userTitleService;
+        this.userTitleScoreService = userTitleScoreService;
+        this.userTitleFavoriteService = userTitleFavoriteService;
         this.commentServiceCustom = commentServiceCustom;
     }
 
@@ -83,7 +82,9 @@ public class OngoingRepositoryCustomImpl implements OngoingRepositoryCustom {
     @Transactional
     public UserTitle getOngoingData(Long tid, String timezone, Locale locale) {
         return new UserTitle()
-                .marked(false)
+                .added(false)
+                .score(null)
+                .favorite(false)
                 .broadcast(createTitleBroadcast(timezone, tid, locale))
                 .title(getTitleData(tid))
                 .comments(commentServiceCustom.getComments(tid, "root", 0));
@@ -94,7 +95,9 @@ public class OngoingRepositoryCustomImpl implements OngoingRepositoryCustom {
     public UserTitle getUserOngoingData(Long tid, String timezone, Long userid, Locale locale) {
         return userService.get(userid)
                 .map(u -> new UserTitle()
-                        .marked(userTitleService.existsByOngoingEntity_TidAndUserEntity_Id(tid, userid))
+                        .added(userTitleService.existsByOngoingEntity_TidAndUserEntity_Id(tid, userid))
+                        .score(userTitleScoreService.findByOngoingEntity_TidAndUserEntity_Id(tid, userid).map(UserTitleScoreEntity::score).orElse(null))
+                        .favorite(userTitleFavoriteService.findByOngoingEntity_TidAndUserEntity_Id(tid, userid).isPresent())
                         .broadcast(createTitleBroadcast(u.userSettingsEntity().timezone(), tid, locale))
                         .title(getTitleData(tid))
                         .comments(commentServiceCustom.getUserComments(tid, "root", 0, userid)))
@@ -137,7 +140,7 @@ public class OngoingRepositoryCustomImpl implements OngoingRepositoryCustom {
                         title
                                 .description(ongoing.malEntity().description())
                                 .trailer(ongoing.malEntity().trailerUrl())
-                                .genres(ongoing.malTitleGenreEntities().stream().map(MalTitleGenreEntity::genreEntity).collect(Collectors.toList()))
+                                .genres(ongoing.malTitleGenreEntities().stream().map(MalTitleGenreEntity::genreEntity).sorted(Comparator.comparing(GenreEntity::name)).toList())
                                 .links().addAll(AnimeUtil.createLinks(new Object[]{"MAL", malAnimeUrlPath, ongoing.malid(), new Image(AnimeUtil.createHEX(null), Arrays.asList(new ImagePath(MIMEType.PNG, ImageType.FULL, "/images/mal.png"), new ImagePath(MIMEType.WEBP, ImageType.FULL, "/images/webp/mal.webp")))}));
 
                     if (ongoing.annid() != null)
@@ -147,7 +150,7 @@ public class OngoingRepositoryCustomImpl implements OngoingRepositoryCustom {
                     if (ongoing.ratingEntities() != null) {
                         List<Datasets> datasets = new ArrayList<>();
 
-                        List<BigDecimal> anidbData = ongoing.ratingEntities().stream().sorted(Comparator.comparing(RatingEntity::added)).map(RatingEntity::anidbTemporary).collect(Collectors.toList());
+                        List<BigDecimal> anidbData = ongoing.ratingEntities().stream().sorted(Comparator.comparing(RatingEntity::added)).map(RatingEntity::anidbTemporary).toList();
                         if (anidbData.stream().filter(Objects::nonNull).count() > 2)
                             datasets.add(new Datasets()
                                     .label("AniDB")
@@ -155,7 +158,7 @@ public class OngoingRepositoryCustomImpl implements OngoingRepositoryCustom {
                                     .backgroundColor("rgba(121, 27, 38, 0.5)")
                                     .data(anidbData.toArray()));
 
-                        List<BigDecimal> malData = ongoing.ratingEntities().stream().sorted(Comparator.comparing(RatingEntity::added)).map(RatingEntity::mal).collect(Collectors.toList());
+                        List<BigDecimal> malData = ongoing.ratingEntities().stream().sorted(Comparator.comparing(RatingEntity::added)).map(RatingEntity::mal).toList();
                         if (malData.stream().filter(Objects::nonNull).count() > 2)
                             datasets.add(new Datasets()
                                     .label("MAL")
@@ -163,7 +166,7 @@ public class OngoingRepositoryCustomImpl implements OngoingRepositoryCustom {
                                     .backgroundColor("rgba(46, 81, 163, 0.5)")
                                     .data(malData.toArray()));
 
-                        List<BigDecimal> annData = ongoing.ratingEntities().stream().sorted(Comparator.comparing(RatingEntity::added)).map(RatingEntity::ann).collect(Collectors.toList());
+                        List<BigDecimal> annData = ongoing.ratingEntities().stream().sorted(Comparator.comparing(RatingEntity::added)).map(RatingEntity::ann).toList();
                         if (annData.stream().filter(Objects::nonNull).count() > 2)
                             datasets.add(new Datasets()
                                     .label("ANN")
@@ -222,7 +225,7 @@ public class OngoingRepositoryCustomImpl implements OngoingRepositoryCustom {
                     if (ongoing.malEntity() != null)
                         elasticAnime
                                 .description(ongoing.malEntity().description())
-                                .genres(ongoing.malTitleGenreEntities().stream().map(MalTitleGenreEntity::genreEntity).collect(Collectors.toList()));
+                                .genres(ongoing.malTitleGenreEntities().stream().map(MalTitleGenreEntity::genreEntity).toList());
 
                     if (ongoing.ratingEntities() != null)
                         elasticAnime
@@ -238,11 +241,11 @@ public class OngoingRepositoryCustomImpl implements OngoingRepositoryCustom {
 
                     if (ongoing.syoboiTimetableEntities() != null)
                         elasticAnime
-                                .channels(ongoing.syoboiTimetableEntities().stream().map(SyoboiTimetableEntity::channelEntity).distinct().collect(Collectors.toList()));
+                                .channels(ongoing.syoboiTimetableEntities().stream().map(SyoboiTimetableEntity::channelEntity).distinct().toList());
 
                     return elasticAnime;
                 })
-                .collect(Collectors.toList());
+                .toList();
     }
 
     private Broadcast createTitleBroadcast(String timezone, Long tid, Locale locale) {
@@ -255,20 +258,18 @@ public class OngoingRepositoryCustomImpl implements OngoingRepositoryCustom {
 
         List<TitleBroadcast> titleBroadcasts = getTitleBroadcastForTimezone(timezone, tid, locale);
 
-        if (titleBroadcasts != null) {
-            tabs.get(next).items(
-                    titleBroadcasts
-                            .stream()
-                            .filter(el -> !el.elapsed())
-                            .collect(Collectors.toList())
-            );
-            tabs.get(prev).items(
-                    titleBroadcasts
-                            .stream()
-                            .filter(TitleBroadcast::elapsed)
-                            .collect(Collectors.toList())
-            );
-        }
+        tabs.get(next).items(
+                titleBroadcasts
+                        .stream()
+                        .filter(el -> !el.elapsed())
+                        .toList()
+        );
+        tabs.get(prev).items(
+                titleBroadcasts
+                        .stream()
+                        .filter(TitleBroadcast::elapsed)
+                        .toList()
+        );
         return new Broadcast(new ArrayList<>(tabs.values()));
     }
 

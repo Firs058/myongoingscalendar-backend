@@ -20,26 +20,26 @@ public class CommentsController {
     }
 
     @RequestMapping(value = "/comments/add")
-    public AjaxResponse addComment(@RequestBody Comment comment, @AuthenticationPrincipal JwtUser user) {
+    public AjaxResponse<?> addComment(@RequestBody Comment comment, @AuthenticationPrincipal JwtUser user) {
         return new AjaxResponse<>(
                 commentServiceCustom.addComment(comment, user.getId())
         );
     }
 
     @RequestMapping(value = "/{tid}/comments/{path}/{offset}")
-    public AjaxResponse getUserComments(@PathVariable("tid") Long tid, @PathVariable("path") String path, @PathVariable("offset") Integer offset, @AuthenticationPrincipal JwtUser user) {
+    public AjaxResponse<?> getUserComments(@PathVariable("tid") Long tid, @PathVariable("path") String path, @PathVariable("offset") Integer offset, @AuthenticationPrincipal JwtUser user) {
         return new AjaxResponse<>(commentServiceCustom.getUserComments(tid, path, offset, user.getId()));
     }
 
     @RequestMapping(value = "/{tid}/comments/{comment_id}/{emotion}/add")
-    public AjaxResponse addEmotion(@PathVariable("tid") Long tid, @PathVariable("comment_id") Long comment_id, @PathVariable("emotion") Emotion emotion, @AuthenticationPrincipal JwtUser user) {
+    public AjaxResponse<?> addEmotion(@PathVariable("tid") Long tid, @PathVariable("comment_id") Long comment_id, @PathVariable("emotion") Emotion emotion, @AuthenticationPrincipal JwtUser user) {
         return new AjaxResponse<>(
                 commentServiceCustom.addEmotion(tid, comment_id, emotion, user.getId())
         );
     }
 
     @RequestMapping(value = "/{tid}/comments/{comment_id}/report/add")
-    public AjaxResponse addReport(@PathVariable("tid") Long tid, @PathVariable("comment_id") Long comment_id, @AuthenticationPrincipal JwtUser user) {
+    public AjaxResponse<?> addReport(@PathVariable("tid") Long tid, @PathVariable("comment_id") Long comment_id, @AuthenticationPrincipal JwtUser user) {
         return new AjaxResponse<>(
                 commentServiceCustom.addReport(tid, comment_id, user.getId())
         );

@@ -14,6 +14,7 @@ import org.myongoingscalendar.entity.UserAuthorityEntity;
 import org.myongoingscalendar.model.*;
 import org.myongoingscalendar.entity.UserEntity;
 import org.myongoingscalendar.manipulations.URLManipulations;
+import org.myongoingscalendar.model.ResponseStatus;
 import org.myongoingscalendar.model.Token;
 import org.myongoingscalendar.service.UserService;
 import org.myongoingscalendar.social.github.GithubUser;
@@ -99,11 +100,11 @@ public class SocialAuthController {
     }
 
     @RequestMapping(value = "/google")
-    public AjaxResponse initPostGoogleAuth(@RequestBody VueSocialAuth20 vueSocialAuth20) throws InterruptedException, ExecutionException, IOException {
+    public AjaxResponse<?> initPostGoogleAuth(@RequestBody VueSocialAuth20 vueSocialAuth20) throws InterruptedException, ExecutionException, IOException {
         if (!vueSocialAuth20.state().equalsIgnoreCase(SECRET_STATE))
-            return new AjaxResponse<>(new Status(10021, "Wrong secret state"));
+            return new AjaxResponse<>(ResponseStatus.S10021.getStatus());
         else if (vueSocialAuth20.code() == null || vueSocialAuth20.state() == null || vueSocialAuth20.userSettingsEntity() == null)
-            return new AjaxResponse<>(new Status(10001, "Empty fields are not allowed"));
+            return new AjaxResponse<>(ResponseStatus.S10001.getStatus());
         OAuth2AccessToken accessToken = googleService.getAccessToken(vueSocialAuth20.code());
         accessToken = googleService.refreshAccessToken(accessToken.getAccessToken());
         final OAuthRequest request = new OAuthRequest(Verb.GET, GOOGLE_PROTECTED_RESOURCE_URL);
@@ -120,23 +121,23 @@ public class SocialAuthController {
                 );
             } else {
                 log.error(googleUser.email() + " not verified");
-                return new AjaxResponse(new Status(10037, "Email not verified"));
+                return new AjaxResponse<>(ResponseStatus.S10037.getStatus());
             }
         } else {
             log.error(response.getMessage());
-            return new AjaxResponse(new Status(10036, "Error while logging in via social network"));
+            return new AjaxResponse<>(ResponseStatus.S10036.getStatus());
         }
     }
 
     @RequestMapping(value = "/google/url")
-    public AjaxResponse getGoogleAuthorizationUrl() {
+    public AjaxResponse<?> getGoogleAuthorizationUrl() {
         return new AjaxResponse<>(googleService.createAuthorizationUrlBuilder().state(SECRET_STATE).build());
     }
 
     @RequestMapping(value = "/twitter")
-    public AjaxResponse initPostTwitterAuth(@RequestBody VueSocialAuth10 vueTwitterSocialAuth) throws InterruptedException, ExecutionException, IOException {
+    public AjaxResponse<?> initPostTwitterAuth(@RequestBody VueSocialAuth10 vueTwitterSocialAuth) throws InterruptedException, ExecutionException, IOException {
         if (vueTwitterSocialAuth.oauth_token() == null || vueTwitterSocialAuth.oauth_verifier() == null || vueTwitterSocialAuth.userSettingsEntity() == null)
-            return new AjaxResponse<>(new Status(10001, "Empty fields are not allowed"));
+            return new AjaxResponse<>(ResponseStatus.S10001.getStatus());
         final OAuth1RequestToken requestToken = new OAuth1RequestToken(vueTwitterSocialAuth.oauth_token(), vueTwitterSocialAuth.oauth_verifier());
         final OAuth1AccessToken accessToken = twitterService.getAccessToken(requestToken, vueTwitterSocialAuth.oauth_verifier());
         final OAuthRequest request = new OAuthRequest(Verb.GET, TWITTER_PROTECTED_RESOURCE_URL);
@@ -152,21 +153,21 @@ public class SocialAuthController {
             );
         } else {
             log.error(response.getMessage());
-            return new AjaxResponse(new Status(10036, "Error while logging in via social network"));
+            return new AjaxResponse<>(ResponseStatus.S10036.getStatus());
         }
     }
 
     @RequestMapping(value = "/twitter/url")
-    public AjaxResponse getTwitterAuthorizationUrl() throws InterruptedException, ExecutionException, IOException {
+    public AjaxResponse<?> getTwitterAuthorizationUrl() throws InterruptedException, ExecutionException, IOException {
         return new AjaxResponse<>(twitterService.getAuthorizationUrl(twitterService.getRequestToken()));
     }
 
     @RequestMapping(value = "/github")
-    public AjaxResponse initPostGithubAuth(@RequestBody VueSocialAuth20 vueSocialAuth20) throws InterruptedException, ExecutionException, IOException {
+    public AjaxResponse<?> initPostGithubAuth(@RequestBody VueSocialAuth20 vueSocialAuth20) throws InterruptedException, ExecutionException, IOException {
         if (!vueSocialAuth20.state().equalsIgnoreCase(SECRET_STATE))
-            return new AjaxResponse<>(new Status(10021, "Wrong secret state"));
+            return new AjaxResponse<>(ResponseStatus.S10021.getStatus());
         else if (vueSocialAuth20.code() == null || vueSocialAuth20.state() == null || vueSocialAuth20.userSettingsEntity() == null)
-            return new AjaxResponse<>(new Status(10001, "Empty fields are not allowed"));
+            return new AjaxResponse<>(ResponseStatus.S10001.getStatus());
         OAuth2AccessToken accessToken = githubService.getAccessToken(vueSocialAuth20.code());
         final OAuthRequest request = new OAuthRequest(Verb.GET, GITHUB_PROTECTED_RESOURCE_URL);
         githubService.signRequest(accessToken, request);
@@ -182,12 +183,12 @@ public class SocialAuthController {
             );
         } else {
             log.error(response.getMessage());
-            return new AjaxResponse(new Status(10036, "Error while logging in via social network"));
+            return new AjaxResponse<>(ResponseStatus.S10036.getStatus());
         }
     }
 
     @RequestMapping(value = "/github/url")
-    public AjaxResponse getGithubAuthorizationUrl() {
+    public AjaxResponse<?> getGithubAuthorizationUrl() {
         return new AjaxResponse<>(githubService.getAuthorizationUrl(SECRET_STATE));
     }
 
@@ -196,7 +197,7 @@ public class SocialAuthController {
     }
 
     @Transactional
-    AjaxResponse authUserViaEmail(UserEntity user) {
+    AjaxResponse<?> authUserViaEmail(UserEntity user) {
         return userService.findByEmailContainingIgnoreCase(user.email())
                 .map(u -> {
                     u.active(true);
@@ -226,14 +227,14 @@ public class SocialAuthController {
                     userService.save(userEntity);
 
                     return new AjaxResponse<>(
-                            new Status(11010, "Successful login"),
+                            ResponseStatus.S11010.getStatus(),
                             new LoginStatus()
                                     .email(user.email())
                                     .social(true)
                                     .tokens(tokens)
-                                    .roles(userEntity.authorityEntities().stream().map(UserAuthorityEntity::authorityName).collect(Collectors.toList()))
+                                    .roles(userEntity.authorityEntities().stream().map(UserAuthorityEntity::authorityName).toList())
                                     .settings(userEntity.userSettingsEntity()));
                 })
-                .orElseGet(() -> new AjaxResponse<>(new Status(10001, "Empty fields are not allowed")));
+                .orElseGet(() -> new AjaxResponse<>(ResponseStatus.S10001.getStatus()));
     }
 }

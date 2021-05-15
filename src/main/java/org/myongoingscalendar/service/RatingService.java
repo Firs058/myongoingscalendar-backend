@@ -1,5 +1,6 @@
 package org.myongoingscalendar.service;
 
+import org.myongoingscalendar.entity.OngoingEntity;
 import org.myongoingscalendar.entity.RatingEntity;
 
 import java.util.List;
@@ -16,6 +17,8 @@ public interface RatingService {
     Optional<RatingEntity> get(Long id);
 
     List<RatingEntity> getAll();
+
+    List<RatingEntity> getAllByOngoingEntity(OngoingEntity ongoingEntity);
 
     void delete(RatingEntity ratingEntity);
 

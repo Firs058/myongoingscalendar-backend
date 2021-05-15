@@ -8,8 +8,8 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class FillElastic {
-    private ElasticAnimeService elasticAnimeService;
-    private OngoingServiceCustom ongoingServiceCustom;
+    private final ElasticAnimeService elasticAnimeService;
+    private final OngoingServiceCustom ongoingServiceCustom;
 
     @Autowired
     public FillElastic(ElasticAnimeService elasticAnimeService, OngoingServiceCustom ongoingServiceCustom) {

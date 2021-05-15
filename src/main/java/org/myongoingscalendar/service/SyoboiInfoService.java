@@ -17,6 +17,8 @@ public interface SyoboiInfoService {
 
     List<SyoboiInfoEntity> getAll();
 
+    List<SyoboiInfoEntity> findAllByFirstEndMonthIsNullAndFirstEndYearIsNull();
+
     void delete(SyoboiInfoEntity syoboiInfoEntity);
 
     void deleteAll();

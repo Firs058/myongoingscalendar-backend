@@ -44,7 +44,7 @@ public class ParseMALManipulations {
 
     @Transactional
     public void parseMALForCurrentOngoings() {
-        parse(ongoingService.getCurrentOngoings().stream().filter(e -> e.malid() != null).collect(Collectors.toList()));
+        parse(ongoingService.getCurrentOngoings().stream().filter(e -> e.malid() != null).toList());
     }
 
     @Transactional
@@ -74,7 +74,7 @@ public class ParseMALManipulations {
                                     existentGenre = genreService.save(new GenreEntity().name(genre.name()));
                                 return new MalTitleGenreEntity().ongoingEntity(ongoing).genreEntity(existentGenre.get());
                             })
-                            .collect(Collectors.toList());
+                            .toList();
                     if (genresList.size() > 0) {
                         ongoing.malTitleGenreEntities().clear();
                         ongoingService.flush();

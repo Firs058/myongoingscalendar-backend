@@ -6,7 +6,7 @@ import lombok.Data;
 @Data
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class AjaxResponse<T> {
-    static final Status DEFAULT_STATUS = new Status(11000, "OK");
+    static final Status DEFAULT_STATUS = ResponseStatus.S11000.getStatus();
 
     private Status status;
     private T payload;

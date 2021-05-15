@@ -37,7 +37,7 @@ public class ParseAnnManipulations {
 
     @Transactional
     public void parseAnnForCurrentOngoings() {
-        parse(ongoingService.getCurrentOngoings().stream().map(OngoingEntity::annid).filter(Objects::nonNull).collect(Collectors.toList()));
+        parse(ongoingService.getCurrentOngoings().stream().map(OngoingEntity::annid).filter(Objects::nonNull).toList());
     }
 
     private void parse(List<Long> annids) {

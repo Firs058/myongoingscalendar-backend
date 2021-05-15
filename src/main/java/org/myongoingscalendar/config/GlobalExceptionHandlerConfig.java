@@ -4,7 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.catalina.connector.ClientAbortException;
 import org.elasticsearch.client.transport.NoNodeAvailableException;
 import org.myongoingscalendar.model.AjaxResponse;
-import org.myongoingscalendar.model.Status;
+import org.myongoingscalendar.model.ResponseStatus;
 import org.myongoingscalendar.security.AuthenticationException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.HttpMediaTypeNotAcceptableException;
@@ -27,26 +27,26 @@ public class GlobalExceptionHandlerConfig {
     }
 
     @ExceptionHandler(NoNodeAvailableException.class)
-    public AjaxResponse processNoNodeAvailableException() {
-        return new AjaxResponse<>(new Status(10015, "One of our services does not work. Do not worry, we'll fix it soon"));
+    public AjaxResponse<?> processNoNodeAvailableException() {
+        return new AjaxResponse<>(ResponseStatus.S10015.getStatus());
     }
 
     @ExceptionHandler(Exception.class)
-    public AjaxResponse processException(Exception ex) {
+    public AjaxResponse<?> processException(Exception ex) {
         log.error(ex.getMessage(), ex);
-        return new AjaxResponse<>(new Status(10016, "Server error. What you expect?"));
+        return new AjaxResponse<>(ResponseStatus.S10016.getStatus());
     }
 
     @ExceptionHandler(AuthenticationException.class)
-    public AjaxResponse processAuthenticationException(AuthenticationException ex) {
+    public AjaxResponse<?> processAuthenticationException(AuthenticationException ex) {
         log.error(ex.getMessage(), ex);
-        return new AjaxResponse<>(new Status(10012, "You must be logged"));
+        return new AjaxResponse<>(ResponseStatus.S10012.getStatus());
     }
 
     @ExceptionHandler(AccessDeniedException.class)
-    public AjaxResponse processAccessDeniedException(AccessDeniedException ex) {
+    public AjaxResponse<?> processAccessDeniedException(AccessDeniedException ex) {
         log.error(ex.getMessage(), ex);
-        return new AjaxResponse<>(new Status(10012, "You must be logged"));
+        return new AjaxResponse<>(ResponseStatus.S10012.getStatus());
     }
 
 }

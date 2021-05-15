@@ -14,9 +14,10 @@ import org.myongoingscalendar.model.WatchingStatus;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.elasticsearch.annotations.*;
 
+import java.math.BigDecimal;
 import java.util.List;
 
-@Document(indexName = "animes", type = "anime")
+@Document(indexName = "animes")
 @Setting(settingPath = "/settings/settings.json")
 @Mapping(mappingPath = "/mappings/mappings.json")
 @Data
@@ -41,4 +42,6 @@ public class ElasticAnime {
     private WatchingStatus watchingStatus;
     private Boolean finished;
     private Boolean started;
+    private Boolean favorite;
+    private BigDecimal score;
 }

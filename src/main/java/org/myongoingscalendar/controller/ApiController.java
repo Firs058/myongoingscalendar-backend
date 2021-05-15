@@ -6,6 +6,7 @@ import org.myongoingscalendar.manipulations.DBManipulations;
 import org.myongoingscalendar.manipulations.ReCaptchaManipulations;
 import org.myongoingscalendar.model.*;
 import org.myongoingscalendar.elastic.service.ElasticAnimeService;
+import org.myongoingscalendar.model.ResponseStatus;
 import org.myongoingscalendar.service.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -38,7 +39,7 @@ public class ApiController {
     }
 
     @RequestMapping(value = "/calendar")
-    public AjaxResponse returnOngoings(@RequestBody UserSettingsEntity userSettingsEntity, Locale locale) {
+    public AjaxResponse<?> returnOngoings(@RequestBody UserSettingsEntity userSettingsEntity, Locale locale) {
         return new AjaxResponse<>(
                 userSettingsEntity.hideRepeats()
                         ? ongoingServiceCustom.getOngoingsMin(userSettingsEntity.timezone(), locale)
@@ -47,43 +48,43 @@ public class ApiController {
     }
 
     @RequestMapping(value = "/title/{tid}")
-    public AjaxResponse returnTitleData(@PathVariable("tid") Long tid, @RequestBody InputUserValues inputUserValues, Locale locale) {
+    public AjaxResponse<?> returnTitleData(@PathVariable("tid") Long tid, @RequestBody InputUserValues inputUserValues, Locale locale) {
         return new AjaxResponse<>(ongoingServiceCustom.getOngoingData(tid, inputUserValues.getTimezone(), locale));
     }
 
     @RequestMapping(value = "/title/{tid}/comments/{path}/{offset}")
-    public AjaxResponse getUserComments(@PathVariable("tid") Long tid, @PathVariable("path") String path, @PathVariable("offset") Integer offset) {
+    public AjaxResponse<?> getUserComments(@PathVariable("tid") Long tid, @PathVariable("path") String path, @PathVariable("offset") Integer offset) {
         return new AjaxResponse<>(commentServiceCustom.getComments(tid, path, offset));
     }
 
     @RequestMapping(value = "/title/list")
-    public AjaxResponse returnTitlesList() {
+    public AjaxResponse<?> returnTitlesList() {
         return new AjaxResponse<>(elasticAnimeService.getCurrentOngoingsList());
     }
 
     @RequestMapping(value = "/es/supply")
-    public AjaxResponse returnAllGenres() {
+    public AjaxResponse<?> returnAllGenres() {
         return new AjaxResponse<>(new ElasticInfo(genreService.getAll(), syoboiInfoService.getYearsRanges(), new int[]{0, 10}));
     }
 
     @RequestMapping(value = "/es/autocomplete")
-    public AjaxResponse setESAutocomplete(@RequestBody ElasticQuery elasticQuery) {
+    public AjaxResponse<?> setESAutocomplete(@RequestBody ElasticQuery elasticQuery) {
         return new AjaxResponse<>(elasticAnimeService.autocomplete(elasticQuery, 12));
     }
 
     @RequestMapping("/timezones")
-    public AjaxResponse getAllTimezones() {
+    public AjaxResponse<?> getAllTimezones() {
         return new AjaxResponse<>(dbManipulations.getAllTimezones());
     }
 
     @RequestMapping(value = "/feedback/add")
-    public AjaxResponse addFeedback(@RequestBody Feedback feedback) {
+    public AjaxResponse<?> addFeedback(@RequestBody Feedback feedback) {
         ReCaptchaGoogleResponse reCaptchaResponse = reCaptchaManipulations.verify(feedback.recaptchaToken());
         if (reCaptchaResponse.success()) {
             feedbackService.save(new FeedbackEntity().userEntity(null).text(feedback.text()));
-            return new AjaxResponse<>(new Status(11018, "Thanks for feedback!"));
+            return new AjaxResponse<>(ResponseStatus.S11018.getStatus());
         }
-        return new AjaxResponse<>(new Status(10008, "Invalid captcha"));
+        return new AjaxResponse<>(ResponseStatus.S10008.getStatus());
     }
 }
 
