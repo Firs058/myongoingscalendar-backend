@@ -58,8 +58,9 @@ public class ParseSyoboiManipulations {
     }
 
     public void parseSyoboiRSS() {
-        List<OngoingEntity> tempOngoingEntityList = new ArrayList<>();
         try {
+            List<OngoingEntity> tempOngoingEntityList = new ArrayList<>();
+
             HttpURLConnection httpURLConnection = (HttpURLConnection) new URL(syoboiRss).openConnection();
             httpURLConnection.setConnectTimeout(60000);
             SyndFeedInput input = new SyndFeedInput();
@@ -93,29 +94,29 @@ public class ParseSyoboiManipulations {
                                 )
                         );
             }
+
+            List<Long> tids = tempOngoingEntityList.stream().map(OngoingEntity::tid).distinct().toList();
+
+            List<OngoingEntity> existentList = ongoingService.findByTidIn(tids);
+
+            existentList.forEach(e ->
+                    tempOngoingEntityList.stream()
+                            .filter(t -> t.tid().equals(e.tid()))
+                            .findFirst()
+                            .map(freshOngoingsEntity -> e.syoboiRssEntities(freshOngoingsEntity.syoboiRssEntities()))
+                            .orElseGet(() -> e.syoboiRssEntities(null))
+            );
+
+            if (existentList.size() > 0) ongoingService.saveAll(existentList);
+
+            List<OngoingEntity> notInDB = tempOngoingEntityList.stream()
+                    .filter(os -> existentList.stream().noneMatch(ns -> os.tid().equals(ns.tid())))
+                    .toList();
+
+            if (notInDB.size() > 0) ongoingService.saveAll(notInDB);
         } catch (FeedException | IOException e) {
             log.error("Can't parse syoboi RSS", e);
         }
-
-        List<Long> tids = tempOngoingEntityList.stream().map(OngoingEntity::tid).distinct().toList();
-
-        List<OngoingEntity> existentList = ongoingService.findByTidIn(tids);
-
-        existentList.forEach(e ->
-                tempOngoingEntityList.stream()
-                        .filter(t -> t.tid().equals(e.tid()))
-                        .findFirst()
-                        .map(freshOngoingsEntity -> e.syoboiRssEntities(freshOngoingsEntity.syoboiRssEntities()))
-                        .orElseGet(() -> e.syoboiRssEntities(null))
-        );
-
-        if (existentList.size() > 0) ongoingService.saveAll(existentList);
-
-        List<OngoingEntity> notInDB = tempOngoingEntityList.stream()
-                .filter(os -> existentList.stream().noneMatch(ns -> os.tid().equals(ns.tid())))
-                .toList();
-
-        if (notInDB.size() > 0) ongoingService.saveAll(notInDB);
     }
 
     public void parseSyoboiAnimeOngoingsList() {
