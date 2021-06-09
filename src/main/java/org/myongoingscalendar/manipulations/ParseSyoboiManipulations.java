@@ -119,8 +119,9 @@ public class ParseSyoboiManipulations {
     }
 
     public void parseSyoboiAnimeOngoingsList() {
-        List<OngoingEntity> tempOngoingEntityList = new ArrayList<>();
         try {
+            List<OngoingEntity> tempOngoingEntityList = new ArrayList<>();
+
             org.jsoup.nodes.Document doc = Jsoup.connect("http://cal.syoboi.jp/list?cat=1").userAgent("Mozilla").get();
             Elements table = doc.select("table.TitleList");
             Elements rows = table.select("tr");
@@ -147,36 +148,35 @@ public class ParseSyoboiManipulations {
                         );
                     });
 
+            List<Long> tids = tempOngoingEntityList.stream().map(OngoingEntity::tid).distinct().toList();
+
+            List<OngoingEntity> existentList = ongoingService.findByTidIn(tids);
+
+            existentList.forEach(e ->
+                    tempOngoingEntityList.stream()
+                            .filter(t -> t.tid().equals(e.tid()))
+                            .findFirst()
+                            .map(f -> e.syoboiOngoingEntity(f.syoboiOngoingEntity()))
+            );
+
+            if (existentList.size() > 0) ongoingService.saveAll(existentList);
+
+            List<OngoingEntity> notInDB = tempOngoingEntityList.stream()
+                    .filter(os -> existentList.stream().noneMatch(ns -> os.tid().equals(ns.tid())))
+                    .toList();
+
+            if (notInDB.size() > 0) ongoingService.saveAll(notInDB);
+
+            List<OngoingEntity> toDelete = ongoingService.getCurrentOngoings().stream()
+                    .filter(os -> tempOngoingEntityList.stream().noneMatch(ns -> os.tid().equals(ns.tid())))
+                    .toList();
+
+            toDelete.forEach(e -> e.syoboiOngoingEntity(null));
+
+            if (toDelete.size() > 0) ongoingService.saveAll(toDelete);
         } catch (IOException e) {
             log.error("Can't parse syoboi ongoings", e);
         }
-
-        List<Long> tids = tempOngoingEntityList.stream().map(OngoingEntity::tid).distinct().toList();
-
-        List<OngoingEntity> existentList = ongoingService.findByTidIn(tids);
-
-        existentList.forEach(e ->
-                tempOngoingEntityList.stream()
-                        .filter(t -> t.tid().equals(e.tid()))
-                        .findFirst()
-                        .map(f -> e.syoboiOngoingEntity(f.syoboiOngoingEntity()))
-        );
-
-        if (existentList.size() > 0) ongoingService.saveAll(existentList);
-
-        List<OngoingEntity> notInDB = tempOngoingEntityList.stream()
-                .filter(os -> existentList.stream().noneMatch(ns -> os.tid().equals(ns.tid())))
-                .toList();
-
-        if (notInDB.size() > 0) ongoingService.saveAll(notInDB);
-
-        List<OngoingEntity> toDelete = ongoingService.getCurrentOngoings().stream()
-                .filter(os -> tempOngoingEntityList.stream().noneMatch(ns -> os.tid().equals(ns.tid())))
-                .toList();
-
-        toDelete.forEach(e -> e.syoboiOngoingEntity(null));
-
-        if (toDelete.size() > 0) ongoingService.saveAll(toDelete);
     }
 
     @Transactional
