@@ -26,9 +26,13 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.BufferedInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.sql.Timestamp;
 import java.util.*;
 import java.util.regex.Matcher;
@@ -278,15 +282,21 @@ public class ParseSyoboiManipulations {
         ObjectMapper objectMapper = new ObjectMapper();
         for (Long tid : tids) {
             try {
-                JsonParser jp = jsonFactory.createParser(new URL(syoboiPath + tid));
+                HttpURLConnection httpConn = (HttpURLConnection) new URL(syoboiPath + tid).openConnection();
+                httpConn.addRequestProperty("User-Agent", "Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:56.0) Gecko/20100101 Firefox/56.0");
+                httpConn.setConnectTimeout(60000);
+                InputStream inputStream = new BufferedInputStream(httpConn.getInputStream());
+
+                JsonParser jp = jsonFactory.createParser(new InputStreamReader(inputStream, StandardCharsets.UTF_8));
                 JsonNode root = objectMapper.readTree(jp);
                 JsonNode nodeTID = root.findValue(String.valueOf(tid));
+
                 ongoingService.findByTid(tid).ifPresent(s -> {
                     s.syoboiInfoEntity(new ObjectMapper().convertValue(nodeTID, SyoboiInfoEntity.class).ongoingEntity(s));
                     ongoingService.save(s);
                 });
                 Thread.sleep(3000);
-            } catch (Exception e) {
+            } catch (IOException | InterruptedException e) {
                 log.error("Error parse syoboi info " + tid, e);
             }
         }
