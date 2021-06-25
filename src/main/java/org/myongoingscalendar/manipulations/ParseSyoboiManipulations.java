@@ -185,6 +185,7 @@ public class ParseSyoboiManipulations {
         }
     }
 
+    @Transactional
     public void parseSyoboiUidTimetableForAllOngoings() {
         parseList(syoboiOngoingService.getAll().stream().map(e -> e.ongoingEntity().tid()).distinct().toList());
     }
@@ -235,6 +236,7 @@ public class ParseSyoboiManipulations {
         });
     }
 
+    @Transactional
     public void updateTidsTimetable() {
         List<Long> toParse = syoboiOngoingService.getAll().stream()
                 .flatMap(e -> e.ongoingEntity().syoboiRssEntities().stream())
