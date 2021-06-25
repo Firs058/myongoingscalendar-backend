@@ -226,11 +226,12 @@ public class ParseSyoboiManipulations {
                             }
                         });
                 ongoing.syoboiTimetableEntities().clear();
+                ongoingService.flush();
                 if (!syoboiTimetableEntityList.isEmpty())
                     ongoing.syoboiTimetableEntities().addAll(syoboiTimetableEntityList);
                 ongoing.syoboiRssEntities().forEach(s -> s.updated(true));
                 ongoingService.save(ongoing);
-            } catch (IOException | ObjectOptimisticLockingFailureException e) {
+            } catch (IOException e) {
                 log.error("Cant get syoboi tid timetable: " + tid + ", " + e.toString());
             }
         });
