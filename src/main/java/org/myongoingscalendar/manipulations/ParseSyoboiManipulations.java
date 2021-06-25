@@ -23,6 +23,7 @@ import org.myongoingscalendar.entity.*;
 import org.myongoingscalendar.service.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -184,18 +185,16 @@ public class ParseSyoboiManipulations {
         }
     }
 
-    @Transactional
     public void parseSyoboiUidTimetableForAllOngoings() {
         parseList(syoboiOngoingService.getAll().stream().map(e -> e.ongoingEntity().tid()).distinct().toList());
     }
 
-    private void parseSyoboiUidTimetable(Long tid) {
-        Optional<OngoingEntity> ongoing = ongoingService.findByTid(tid);
-        ongoing.ifPresent(o -> {
+    @Transactional
+    void parseSyoboiUidTimetable(Long tid) {
+        ongoingService.findByTid(tid).ifPresent(ongoing -> {
             List<SyoboiTimetableEntity> syoboiTimetableEntityList = new ArrayList<>();
-            org.jsoup.nodes.Document doc;
             try {
-                doc = Jsoup.connect("http://cal.syoboi.jp/tid/" + tid + "/time?Filter=ChAll&Filter2=Recent").userAgent("Mozilla").get();
+                org.jsoup.nodes.Document doc = Jsoup.connect("http://cal.syoboi.jp/tid/".concat(tid.toString()).concat("/time?Filter=ChAll&Filter2=Recent")).userAgent("Mozilla").get();
                 Elements table = doc.select("table#ProgList.progs");
                 Elements rows = table.select("tr");
                 IntStream.range(1, rows.size())
@@ -210,32 +209,32 @@ public class ParseSyoboiManipulations {
                             episodeName.select("div.peComment").remove();
                             if (episodeName.childNodeSize() > 1) episodeName.select("div.peNotice").remove();
                             if (!episode.text().equals("")) {
-                                Optional<ChannelEntity> channel = channelService.findByJa(ch.text().trim());
-                                if (!channel.isPresent())
-                                    channel = channelService.save(new ChannelEntity().ja(ch.text().trim()));
-                                syoboiTimetableEntityList.add(
-                                        new SyoboiTimetableEntity()
-                                                .ongoingEntity(o)
-                                                .channelEntity(channel.get())
-                                                .dateStart(parseJapanIdioticTimeSystem(dateStart.text()))
-                                                .shift(parseEpisodeShift(shift))
-                                                .episode(Integer.parseInt(episode.text()))
-                                                .episodeName(parseTidEpisodeName(episodeName.text()))
-                                );
+                                String channelName = ch.text().trim();
+                                Optional<ChannelEntity> channel = channelService.findByJa(channelName)
+                                        .or(() -> channelService.save(new ChannelEntity().ja(channelName)));
+                                channel.ifPresent(channelEntity ->
+                                        syoboiTimetableEntityList.add(
+                                                new SyoboiTimetableEntity()
+                                                        .ongoingEntity(ongoing)
+                                                        .channelEntity(channelEntity)
+                                                        .dateStart(parseJapanIdioticTimeSystem(dateStart.text()))
+                                                        .shift(parseEpisodeShift(shift))
+                                                        .episode(Integer.parseInt(episode.text()))
+                                                        .episodeName(parseTidEpisodeName(episodeName.text()))
+                                        ));
                             }
                         });
-                o.syoboiTimetableEntities().clear();
-                ongoingService.flush();
-                if (!syoboiTimetableEntityList.isEmpty()) o.syoboiTimetableEntities().addAll(syoboiTimetableEntityList);
-                o.syoboiRssEntities().forEach(s -> s.updated(true));
-                ongoingService.save(o);
-            } catch (IOException e) {
+                ongoing.syoboiTimetableEntities().clear();
+                if (!syoboiTimetableEntityList.isEmpty())
+                    ongoing.syoboiTimetableEntities().addAll(syoboiTimetableEntityList);
+                ongoing.syoboiRssEntities().forEach(s -> s.updated(true));
+                ongoingService.save(ongoing);
+            } catch (IOException | ObjectOptimisticLockingFailureException e) {
                 log.error("Cant get syoboi tid timetable: " + tid + ", " + e.toString());
             }
         });
     }
 
-    @Transactional
     public void updateTidsTimetable() {
         List<Long> toParse = syoboiOngoingService.getAll().stream()
                 .flatMap(e -> e.ongoingEntity().syoboiRssEntities().stream())
