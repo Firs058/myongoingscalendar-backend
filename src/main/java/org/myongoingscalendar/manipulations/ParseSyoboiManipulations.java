@@ -226,7 +226,6 @@ public class ParseSyoboiManipulations {
                             }
                         });
                 ongoing.syoboiTimetableEntities().clear();
-                ongoingService.flush();
                 if (!syoboiTimetableEntityList.isEmpty())
                     ongoing.syoboiTimetableEntities().addAll(syoboiTimetableEntityList);
                 ongoing.syoboiRssEntities().forEach(s -> s.updated(true));

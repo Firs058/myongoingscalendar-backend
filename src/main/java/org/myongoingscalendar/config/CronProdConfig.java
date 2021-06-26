@@ -30,7 +30,7 @@ public class CronProdConfig {
         this.fillElastic = fillElastic;
     }
 
-    @Scheduled(cron = "* */10 * * * ?")
+    @Scheduled(cron = "* */10 0-12,13-23 * * ?")
     public void updateSyoboi() {
         parseSyoboiManipulations.parseSyoboiRSS();
         parseSyoboiManipulations.updateTidsTimetable();
