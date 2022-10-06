@@ -31,7 +31,7 @@ public class JikanAnime implements Serializable {
     @JsonProperty("synopsis")
     private String synopsis;
     @JsonProperty("trailer")
-    public Trailer trailer;
+    private Trailer trailer;
     @JsonProperty("genres")
     private List<Genre> genres = null;
 }

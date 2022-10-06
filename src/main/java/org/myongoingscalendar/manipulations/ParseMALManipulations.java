@@ -66,22 +66,24 @@ public class ParseMALManipulations {
                     }
                     in.close();
                     final JikanAnime jikanAnime = new ObjectMapper().readValue(Jsoup.parse(content.toString()).text(), JikanAnime.class);
-                    List<MalTitleGenreEntity> genresList = jikanAnime.genres().stream()
-                            .map(genre -> {
-                                Optional<GenreEntity> existentGenre = genreService.findByName(genre.name());
-                                if (!existentGenre.isPresent())
-                                    existentGenre = genreService.save(new GenreEntity().name(genre.name()));
-                                return new MalTitleGenreEntity().ongoingEntity(ongoing).genreEntity(existentGenre.get());
-                            })
-                            .toList();
-                    if (genresList.size() > 0) {
-                        ongoing.malTitleGenreEntities().clear();
-                        ongoingService.flush();
-                        ongoing.malTitleGenreEntities().addAll(genresList);
+                    if (jikanAnime.genres() != null) {
+                        List<MalTitleGenreEntity> genresList = jikanAnime.genres().stream()
+                                .map(genre -> {
+                                    Optional<GenreEntity> existentGenre = genreService.findByName(genre.name());
+                                    if (existentGenre.isEmpty())
+                                        existentGenre = genreService.save(new GenreEntity().name(genre.name()));
+                                    return new MalTitleGenreEntity().ongoingEntity(ongoing).genreEntity(existentGenre.get());
+                                })
+                                .toList();
+                        if (genresList.size() > 0) {
+                            ongoing.malTitleGenreEntities().clear();
+                            ongoingService.flush();
+                            ongoing.malTitleGenreEntities().addAll(genresList);
+                        }
                     }
 
                     String description = (jikanAnime.synopsis() != null) ? parseAndCleanMALDescription(jikanAnime.synopsis()) : "Not have description";
-                    String trailerUrl = (jikanAnime.trailer() != null) ? parseAndCleanMALTrailerUrl(jikanAnime.trailer.url()) : null;
+                    String trailerUrl = (jikanAnime.trailer() != null) ? parseAndCleanMALTrailerUrl(jikanAnime.trailer().url()) : null;
 
                     if (jikanAnime.score() != null) {
                         Optional<RatingEntity> ratingsEntity = ongoing.ratingEntities().stream()
