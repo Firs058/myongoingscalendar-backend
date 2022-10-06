@@ -26,7 +26,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -82,7 +81,7 @@ public class ParseMALManipulations {
                     }
 
                     String description = (jikanAnime.synopsis() != null) ? parseAndCleanMALDescription(jikanAnime.synopsis()) : "Not have description";
-                    String trailerUrl = (jikanAnime.trailerUrl() != null) ? parseAndCleanMALTrailerUrl(jikanAnime.trailerUrl()) : null;
+                    String trailerUrl = (jikanAnime.trailer() != null) ? parseAndCleanMALTrailerUrl(jikanAnime.trailer.url()) : null;
 
                     if (jikanAnime.score() != null) {
                         Optional<RatingEntity> ratingsEntity = ongoing.ratingEntities().stream()
