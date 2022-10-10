@@ -86,7 +86,7 @@ public class ParseMALManipulations {
                     }
 
                     String description = (jikanAnime.synopsis() != null) ? parseAndCleanMALDescription(jikanAnime.synopsis()) : "Not have description";
-                    String trailerUrl = (jikanAnime.trailer() != null) ? parseAndCleanMALTrailerUrl(jikanAnime.trailer().url()) : null;
+                    String trailerUrl = (jikanAnime.trailer() != null && jikanAnime.trailer().url() != null ) ? parseAndCleanMALTrailerUrl(jikanAnime.trailer().url()) : null;
 
                     if (jikanAnime.score() != null) {
                         Optional<RatingEntity> ratingsEntity = ongoing.ratingEntities().stream()
