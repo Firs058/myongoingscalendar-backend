@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.jsoup.Jsoup;
 import org.myongoingscalendar.model.Jikan.JikanAnime;
 import org.myongoingscalendar.entity.*;
+import org.myongoingscalendar.model.Jikan.JikanWrapper;
 import org.myongoingscalendar.service.GenreService;
 import org.myongoingscalendar.service.OngoingService;
 import org.myongoingscalendar.utils.AnimeUtil;
@@ -20,6 +21,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
@@ -58,14 +60,15 @@ public class ParseMALManipulations {
                 con.setRequestMethod("GET");
                 con.setConnectTimeout(60000);
                 if (con.getResponseCode() == 200) {
-                    BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream(), "UTF8"));
+                    BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream(), StandardCharsets.UTF_8));
                     String inputLine;
                     StringBuilder content = new StringBuilder();
                     while ((inputLine = in.readLine()) != null) {
                         content.append(inputLine);
                     }
                     in.close();
-                    final JikanAnime jikanAnime = new ObjectMapper().readValue(Jsoup.parse(content.toString()).text(), JikanAnime.class);
+                    final JikanWrapper jikanWrapper = new ObjectMapper().readValue(Jsoup.parse(content.toString()).text(), JikanWrapper.class);
+                    final JikanAnime jikanAnime = jikanWrapper.data();
                     if (jikanAnime.genres() != null) {
                         List<MalTitleGenreEntity> genresList = jikanAnime.genres().stream()
                                 .map(genre -> {
