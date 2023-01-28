@@ -20,7 +20,6 @@ import java.math.RoundingMode;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -46,39 +45,41 @@ public class ParseAnnManipulations {
                 JAXBContext jaxbContext = JAXBContext.newInstance(Ann.class);
                 Unmarshaller jaxbUnmarshaller = jaxbContext.createUnmarshaller();
                 Ann.Anime ann = ((Ann) jaxbUnmarshaller.unmarshal(new URL(annPath + annid))).getAnime();
-                ongoingService.findByAnnid(annid).ifPresent(ongoing -> {
+                if (ann != null) {
+                    ongoingService.findByAnnid(annid).ifPresent(ongoing -> {
 
-                    if (ann.getNews() != null) {
-                        ann.getNews().forEach(e -> {
-                            NewsEntity newsEntity = new NewsEntity()
-                                    .datetime(e.getDatetime().toGregorianCalendar().getTime())
-                                    .href(e.getHref())
-                                    .headline(e.getValue().replaceAll("(<\\/?(\\s|\\S)*?>)", ""))
-                                    .lang(Locale.ENGLISH)
-                                    .source("https://animenewsnetwork.com")
-                                    .ongoingEntity(ongoing);
-                            if (ongoing.newsEntities().stream().noneMatch(i -> i.datetime().compareTo(newsEntity.datetime()) == 0))
-                                ongoing.newsEntities().add(newsEntity);
-                        });
-                    }
+                        if (ann.getNews() != null) {
+                            ann.getNews().forEach(e -> {
+                                NewsEntity newsEntity = new NewsEntity()
+                                        .datetime(e.getDatetime().toGregorianCalendar().getTime())
+                                        .href(e.getHref())
+                                        .headline(e.getValue().replaceAll("(<\\/?(\\s|\\S)*?>)", ""))
+                                        .lang(Locale.ENGLISH)
+                                        .source("https://animenewsnetwork.com")
+                                        .ongoingEntity(ongoing);
+                                if (ongoing.newsEntities().stream().noneMatch(i -> i.datetime().compareTo(newsEntity.datetime()) == 0))
+                                    ongoing.newsEntities().add(newsEntity);
+                            });
+                        }
 
-                    if (ann.getRatings() != null) {
-                        BigDecimal weightedScore = ann.getRatings().getWeightedScore().setScale(2, RoundingMode.DOWN);
+                        if (ann.getRatings() != null) {
+                            BigDecimal weightedScore = ann.getRatings().getWeightedScore().setScale(2, RoundingMode.DOWN);
 
-                        Optional<RatingEntity> ratingsEntity = ongoing.ratingEntities().stream()
-                                .max(Comparator.comparing(RatingEntity::added));
-                        if (ratingsEntity.isPresent() && AnimeUtil.daysBetween(ratingsEntity.get().added(), new Date()) == 0)
-                            ratingsEntity.get().ann(weightedScore);
-                        else ongoing.ratingEntities().add(
-                                new RatingEntity()
-                                        .ongoingEntity(ongoing)
-                                        .ann(weightedScore));
-                    }
+                            Optional<RatingEntity> ratingsEntity = ongoing.ratingEntities().stream()
+                                    .max(Comparator.comparing(RatingEntity::added));
+                            if (ratingsEntity.isPresent() && AnimeUtil.daysBetween(ratingsEntity.get().added(), new Date()) == 0)
+                                ratingsEntity.get().ann(weightedScore);
+                            else ongoing.ratingEntities().add(
+                                    new RatingEntity()
+                                            .ongoingEntity(ongoing)
+                                            .ann(weightedScore));
+                        }
 
-                    ongoingService.save(ongoing);
-                });
+                        ongoingService.save(ongoing);
+                    });
+                } else throw new IllegalArgumentException("No result for anime with annid: " + annid);
                 Thread.sleep(3000);
-            } catch (JAXBException | InterruptedException | MalformedURLException e) {
+            } catch (JAXBException | InterruptedException | MalformedURLException | IllegalArgumentException e) {
                 log.error("Error parse ann " + annid, e);
             }
         }
