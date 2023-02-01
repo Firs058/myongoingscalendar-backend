@@ -32,7 +32,7 @@ public class SitemapController {
         this.ongoingService = ongoingService;
     }
 
-    @RequestMapping(value = "/sitemap.xml", produces = MediaType.APPLICATION_XML_VALUE)
+    @RequestMapping(value = "/sitemap.xml", produces = "text/xml; charset=UTF-8")
     @ResponseBody
     public XmlUrlSet main(HttpServletRequest request) {
         XmlUrlSet xmlUrlSet = new XmlUrlSet();
