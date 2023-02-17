@@ -21,8 +21,6 @@ public class MailConfig {
     private boolean auth;
     @Value("${mail.smtp.starttls.enable}")
     private boolean starttls;
-    @Value("${mail.from}")
-    private String from;
     @Value("${mail.username}")
     private String username;
     @Value("${mail.password}")

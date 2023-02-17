@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.joda.time.DateTime;
 import org.myongoingscalendar.entity.UserEntity;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.scheduling.annotation.Async;
@@ -17,6 +18,8 @@ import javax.mail.internet.MimeMessage;
 public class EmailManipulations {
 
     private final JavaMailSender javaMailSender;
+    @Value("${mail.from}")
+    private String from;
 
     @Autowired
     EmailManipulations(JavaMailSender javaMailSender) {
@@ -30,7 +33,7 @@ public class EmailManipulations {
             MimeMessage mime = this.javaMailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(mime, true);
             String year = (new DateTime().getYear() == 2017) ? String.valueOf(new DateTime().getYear()) : "2017 - " + new DateTime().getYear();
-            helper.setFrom("myongoingscalendar@gmail.com");
+            helper.setFrom(from);
             helper.setTo(user.email());
             helper.setSubject("MyOngoingsCalendar confirm registration");
             String htmlText = "<div style='background:#111111;text-align:center;" +
@@ -55,7 +58,7 @@ public class EmailManipulations {
             MimeMessage mime = this.javaMailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(mime, true);
             String year = (new DateTime().getYear() == 2017) ? String.valueOf(new DateTime().getYear()) : "2017 - " + new DateTime().getYear();
-            helper.setFrom("myongoingscalendar@gmail.com");
+            helper.setFrom(from);
             helper.setTo(user.email());
             helper.setSubject("MyOngoingsCalendar password recover");
             String htmlText = "<div style='background:#111111;text-align:center;" +
